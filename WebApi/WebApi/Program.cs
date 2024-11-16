@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("default", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200") // Exact origin of your Angular app
+            .WithOrigins("http://localhost:4200", "https://your-production-url.com") // Exact origin of your Angular app
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials(); // Required to allow cookies with cross-origin requests

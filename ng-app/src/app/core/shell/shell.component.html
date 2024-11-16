@@ -1,7 +1,62 @@
-<div class="container-fluid d-flex flex-column min-vh-100">
-  <app-header></app-header>
-  <main class="flex-grow-1 p-4">
-    <ng-content></ng-content>
-  </main>
-  <app-footer></app-footer>
-</div>
+<mat-sidenav-container class="sidenav-container">
+  <!-- Side Navigation Drawer -->
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    fixedInViewport
+    [mode]="(isHandset$ | async) ? 'over' : 'side'"
+    [opened]="!(isHandset$ | async)"
+  >
+    <div class="sidenav-header">
+      <div class="logo-area">
+        <i class="fa fa-lock logo-icon" aria-hidden="true"></i>
+        <span class="logo-title">SimpleNetAuth</span>
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+    <mat-nav-list>
+      <a mat-list-item routerLink="/home" routerLinkActive="active-link"
+        >Home</a
+      >
+      <a mat-list-item routerLink="/about" routerLinkActive="active-link"
+        >About</a
+      >
+      <a mat-list-item routerLink="/contact" routerLinkActive="active-link"
+        >Contact</a
+      >
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content>
+    <!-- Header Toolbar -->
+    <mat-toolbar color="primary">
+      <button
+        mat-icon-button
+        (click)="toggleDrawer()"
+        *ngIf="isHandset$ | async"
+        aria-label="Toggle sidenav"
+      >
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span>SimpleNetAuth</span>
+      <span class="spacer"></span>
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item>Profile</button>
+        <button mat-menu-item>Settings</button>
+        <button mat-menu-item (click)="logout()">Logout</button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <!-- Main Content Area -->
+    <main>
+      <ng-content></ng-content>
+    </main>
+
+    <!-- Footer -->
+    <app-footer></app-footer>
+  </mat-sidenav-content>
+</mat-sidenav-container>
