@@ -23,6 +23,7 @@
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
+    "ng-recaptcha": "^13.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"

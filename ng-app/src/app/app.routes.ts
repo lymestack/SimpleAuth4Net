@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './home/home.component';
+import { AboutComponent } from './about/about.component';
 
 const routes: Routes = [
   {
@@ -12,6 +13,11 @@ const routes: Routes = [
     path: 'account',
     loadChildren: () =>
       import('./account/account.module').then((m) => m.AccountModule),
+  },
+  {
+    path: 'about',
+    component: AboutComponent,
+    data: { state: 'About', allowAnonymous: true },
   },
 ];
 

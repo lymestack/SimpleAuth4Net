@@ -1,0 +1,120 @@
+<div class="container mat-container padded-top">
+  <mat-card class="mat-card">
+    <h3 class="mat-title text-center">Register</h3>
+    <form (ngSubmit)="onSubmit()" class="form">
+      <app-username-email-input
+        [emailAddress]="model.username"
+        [available]="usernameAvailable"
+        [checking]="checkingUsername"
+        [checked]="checkedUsername"
+        [valid]="usernameValid"
+        [labelText]="'Username'"
+        (emailAddressUpdated)="onEmailAddressChanged($event)"
+      ></app-username-email-input>
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>First Name</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Enter your first name"
+          [(ngModel)]="model.firstName"
+          name="firstName"
+          required
+        />
+        <mat-error *ngIf="!model.firstName"
+          >Please enter your first name.</mat-error
+        >
+      </mat-form-field>
+
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>Last Name</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Enter your last name"
+          [(ngModel)]="model.lastName"
+          name="lastName"
+          required
+        />
+        <mat-error *ngIf="!model.lastName"
+          >Please enter your last name.</mat-error
+        >
+      </mat-form-field>
+
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>Email Address</mat-label>
+        <input
+          matInput
+          type="email"
+          placeholder="Enter your email"
+          [(ngModel)]="model.emailAddress"
+          name="emailAddress"
+          required
+        />
+        <mat-error *ngIf="!model.emailAddress"
+          >Please enter a valid email address.</mat-error
+        >
+      </mat-form-field>
+
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>Username</mat-label>
+        <input
+          matInput
+          type="text"
+          placeholder="Choose a username"
+          [(ngModel)]="model.username"
+          name="username"
+          required
+        />
+        <mat-error *ngIf="!model.username">Please choose a username.</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          type="password"
+          placeholder="Enter your password"
+          [(ngModel)]="model.password"
+          name="password"
+          required
+        />
+        <mat-error *ngIf="!model.password"
+          >Please enter your password.</mat-error
+        >
+      </mat-form-field>
+
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>Confirm Password</mat-label>
+        <input
+          matInput
+          type="password"
+          placeholder="Confirm your password"
+          [(ngModel)]="model.confirmPassword"
+          name="confirmPassword"
+          required
+        />
+        <mat-error *ngIf="model.confirmPassword !== model.password">
+          Passwords must match.
+        </mat-error>
+      </mat-form-field>
+
+      <div class="captcha-container" *ngIf="isCaptchaEnabled">
+        <re-captcha
+          [siteKey]="captchaSiteKey"
+          (resolved)="onCaptchaResolved($event)"
+        ></re-captcha>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="submit-button"
+        type="submit"
+        [disabled]="!captchaResolved"
+      >
+        Register
+      </button>
+    </form>
+  </mat-card>
+</div>

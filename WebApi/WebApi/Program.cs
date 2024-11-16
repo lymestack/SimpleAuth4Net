@@ -7,12 +7,14 @@ using System.Text.Json.Serialization;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Swagger/OpenAPI - Included in WebApi project by default. More info: https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Database Context:
 builder.Services.AddDbContext<SimpleNetAuthDataContext>();
+// builder.Services.AddScoped<IAuthService, AuthService>();
+// builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 
 // Enable Controllers:
 builder.Services.AddControllers().AddJsonOptions(x =>

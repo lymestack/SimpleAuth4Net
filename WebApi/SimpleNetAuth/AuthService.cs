@@ -13,6 +13,12 @@ using System.Text;
 
 namespace SimpleNetAuth;
 
+//public interface IAuthService
+//{
+//    Task<bool> UserExistsAsync(string username);
+//    Task GetUserWithRoles(string modelUsername);
+//}
+
 public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext db)
 {
     public async Task<AppUser?> GetUserWithRoles(string username)
@@ -91,12 +97,12 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
         };
     }
 
-    public async Task<string?> RegisterUser(RegisterModel model)
+    public async Task<string?> RegisterUserAsync(RegisterModel model)
     {
         // FUTURE: Check password complexity.
 
         if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return "User already exists.";
-        var user = new AppUser { Username = model.Username, FirstName = model.Firstname, LastName = model.LastName, EmailAddress = model.EmailAddress, AppUserCredential = new AppUserCredential() };
+        var user = new AppUser { Username = model.Username, FirstName = model.FirstName, LastName = model.LastName, EmailAddress = model.EmailAddress, AppUserCredential = new AppUserCredential() };
 
         if (model.ConfirmPassword == model.Password)
         {
@@ -112,5 +118,10 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
         await db.AppUsers.AddAsync(user);
         await db.SaveChangesAsync();
         return null;
+    }
+
+    public async Task<bool> UserExistsAsync(string username)
+    {
+        return await db.AppUsers.AnyAsync(u => u.Username == username);
     }
 }

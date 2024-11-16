@@ -1,1 +1,18 @@
-<p>home works!</p>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Welcome to the SimpleNetAuth</mat-card-title>
+    <mat-card-subtitle
+      >Making Auth Suck Less in .NET 9 WebApi and Angular</mat-card-subtitle
+    >
+  </mat-card-header>
+  <mat-card-content>
+    <div class="alert alert-warning padded-top padded-bottom">
+      You are NOT logged in.
+      <a routerLink="/account/login">Log in</a>
+    </div>
+
+    <div class="padded-top">
+      <app-card-menu [menuItems]="menuItems"></app-card-menu>
+    </div>
+  </mat-card-content>
+</mat-card>

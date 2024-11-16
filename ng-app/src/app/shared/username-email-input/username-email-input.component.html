@@ -1,0 +1,41 @@
+<div *ngIf="!useBootstrap">
+  <mat-form-field class="full-width">
+    <mat-label>{{ labelText }}</mat-label>
+    <input
+      matInput
+      #emailInput="ngModel"
+      name="email"
+      type="email"
+      name="emailAddress"
+      (change)="onEmailAddressChanged($event)"
+      required
+      autocomplete="off"
+      [(ngModel)]="emailAddress"
+      [ngModelOptions]="{ updateOn: 'blur' }"
+      placeholder="Your email address will be your username."
+      [disabled]="disabled"
+    />
+
+    <mat-hint *ngIf="checking">
+      <i class="fa fa-spin fa-spinner"></i> Checking
+    </mat-hint>
+
+    <mat-hint *ngIf="checked && !checking">
+      <div class="validation-message" [hidden]="available">
+        <i class="fa fa-exclamation-triangle"></i> The username is already
+        taken.
+      </div>
+
+      <div [hidden]="!available">
+        <div class="validation-message valid" [hidden]="!valid">
+          <i class="fa fa-check"></i> The username is available.
+        </div>
+
+        <div class="validation-message" [hidden]="valid">
+          <i class="fa fa-exclamation-triangle"></i> The username must be a
+          valid email address.
+        </div>
+      </div>
+    </mat-hint>
+  </mat-form-field>
+</div>

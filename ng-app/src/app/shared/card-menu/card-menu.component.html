@@ -1,0 +1,47 @@
+<div class="row">
+  <div class="{{ columnClass }}" *ngFor="let item of menuItems">
+    <ng-container *ngIf="item.routerLink">
+      <mat-card style="cursor: pointer" [routerLink]="item.routerLink">
+        <mat-card-header>
+          <mat-card-title>
+            <i *ngIf="item.icon" class="fa" [ngClass]="item.icon"></i>
+            {{ item.title }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content
+          ><div [innerHTML]="item.description"></div
+        ></mat-card-content>
+      </mat-card>
+    </ng-container>
+
+    <ng-container *ngIf="!item.routerLink && !item.href">
+      <mat-card (click)="menuItemClicked.emit(item)" style="cursor: pointer">
+        <mat-card-header>
+          <mat-card-title>
+            <i class="fa" *ngIf="item.icon" [ngClass]="item.icon"></i>
+            {{ item.title }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content
+          ><div [innerHTML]="item.description"></div
+        ></mat-card-content>
+      </mat-card>
+    </ng-container>
+
+    <ng-container *ngIf="item.href">
+      <a [href]="item.href">
+        <mat-card (click)="menuItemClicked.emit(item)" style="cursor: pointer">
+          <mat-card-header>
+            <mat-card-title>
+              <i class="fa" *ngIf="item.icon" [ngClass]="item.icon"></i>
+              {{ item.title }}
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content
+            ><div [innerHTML]="item.description"></div
+          ></mat-card-content>
+        </mat-card>
+      </a>
+    </ng-container>
+  </div>
+</div>

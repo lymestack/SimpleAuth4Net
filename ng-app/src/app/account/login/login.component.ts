@@ -7,6 +7,7 @@ import { Component } from '@angular/core';
 })
 export class LoginComponent {
   model: LoginModel = new LoginModel();
+  useBootstrap = false;
 
   onSubmit() {
     console.log('Login submitted', this.model);
@@ -14,6 +15,6 @@ export class LoginComponent {
 }
 
 export class LoginModel {
-  userName: string = '';
+  username: string = '';
   password: string = '';
 }
