@@ -41,7 +41,7 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
     {
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            Audience = new List<string> { configuration["SimpleNetAuthSettingsGoogleClientId"] }
+            Audience = new List<string> { configuration["AppConfig:googleClientId"] }
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
@@ -51,7 +51,7 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
     public async Task<dynamic> GenerateJwtAndRefreshToken(AppUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(configuration["SimpleNetAuthSettings:Secret"]);
+        var key = Encoding.ASCII.GetBytes(configuration["ApiConfig:tokenSecret"]);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -61,7 +61,7 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Username)
             }),
-            Expires = DateTime.UtcNow.AddMinutes(int.Parse(configuration["SimpleNetAuthSettings:AccessTokenExpirationMinutes"])),
+            Expires = DateTime.UtcNow.AddMinutes(int.Parse(configuration["AppConfig:AccessTokenExpirationMinutes"])),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
 
@@ -91,8 +91,8 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
     {
         return new AppRefreshToken
         {
-            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(int.Parse(configuration["SimpleNetAuthSettings:RefreshTokenLengthBytes"]))),
-            Expires = DateTime.UtcNow.AddDays(int.Parse(configuration["SimpleNetAuthSettings:RefreshTokenExpirationDays"])),
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(int.Parse(configuration["AppConfig:refreshTokenLengthBytes"]))),
+            Expires = DateTime.UtcNow.AddDays(int.Parse(configuration["AppConfig:refreshTokenExpirationDays"])),
             Created = DateTime.UtcNow
         };
     }

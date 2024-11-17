@@ -33,7 +33,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var secret = configuration["SimpleNetAuthSettings:Secret"];
+var secret = configuration["ApiConfig:tokenSecret"];
 
 // Define Authentication
 builder.Services.AddAuthentication(x =>

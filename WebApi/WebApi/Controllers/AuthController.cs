@@ -52,7 +52,7 @@ public class AuthController(IConfiguration configuration, /* IRecaptchaService r
     {
         if (!ModelState.IsValid) return BadRequest("Invalid input.");
 
-        //var isCaptchaEnabled = configuration.GetValue<bool>("SimpleNetAuthSettings:Captcha:Enabled");
+        //var isCaptchaEnabled = configuration.GetValue<bool>("AppConfig:Captcha:Enabled");
         //if (isCaptchaEnabled)
         //{
         //    // Verify the CAPTCHA

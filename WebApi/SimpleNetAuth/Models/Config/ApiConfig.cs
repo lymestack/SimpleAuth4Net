@@ -1,0 +1,26 @@
+﻿namespace SimpleNetAuth.Models.Config;
+
+public class AppConfig
+{
+    public Environment Environment { get; set; }
+    public List<Environment> Environments { get; set; }
+    public string GoogleClientId { get; set; }
+    public int AccessTokenExpirationMinutes { get; set; }
+    public int RefreshTokenExpirationDays { get; set; }
+    public CaptchaSettings CaptchaSettings { get; set; }
+}
+
+public class CaptchaSettings
+{
+    public bool Enabled { get; set; }
+    public string SecretKey { get; set; }
+}
+
+public class Environment
+{
+    public string Name { get; set; }
+    public string Url { get; set; }
+    public string Api { get; set; }
+    public string Description { get; set; }
+    public string BootstrapLabelCss { get; set; }
+}
