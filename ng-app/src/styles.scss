@@ -62,23 +62,44 @@ body {
   margin-right: 5px !important;
 }
 
-.mat-mdc-snack-bar-container.snack-bar-info {
-  background-color: #17a2b8; // Bootstrap info
+.mat-snack-bar-container {
+  border-radius: 5px !important;
+  padding: 14px !important;
 }
 
-.mat-mdc-snack-bar-container.snack-bar-warning {
-  background-color: #ffc107; // Bootstrap warning
-  color: #fff;
+.snackbar-info {
+  background-color: rgba(0, 159, 223, 0.8) !important;
+  text-align: center;
 }
 
-.mat-mdc-snack-bar-container.snack-bar-danger {
-  background-color: #dc3545 !important; // Bootstrap danger
+.snackbar-warning {
+  background-color: rgba(255, 102, 41, 0.8) !important;
 }
 
-.mat-mdc-snack-bar-container.snack-bar-success {
-  background-color: #28a745; // Bootstrap success
+.snackbar-warning .fa-exclamation-triangle {
+  color: white;
 }
 
-.mat-mdc-snack-bar-container.snack-bar-secondary {
-  background-color: #6c757d; // Bootstrap secondary
+.snackbar-error {
+  background-color: rgba(255, 0, 0, 0.8) !important;
+}
+
+.snackbar-success {
+  background-color: rgba(112, 187, 75, 0.8) !important;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.clearfix {
+  clear: both;
+}
+
+.mat-mdc-snack-bar-container .mat-mdc-snackbar-surface {
+  background-color: inherit !important;
 }

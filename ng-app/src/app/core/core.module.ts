@@ -6,12 +6,12 @@ import { FooterComponent } from './footer/footer.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { SharedModule } from '../shared/shared.module';
 import { RestService } from './_services/rest.service';
-import { CustomSnackBarComponent } from './custom-snack-bar/custom-snack-bar.component';
+import { LoggerService } from './_services/logger.service';
 
 @NgModule({
-  declarations: [ShellComponent, HeaderComponent, FooterComponent, CustomSnackBarComponent],
+  declarations: [ShellComponent, HeaderComponent, FooterComponent],
   imports: [CommonModule, BrowserAnimationsModule, SharedModule],
   exports: [ShellComponent],
-  providers: [RestService],
+  providers: [LoggerService, RestService],
 })
 export class CoreModule {}

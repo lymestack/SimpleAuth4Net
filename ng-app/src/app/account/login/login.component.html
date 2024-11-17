@@ -30,12 +30,13 @@
           />
         </div>
         <div class="d-flex justify-content-between mb-4">
-          <a routerLink="/account/forgot-password" class="text-decoration-none"
-            >Forgot password?</a
-          >
-          <a routerLink="/account/register" class="text-decoration-none"
-            >Register</a
-          >
+          <a routerLink="/account/forgot-password" class="text-decoration-none">
+            Forgot password?
+          </a>
+
+          <a routerLink="/account/register" class="text-decoration-none">
+            Register
+          </a>
         </div>
         <button type="submit" class="btn btn-primary w-100">Login</button>
       </form>
@@ -79,10 +80,20 @@
         </mat-form-field>
 
         <div class="link-container">
-          <a mat-button color="primary" class="text-link" href="#"
+          <a
+            mat-button
+            color="primary"
+            class="text-link"
+            routerLink="/account/forgot-password"
             >Forgot password?</a
           >
-          <a mat-button color="primary" class="text-link" href="#">Register</a>
+          <a
+            mat-button
+            color="primary"
+            class="text-link"
+            routerLink="/account/register"
+            >Register</a
+          >
         </div>
 
         <button

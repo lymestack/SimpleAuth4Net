@@ -1,0 +1,16 @@
+<div class="snack-bar-info">
+  <div class="float-left">
+    <i class="fa {{ data.icon }}"></i>
+  </div>
+
+  <div class="float-left snack-bar-message">
+    <h6 class="snack-bar-title" [hidden]="!data.title">
+      {{ data.title }}
+    </h6>
+
+    <div class="message">
+      {{ data.message }}
+    </div>
+  </div>
+  <div class="clearfix"></div>
+</div>

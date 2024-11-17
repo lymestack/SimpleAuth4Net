@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RestService } from '../../core/_services/rest.service';
-import { SnackbarService } from '../../core/_services/snackbar.service';
+import { LoggerService } from '../../core/_services/logger.service';
 
 @Component({
   selector: 'app-register',
@@ -27,10 +27,7 @@ export class RegisterComponent {
   captchaResolved = true;
   isCaptchaEnabled = false;
 
-  constructor(
-    private rest: RestService,
-    private snackbarService: SnackbarService
-  ) {}
+  constructor(private logger: LoggerService, private rest: RestService) {}
 
   onCaptchaResolved(captchaResponse: any) {
     console.log('Captcha resolved:', captchaResponse);
@@ -74,28 +71,20 @@ export class RegisterComponent {
         console.log('Done:', data);
       },
       (err: any) => {
-        this.snackbarService.openSnackBar(
-          'An error occurred! ' + err,
-          'danger',
-          'error'
-        );
+        this.logger.error('An error occurred. ' + err);
       }
     );
   }
 
-  // showSuccess() {
-  //   this.snackbarService.openSnackBar(
-  //     'Operation successful!',
-  //     'success',
-  //     'check_circle'
-  //   );
-  // }
+  showSuccess() {
+    this.logger.success('Hey!');
+  }
 
-  // showWarning() {
-  //   this.snackbarService.openSnackBar('Be cautious!', 'warning', 'warning');
-  // }
+  showWarning() {
+    this.logger.warning('Hey!');
+  }
 
-  // showDanger() {
-  //   this.snackbarService.openSnackBar('An error occurred!', 'danger', 'error');
-  // }
+  showDanger() {
+    this.logger.error('Hey!');
+  }
 }

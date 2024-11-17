@@ -61,6 +61,9 @@ public class AuthController(IConfiguration configuration, /* IRecaptchaService r
         //        return BadRequest("Invalid CAPTCHA.");
         //}
 
+        // HACK: We don't collect email address separately from username during registration:
+        model.EmailAddress = model.Username;
+
         var result = await _authService.RegisterUserAsync(model);
         if (!string.IsNullOrEmpty(result)) return BadRequest(result);
 

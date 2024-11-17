@@ -8,7 +8,7 @@
         [checking]="checkingUsername"
         [checked]="checkedUsername"
         [valid]="usernameValid"
-        [labelText]="'Username'"
+        [labelText]="'Email Address'"
         (emailAddressUpdated)="onEmailAddressChanged($event)"
       ></app-username-email-input>
 
@@ -40,34 +40,6 @@
         <mat-error *ngIf="!model.lastName"
           >Please enter your last name.</mat-error
         >
-      </mat-form-field>
-
-      <mat-form-field class="form-field" appearance="fill">
-        <mat-label>Email Address</mat-label>
-        <input
-          matInput
-          type="email"
-          placeholder="Enter your email"
-          [(ngModel)]="model.emailAddress"
-          name="emailAddress"
-          required
-        />
-        <mat-error *ngIf="!model.emailAddress"
-          >Please enter a valid email address.</mat-error
-        >
-      </mat-form-field>
-
-      <mat-form-field class="form-field" appearance="fill">
-        <mat-label>Username</mat-label>
-        <input
-          matInput
-          type="text"
-          placeholder="Choose a username"
-          [(ngModel)]="model.username"
-          name="username"
-          required
-        />
-        <mat-error *ngIf="!model.username">Please choose a username.</mat-error>
       </mat-form-field>
 
       <mat-form-field class="form-field" appearance="fill">
@@ -125,7 +97,6 @@
   </mat-card>
 </div>
 
-<!-- 
 <button mat-raised-button (click)="showSuccess()">Success</button>
 <button mat-raised-button (click)="showWarning()">Warning</button>
-<button mat-raised-button (click)="showDanger()">Danger</button> -->
+<button mat-raised-button (click)="showDanger()">Danger</button>
