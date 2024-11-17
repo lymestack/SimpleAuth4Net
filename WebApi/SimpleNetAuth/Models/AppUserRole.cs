@@ -5,7 +5,6 @@ namespace SimpleNetAuth.Models;
 [Table("AppUserRole")]
 public class AppUserRole
 {
-    [System.ComponentModel.DataAnnotations.Key]
     [Column(Order = 0)]
     public int AppUserId { get; set; }
 

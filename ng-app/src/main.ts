@@ -9,7 +9,10 @@ fetch(getConfigUrl())
       .bootstrapModule(AppModule, {
         ngZoneEventCoalescing: true,
       })
-      .catch((err) => console.error(err));
+      .catch((err) => {
+        console.error(err);
+        alert("Couldn't load config. Try again");
+      });
   });
 
 function getConfigUrl() {

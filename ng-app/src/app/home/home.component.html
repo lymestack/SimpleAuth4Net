@@ -6,9 +6,14 @@
     >
   </mat-card-header>
   <mat-card-content>
-    <div class="alert alert-warning padded-top padded-bottom">
+    <div *ngIf="!appUser" class="alert alert-warning padded-top padded-bottom">
       You are NOT logged in.
       <a routerLink="/account/login">Log in</a>
+    </div>
+
+    <div *ngIf="appUser" class="alert alert-success padded-top padded-bottom">
+      You are logged in as {{ appUser.username }}.
+      <a routerLink="/account/logout">Log out</a>
     </div>
 
     <div class="padded-top">

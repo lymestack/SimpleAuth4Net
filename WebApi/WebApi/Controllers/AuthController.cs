@@ -1,81 +1,225 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SimpleNetAuth;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SimpleNetAuth.Data;
+using SimpleNetAuth.Models;
 using SimpleNetAuth.Models.ViewModels;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, /* IRecaptchaService recaptchaService, */ SimpleNetAuthDataContext db) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleNetAuthDataContext db) : ControllerBase
 {
-    // TODO: Fix the DI
-    private readonly AuthService _authService = new AuthService(configuration, db);
+    #region Register
+
+    [HttpPost("Register")]
+    public async Task<IActionResult> Register([FromBody] RegisterModel model)
+    {
+        if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("AppUser already exists...");
+        var user = new AppUser { Username = model.Username, AppUserCredential = new AppUserCredential() };
+
+        if (model.ConfirmPassword == model.Password)
+        {
+            using var hmac = new HMACSHA512();
+            user.AppUserCredential.PasswordSalt = hmac.Key;
+            user.AppUserCredential.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(model.Password));
+            user.AppUserCredential.DateCreated = DateTime.UtcNow;
+        }
+        else
+        {
+            return BadRequest("Passwords don't match");
+        }
+
+        await db.AppUsers.AddAsync(user);
+        await db.SaveChangesAsync();
+        return Ok(user);
+    }
+
+    #endregion
+
+    #region Login
 
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        var user = await _authService.GetUserWithRoles(model.Username);
-        if (user == null || !_authService.ValidatePassword(model.Password, user))
-            return BadRequest("Invalid username or password");
+        var user = db.AppUsers.Include(x => x.AppUserCredential).FirstOrDefault(x => x.Username == model.Username);
+        if (user == null) return BadRequest("AppUser or password was invalid.");
 
-        var tokens = await _authService.GenerateJwtAndRefreshToken(user);
-        return Ok(tokens);
+        var match = CheckPassword(model.Password, user);
+        if (!match) return BadRequest("AppUser or password was invalid.");
+
+        await JwtGenerator(user);
+        return Ok();
     }
 
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
     {
-        var user = await _authService.AuthenticateWithGoogle(credential);
-        if (user == null) return BadRequest("Invalid Google credentials");
+        var settings = new GoogleJsonWebSignature.ValidationSettings
+        {
+            Audience = new List<string> { configuration["AppSettings:googleClientId"] }
+        };
 
-        var tokens = await _authService.GenerateJwtAndRefreshToken(user);
-        return Ok(tokens);
+        var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+        var user = db.AppUsers.FirstOrDefault(x => x.Username == payload.Email);
+        if (user == null) return BadRequest();
+
+        await JwtGenerator(user);
+        return Ok();
     }
+
+    #endregion
+
+    #region RefreshToken
 
     [HttpGet("RefreshToken")]
-    public async Task<IActionResult> RefreshToken()
+    public async Task<ActionResult<string>> RefreshToken()
     {
         var tokenValue = Request.Cookies["X-Refresh-Token"];
-        var refreshToken = await _authService.GetRefreshToken(tokenValue);
+        var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser).FirstOrDefault(x => x.Token == tokenValue);
 
-        if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
-            return Unauthorized("Refresh token is invalid or expired");
+        if (refreshToken == null || refreshToken.Expires < DateTime.Now)
+        {
+            return Unauthorized("The token has expired.");
+        }
 
-        var tokens = await _authService.GenerateJwtAndRefreshToken(refreshToken.AppUser);
-        return Ok(tokens);
+        Debug.Assert(refreshToken.AppUser != null, "refreshToken.AppUser != null");
+        await JwtGenerator(refreshToken.AppUser);
+        return Ok();
     }
 
-    [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel model /*, [FromQuery] string captchaToken */)
+    #endregion
+
+    #region DELETE / RevokeToken
+
+    [HttpDelete]
+    public async Task<IActionResult> RevokeToken(string username)
     {
-        if (!ModelState.IsValid) return BadRequest("Invalid input.");
-
-        //var isCaptchaEnabled = configuration.GetValue<bool>("AppConfig:Captcha:Enabled");
-        //if (isCaptchaEnabled)
-        //{
-        //    // Verify the CAPTCHA
-        //    var captchaValid = await recaptchaService.ValidateCaptchaAsync(captchaToken);
-        //    if (!captchaValid)
-        //        return BadRequest("Invalid CAPTCHA.");
-        //}
-
-        // HACK: We don't collect email address separately from username during registration:
-        model.EmailAddress = model.Username;
-
-        var result = await _authService.RegisterUserAsync(model);
-        if (!string.IsNullOrEmpty(result)) return BadRequest(result);
-
-        return Ok("Registration successful");
+        //var users = db.AppUsers.Where(x => x.Username == username).ToList();
+        //foreach (var user in users) user.Token = "";
+        //await db.SaveChangesAsync();
+        return Ok();
     }
 
-    [HttpGet("UserExists")]
-    public async Task<IActionResult> UserExists([FromQuery] string username)
+    #endregion
+
+    #region ZOMBIE: Debug Endpoints
+
+    [HttpGet("WhoAmI")]
+    public async Task<IActionResult> WhoAmI()
     {
-        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
-        var exists = await _authService.UserExistsAsync(username);
-        return Ok(new { exists });
+        if (User.Identity == null) return Ok("Nobody");
+        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
+        return Ok(User.Identity.Name);
     }
+
+    // ZOMBIE: For Debugging:
+    //[HttpGet("CheckTokenCookie")]
+    //public IActionResult CheckTokenCookie()
+    //{
+    //    var token = HttpContext.Request.Cookies["X-Access-Token"];
+    //    return Ok(new { token });
+    //}
+
+    #endregion
+
+    #region Private methods
+
+    private async Task<dynamic> JwtGenerator(AppUser user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(configuration["ApiConfig:tokenSecret"]);
+        var expiresInDays = int.Parse(configuration["AppConfig:authSettings:refreshTokenExpirationDays"]);
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(new[]
+            {
+                new Claim("id", user.Username),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Username)
+            }),
+            Expires = DateTime.Now.AddDays(expiresInDays),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        var encryptedToken = tokenHandler.WriteToken(token);
+
+        SetJwt(encryptedToken);
+        var refreshToken = GenerateRefreshToken();
+        await SetRefreshTokenAsync(refreshToken, user);
+
+        return new { token = encryptedToken, username = user.Username };
+    }
+
+    private void SetJwt(string encryptedToken)
+    {
+        var expireInMinutes = int.Parse(configuration["AppConfig:authSettings:accessTokenExpirationMinutes"]);
+
+        HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
+            new CookieOptions
+            {
+                Expires = DateTime.Now.AddMinutes(expireInMinutes),
+                HttpOnly = true,
+                Secure = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None
+            });
+    }
+
+    private static bool CheckPassword(string password, AppUser user)
+    {
+        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
+        using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
+        var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
+        return result;
+    }
+
+    private async Task SetRefreshTokenAsync(AppRefreshToken refreshToken, AppUser user)
+    {
+        HttpContext.Response.Cookies.Append("X-Refresh-Token", refreshToken.Token,
+            new CookieOptions
+            {
+                Expires = refreshToken.Expires,
+                HttpOnly = true,
+                Secure = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.None
+            });
+
+        // var dbItem = db.AppUsers.Single(x => x.Username == user.Username);
+        var dbItem = db.AppRefreshTokens.FirstOrDefault(x => x.Token == refreshToken.Token) ?? new AppRefreshToken();
+        dbItem.AppUserId = user.Id;
+        dbItem.Token = refreshToken.Token;
+        dbItem.Created = refreshToken.Created;
+        dbItem.Expires = refreshToken.Expires;
+        await db.SaveChangesAsync();
+    }
+
+    private AppRefreshToken GenerateRefreshToken()
+    {
+        var expiresInDays = int.Parse(configuration["AppConfig:authSettings:refreshTokenExpirationDays"]);
+
+        var refreshToken = new AppRefreshToken
+        {
+            Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+            Expires = DateTime.Now.AddDays(expiresInDays),
+            Created = DateTime.Now
+        };
+
+        return refreshToken;
+    }
+
+    #endregion
 }

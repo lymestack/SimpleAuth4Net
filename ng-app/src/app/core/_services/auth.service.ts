@@ -14,16 +14,23 @@ export class AuthService {
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
-
     private httpClient: HttpClient
   ) {
     this.apiUrl = this.config.environment.api;
   }
 
+  login(loginModel: LoginModel): Observable<any> {
+    const header = new HttpHeaders().set('Content-type', 'application/json');
+    return this.httpClient.post(this.apiUrl + 'Auth/Login', loginModel, {
+      headers: header,
+      withCredentials: true,
+    });
+  }
+
   loginWithGoogle(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-type', 'application/json');
     return this.httpClient.post(
-      this.apiUrl + 'LoginWithGoogle',
+      this.apiUrl + 'Auth/LoginWithGoogle',
       JSON.stringify(credentials),
       {
         headers: header,
@@ -72,10 +79,6 @@ export class AuthService {
 
   //   return this.httpClient.post(url, postData);
   // }
-
-  login(model: LoginModel) {
-    throw new Error('Method not implemented.');
-  }
 
   // ZOMBIE: Debug code:
   // checkToken(): Observable<boolean> {

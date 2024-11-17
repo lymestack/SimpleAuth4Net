@@ -6,6 +6,7 @@ namespace SimpleNetAuth.Models;
 public class AppRefreshToken
 {
     [System.ComponentModel.DataAnnotations.Key]
+    [ForeignKey("AppUser")]
     public int AppUserId { get; set; }
 
     public string Token { get; set; }

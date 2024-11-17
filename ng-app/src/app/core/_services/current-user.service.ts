@@ -18,7 +18,7 @@ export class CurrentUserService {
   ) {}
 
   getAppUser(refresh: boolean = false): Observable<any> {
-    if (!this.isLoggedIn()) return of(null);
+    // if (!this.isLoggedIn()) return of(null);
     let appUser: AppUser = this.localStorage.get(this.localStorageKey);
     if (!appUser || appUser.sessionId != this.config.sessionId) refresh = true;
 
@@ -36,10 +36,11 @@ export class CurrentUserService {
     }
   }
 
-  isLoggedIn(): boolean {
-    const token = this.getCookie('X-Access-Token');
-    return !!token;
-  }
+  // ZOMBIE: Doesn't work w/ the HTTP Only cookie:
+  // isLoggedIn(): boolean {
+  //   const token = this.getCookie('X-Access-Token');
+  //   return !!token;
+  // }
 
   private getCookie(name: string): string | null {
     const matches = document.cookie.match(

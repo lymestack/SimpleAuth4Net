@@ -5,6 +5,8 @@ import { map, shareReplay } from 'rxjs/operators';
 import { MatDrawer } from '@angular/material/sidenav';
 import { CurrentUserService } from '../_services/current-user.service';
 import { AppUser } from '../../_api';
+import { LoggerService } from '../_services/logger.service';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-shell',
   templateUrl: './shell.component.html',
@@ -17,7 +19,9 @@ export class ShellComponent implements OnInit {
 
   constructor(
     private breakpointObserver: BreakpointObserver,
-    private currentUser: CurrentUserService
+    private currentUser: CurrentUserService,
+    private logger: LoggerService,
+    private router: Router
   ) {
     this.isHandset$ = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
       map((result) => result.matches),
@@ -32,8 +36,9 @@ export class ShellComponent implements OnInit {
   }
 
   logout() {
-    console.log('Logging out...');
-    // Add your logout logic here
+    this.currentUser.logout();
+    this.router.navigateByUrl('/account/login');
+    this.logger.success("You've been signed out successfully.");
   }
 
   toggleDrawer(): void {
