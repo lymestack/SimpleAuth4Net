@@ -16,3 +16,18 @@
     </div>
   </mat-card-content>
 </mat-card>
+
+<mat-card class="padded-top">
+  <mat-card-header>
+    <mat-card-title>Test Area</mat-card-title>
+    <mat-card-subtitle
+      >Use the buton below to test the secured endpoint.</mat-card-subtitle
+    >
+  </mat-card-header>
+  <mat-card-content> </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button (click)="testSecureEndpoint()">
+      Test Secure Resource
+    </button>
+  </mat-card-actions>
+</mat-card>
