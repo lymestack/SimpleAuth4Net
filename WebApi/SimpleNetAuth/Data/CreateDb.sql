@@ -58,8 +58,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE TABLE [dbo].[AppUserCredential](
 	[AppUserId] [int] NOT NULL,
-	[PasswordSalt] [varbinary](50) NOT NULL,
-	[PasswordHash] [varbinary](50) NOT NULL,
+	[PasswordSalt] [varbinary](128) NOT NULL,
+	[PasswordHash] [varbinary](128) NOT NULL,
 	[DateCreated] [smalldatetime] NOT NULL,
  CONSTRAINT [PK_AppUserCredential] PRIMARY KEY CLUSTERED 
 (

@@ -102,11 +102,20 @@ public class AuthService(IConfiguration configuration, SimpleNetAuthDataContext 
         // FUTURE: Check password complexity.
 
         if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return "User already exists.";
-        var user = new AppUser { Username = model.Username, FirstName = model.FirstName, LastName = model.LastName, EmailAddress = model.EmailAddress, AppUserCredential = new AppUserCredential() };
+        var user = new AppUser
+        {
+            Username = model.Username,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            EmailAddress = model.EmailAddress,
+            AppUserCredential = new AppUserCredential(),
+            DateEntered = DateTime.UtcNow
+        };
 
         if (model.ConfirmPassword == model.Password)
         {
             using var hmac = new HMACSHA512();
+            user.AppUserCredential.DateCreated = DateTime.UtcNow;
             user.AppUserCredential.PasswordSalt = hmac.Key;
             user.AppUserCredential.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(model.Password));
         }

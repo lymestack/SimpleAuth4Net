@@ -61,3 +61,24 @@ body {
 .padded-right {
   margin-right: 5px !important;
 }
+
+.mat-mdc-snack-bar-container.snack-bar-info {
+  background-color: #17a2b8; // Bootstrap info
+}
+
+.mat-mdc-snack-bar-container.snack-bar-warning {
+  background-color: #ffc107; // Bootstrap warning
+  color: #fff;
+}
+
+.mat-mdc-snack-bar-container.snack-bar-danger {
+  background-color: #dc3545 !important; // Bootstrap danger
+}
+
+.mat-mdc-snack-bar-container.snack-bar-success {
+  background-color: #28a745; // Bootstrap success
+}
+
+.mat-mdc-snack-bar-container.snack-bar-secondary {
+  background-color: #6c757d; // Bootstrap secondary
+}

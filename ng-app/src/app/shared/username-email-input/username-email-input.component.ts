@@ -20,6 +20,7 @@ export class UsernameEmailInputComponent implements OnInit {
   @Input() labelText = 'Email';
   @Output() emailAddressUpdated = new EventEmitter<string>();
   @Input() useBootstrap = false;
+  debug = true;
 
   constructor() {}
 

@@ -1,7 +1,7 @@
 <div class="container mat-container padded-top">
   <mat-card class="mat-card">
     <h3 class="mat-title text-center">Register</h3>
-    <form (ngSubmit)="onSubmit()" class="form">
+    <form (ngSubmit)="onSubmit()" #theform="ngForm" class="form">
       <app-username-email-input
         [emailAddress]="model.username"
         [available]="usernameAvailable"
@@ -11,6 +11,7 @@
         [labelText]="'Username'"
         (emailAddressUpdated)="onEmailAddressChanged($event)"
       ></app-username-email-input>
+
       <mat-form-field class="form-field" appearance="fill">
         <mat-label>First Name</mat-label>
         <input
@@ -111,10 +112,20 @@
         color="primary"
         class="submit-button"
         type="submit"
-        [disabled]="!captchaResolved"
+        [disabled]="
+          !captchaResolved ||
+          theform.invalid ||
+          !usernameValid ||
+          !usernameAvailable
+        "
       >
         Register
       </button>
     </form>
   </mat-card>
 </div>
+
+<!-- 
+<button mat-raised-button (click)="showSuccess()">Success</button>
+<button mat-raised-button (click)="showWarning()">Warning</button>
+<button mat-raised-button (click)="showDanger()">Danger</button> -->

@@ -48,7 +48,7 @@ public class AuthController(IConfiguration configuration, /* IRecaptchaService r
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterModel model, [FromQuery] string captchaToken)
+    public async Task<IActionResult> Register([FromBody] RegisterModel model /*, [FromQuery] string captchaToken */)
     {
         if (!ModelState.IsValid) return BadRequest("Invalid input.");
 
@@ -71,9 +71,7 @@ public class AuthController(IConfiguration configuration, /* IRecaptchaService r
     [AllowAnonymous]
     public async Task<IActionResult> UserExists([FromQuery] string username)
     {
-        if (string.IsNullOrEmpty(username))
-            return BadRequest("Username must be provided.");
-
+        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
         var exists = await _authService.UserExistsAsync(username);
         return Ok(new { exists });
     }

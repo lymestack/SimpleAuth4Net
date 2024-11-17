@@ -18,7 +18,7 @@ export class RestService<T = any> {
       if (additionalQueryStringParameters.indexOf('?') === -1) url += '?';
       url += additionalQueryStringParameters;
     }
-    debugger;
+
     return this.http.get(url);
   }
 
@@ -53,6 +53,6 @@ export class RestService<T = any> {
 
   getApiUrl(): string {
     // return this.config.environment.api;
-    return 'http://localhost:7214/';
+    return 'https://localhost:7214/';
   }
 }

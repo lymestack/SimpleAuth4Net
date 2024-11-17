@@ -1,0 +1,33 @@
+:host {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  font-size: 14px;
+  border-radius: 4px;
+  color: #fff;
+
+  .mat-icon {
+    margin-right: 8px;
+  }
+
+  &.snack-bar-info {
+    //background-color: #17a2b8; // Bootstrap info
+  }
+
+  &.snack-bar-warning {
+    //background-color: #ffc107; // Bootstrap warning
+    //color: #212529;
+  }
+
+  &.snack-bar-danger {
+    //background-color: #dc3545; // Bootstrap danger
+  }
+
+  &.snack-bar-success {
+    //background-color: #28a745; // Bootstrap success
+  }
+
+  &.snack-bar-secondary {
+    //-color: #6c757d; // Bootstrap secondary
+  }
+}
