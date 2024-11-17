@@ -5,11 +5,10 @@ import { MaterialModule } from './material/material.module';
 import { CardMenuComponent } from './card-menu/card-menu.component';
 import { RouterModule } from '@angular/router';
 import { RecaptchaModule } from 'ng-recaptcha';
-import { UsernameEmailInputComponent } from './username-email-input/username-email-input.component';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [CardMenuComponent, UsernameEmailInputComponent],
+  declarations: [CardMenuComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -25,7 +24,6 @@ import { HttpClientModule } from '@angular/common/http';
     RouterModule,
     RecaptchaModule,
     CardMenuComponent,
-    UsernameEmailInputComponent,
   ],
 })
 export class SharedModule {}

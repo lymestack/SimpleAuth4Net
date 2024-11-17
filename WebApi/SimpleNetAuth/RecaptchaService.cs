@@ -10,7 +10,7 @@ public interface IRecaptchaService
 
 public class RecaptchaService(IConfiguration configuration, HttpClient httpClient) : IRecaptchaService
 {
-    private readonly string _secretKey = configuration.GetValue<string>("SimpleNetAuthSettings:Captcha:SecretKey");
+    private readonly string _secretKey = configuration.GetValue<string>("AppConfig:Captcha:SecretKey");
 
     public async Task<bool> ValidateCaptchaAsync(string token)
     {
