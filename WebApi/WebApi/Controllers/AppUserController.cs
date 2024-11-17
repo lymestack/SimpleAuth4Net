@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SimpleNetAuth.Data;
 using SimpleNetAuth.Models;
@@ -13,6 +14,26 @@ public class AppUserController(SimpleNetAuthDataContext db, IConfiguration confi
 {
     #region GET
 
+    [HttpGet("Me")]
+    [AllowAnonymous]
+    public async Task<ActionResult<AppUser?>> Get()
+    {
+        if (User.Identity is not { IsAuthenticated: true }) return Ok(null);
+        var appUser = await db.AppUsers
+            .Include(x => x.AppUserRoles)
+            .ThenInclude(x => x.AppRole)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Username == User.Identity.Name);
+
+        foreach (var userRole in appUser.AppUserRoles)
+        {
+            appUser.Roles.Add(userRole.AppRole.Name);
+        }
+
+        appUser.AppUserRoles = null;
+        return Ok(appUser);
+    }
+
     //[HttpGet]
     //public async Task<ActionResult<IList<AppUser>>> Get()
     //{
@@ -23,8 +44,10 @@ public class AppUserController(SimpleNetAuthDataContext db, IConfiguration confi
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AppUser>> Get(int id)
     {
-        var sampleItem = await db.AppUsers.SingleOrDefaultAsync(x => x.Id == id);
-        return Ok(sampleItem);
+        var appUser = await db.AppUsers
+            .SingleOrDefaultAsync(x => x.Id == id);
+
+        return Ok(appUser);
     }
 
     #endregion

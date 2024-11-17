@@ -8,10 +8,11 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[AllowAnonymous]
 public class AuthController(IConfiguration configuration, /* IRecaptchaService recaptchaService, */ SimpleNetAuthDataContext db) : ControllerBase
 {
     // TODO: Fix the DI
-    private AuthService _authService = new AuthService(configuration, db);
+    private readonly AuthService _authService = new AuthService(configuration, db);
 
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -71,7 +72,6 @@ public class AuthController(IConfiguration configuration, /* IRecaptchaService r
     }
 
     [HttpGet("UserExists")]
-    [AllowAnonymous]
     public async Task<IActionResult> UserExists([FromQuery] string username)
     {
         if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");

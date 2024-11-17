@@ -11,4 +11,5 @@ export class AppConfig {
     environment: Environment;
     authSettings: AuthSettings;
     captchaSettings: CaptchaSettings;
+    sessionId: string;
 }

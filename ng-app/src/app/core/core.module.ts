@@ -9,6 +9,8 @@ import { RestService } from './_services/rest.service';
 import { LoggerService } from './_services/logger.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JwtInterceptor } from './jwt-interceptor';
+import { CurrentUserService } from './_services/current-user.service';
+import { LocalStorageService } from './_services/local-storage.service';
 
 @NgModule({
   declarations: [ShellComponent, HeaderComponent, FooterComponent],
@@ -20,6 +22,8 @@ import { JwtInterceptor } from './jwt-interceptor';
       useClass: JwtInterceptor,
       multi: true,
     },
+    CurrentUserService,
+    LocalStorageService,
     LoggerService,
     RestService,
   ],

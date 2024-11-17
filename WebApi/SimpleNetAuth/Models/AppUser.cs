@@ -30,4 +30,8 @@ public class AppUser
     /// EF Navigation Property
     /// </summary>
     public IList<AppRefreshToken> AppRefreshTokens { get; set; }
+
+    [NotMapped] public IList<string> Roles { get; set; } = [];
+
+    [NotMapped] public Guid SessionId { get; set; }
 }

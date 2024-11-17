@@ -62,16 +62,16 @@ export class AuthService {
     console.log('Logged out and token deleted');
   }
 
-  registerUser(username: string) {
-    let url = this.apiUrl + 'Register';
-    let postData = {
-      username: username,
-      password: '12345',
-      confirmPassword: '12345',
-    };
+  // registerUser(username: string) {
+  //   let url = this.apiUrl + 'Register';
+  //   let postData = {
+  //     username: username,
+  //     password: '12345',
+  //     confirmPassword: '12345',
+  //   };
 
-    return this.httpClient.post(url, postData);
-  }
+  //   return this.httpClient.post(url, postData);
+  // }
 
   login(model: LoginModel) {
     throw new Error('Method not implemented.');
@@ -86,10 +86,10 @@ export class AuthService {
   //   });
   // }
 
-  getSecureResource(url: string): Observable<any> {
-    const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.get(url, { headers: header, withCredentials: true });
-  }
+  // getSecureResource(url: string): Observable<any> {
+  //   const header = new HttpHeaders().set('Content-type', 'application/json');
+  //   return this.httpClient.get(url, { headers: header, withCredentials: true });
+  // }
 
   private clearRefreshToken() {
     if (this.refreshTokenInterval) {

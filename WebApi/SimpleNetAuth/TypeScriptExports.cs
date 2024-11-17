@@ -1,4 +1,5 @@
-﻿using SimpleNetAuth.Models.Config;
+﻿using SimpleNetAuth.Models;
+using SimpleNetAuth.Models.Config;
 using SimpleNetAuth.Models.ViewModels;
 using TypeGen.Core.SpecGeneration;
 
@@ -12,6 +13,8 @@ public class TypeScriptExports : GenerationSpec
 {
     public TypeScriptExports()
     {
+        AddClass<AppUser>();
+        AddClass<AppRole>();
         AddClass<AppConfig>();
         AddClass<LoginModel>();
         AddClass<RegisterModel>();
