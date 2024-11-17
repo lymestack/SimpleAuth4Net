@@ -5,6 +5,7 @@
 
 export * from './app-config';
 export * from './environment';
+export * from './auth-settings';
 export * from './captcha-settings';
 export * from './login-model';
 export * from './register-model';

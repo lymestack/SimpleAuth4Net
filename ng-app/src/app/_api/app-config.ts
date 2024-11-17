@@ -4,13 +4,11 @@
  */
 
 import { Environment } from "./environment";
+import { AuthSettings } from "./auth-settings";
 import { CaptchaSettings } from "./captcha-settings";
 
 export class AppConfig {
     environment: Environment;
-    environments: Environment[];
-    googleClientId: string;
-    accessTokenExpirationMinutes: number;
-    refreshTokenExpirationDays: number;
+    authSettings: AuthSettings;
     captchaSettings: CaptchaSettings;
 }

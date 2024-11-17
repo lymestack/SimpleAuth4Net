@@ -4,6 +4,8 @@ import { CredentialResponse, PromptMomentNotification } from 'google-one-tap';
 import * as uuid from 'uuid';
 import { AppConfig } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
+import { AuthService } from '../../core/_services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-google-login-button',
@@ -15,7 +17,9 @@ export class GoogleLoginButtonComponent implements OnInit {
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
-    private _ngZone: NgZone
+    private auth: AuthService,
+    private ngZone: NgZone,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -30,7 +34,7 @@ export class GoogleLoginButtonComponent implements OnInit {
   initializeGoogleSignIn(): void {
     // @ts-ignore
     google.accounts.id.initialize({
-      client_id: this.config.googleClientId,
+      client_id: this.config.authSettings.googleClientId,
       callback: this.handleCredentialResponse.bind(this),
       auto_select: false,
       cancel_on_tap_outside: true,
@@ -53,12 +57,17 @@ export class GoogleLoginButtonComponent implements OnInit {
 
   async handleCredentialResponse(response: CredentialResponse) {
     debugger;
-    // await this.currentUser.loginWithGoogle(response.credential).subscribe(
-    //   (x) => {
-    //     this.currentUser.setTokenValue(x.token);
-    //     window.location.reload();
-    //   },
-    //   (error: any) => console.log('error', error)
-    // );
+    await this.auth.loginWithGoogle(response.credential).subscribe(
+      (x) => {
+        // localStorage.setItem('token', x.token);
+
+        this.ngZone.run(() => {
+          this.router.navigate(['/home']);
+        });
+      },
+      (error: any) => {
+        console.log('error', error);
+      }
+    );
   }
 }

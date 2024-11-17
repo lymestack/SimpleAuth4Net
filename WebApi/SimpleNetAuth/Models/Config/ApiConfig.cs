@@ -3,11 +3,17 @@
 public class AppConfig
 {
     public Environment Environment { get; set; }
-    public List<Environment> Environments { get; set; }
+
+    public AuthSettings AuthSettings { get; set; }
+
+    public CaptchaSettings CaptchaSettings { get; set; }
+}
+
+public class AuthSettings
+{
     public string GoogleClientId { get; set; }
     public int AccessTokenExpirationMinutes { get; set; }
     public int RefreshTokenExpirationDays { get; set; }
-    public CaptchaSettings CaptchaSettings { get; set; }
 }
 
 public class CaptchaSettings

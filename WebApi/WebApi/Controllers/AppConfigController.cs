@@ -14,9 +14,7 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
     public async Task<ActionResult<AppConfig>> Get()
     {
         var appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
-        var environmentName = configuration.GetValue<string>("ApiConfig:Environment");
         Debug.Assert(appConfig != null, nameof(appConfig) + " != null");
-        appConfig.Environment = appConfig.Environments.Single(x => x.Name == environmentName);
         return Ok(appConfig);
     }
 }

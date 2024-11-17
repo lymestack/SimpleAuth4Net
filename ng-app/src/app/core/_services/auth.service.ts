@@ -1,22 +1,29 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { map, catchError, of, timer } from 'rxjs';
 import { Observable } from 'rxjs';
+import { AppConfig, LoginModel } from '../../_api';
+import { APP_CONFIG } from './config-injection';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  path = '';
-  username = '';
+  apiUrl: string;
   private refreshTokenInterval: any;
 
-  constructor(private httpClient: HttpClient) {}
+  constructor(
+    @Inject(APP_CONFIG) public config: AppConfig,
+
+    private httpClient: HttpClient
+  ) {
+    this.apiUrl = this.config.environment.api;
+  }
 
   loginWithGoogle(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-type', 'application/json');
     return this.httpClient.post(
-      this.path + 'LoginWithGoogle',
+      this.apiUrl + 'LoginWithGoogle',
       JSON.stringify(credentials),
       {
         headers: header,
@@ -28,7 +35,7 @@ export class AuthService {
   refreshToken(): Observable<any> {
     const header = new HttpHeaders().set('Content-type', 'application/json');
     return this.httpClient
-      .get(this.path + 'RefreshToken', {
+      .get(this.apiUrl + 'RefreshToken', {
         headers: header,
         withCredentials: true,
       })
@@ -41,16 +48,10 @@ export class AuthService {
   }
 
   revokeToken(): Observable<any> {
+    // FUTURE: Fix this:
+    let username = '';
     const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.delete(this.path + 'RevokeToken/' + this.username, {
-      headers: header,
-      withCredentials: true,
-    });
-  }
-
-  checkToken(): Observable<boolean> {
-    const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.get<boolean>(this.path + 'CheckTokenCookie', {
+    return this.httpClient.delete(this.apiUrl + 'RevokeToken/' + username, {
       headers: header,
       withCredentials: true,
     });
@@ -62,7 +63,7 @@ export class AuthService {
   }
 
   registerUser(username: string) {
-    let url = this.path + 'Register';
+    let url = this.apiUrl + 'Register';
     let postData = {
       username: username,
       password: '12345',
@@ -71,6 +72,19 @@ export class AuthService {
 
     return this.httpClient.post(url, postData);
   }
+
+  login(model: LoginModel) {
+    throw new Error('Method not implemented.');
+  }
+
+  // ZOMBIE: Debug code:
+  // checkToken(): Observable<boolean> {
+  //   const header = new HttpHeaders().set('Content-type', 'application/json');
+  //   return this.httpClient.get<boolean>(this.apiUrl + 'CheckTokenCookie', {
+  //     headers: header,
+  //     withCredentials: true,
+  //   });
+  // }
 
   getSecureResource(url: string): Observable<any> {
     const header = new HttpHeaders().set('Content-type', 'application/json');
