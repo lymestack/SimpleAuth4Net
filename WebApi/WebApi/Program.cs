@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SimpleNetAuth.Data;
 using System.Text;
@@ -65,6 +67,15 @@ builder.Services.AddAuthentication(x =>
             };
         }
     );
+
+// Enable [Authorize] attribute by default on all controllers:
+builder.Services.AddMvc(o =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    o.Filters.Add(new AuthorizeFilter(policy));
+});
 
 var app = builder.Build();
 
