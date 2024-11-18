@@ -13,6 +13,8 @@ import { CurrentUserService } from '../core/_services/current-user.service';
 })
 export class HomeComponent implements OnInit {
   appUser: AppUser;
+  loggedIn: boolean | undefined = undefined;
+
   menuItems: CardMenuItem[] = [
     {
       title: 'Home',
@@ -29,9 +31,10 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.currentUser
-      .getAppUser()
-      .subscribe((data: AppUser) => (this.appUser = data));
+    this.currentUser.getAppUser().subscribe((data: AppUser) => {
+      this.appUser = data;
+      this.loggedIn = !!data;
+    });
   }
 
   testSecureEndpoint() {
