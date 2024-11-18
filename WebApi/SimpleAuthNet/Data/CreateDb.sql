@@ -1,5 +1,4 @@
-USE [AuthSample]
-GO
+
 /****** Object:  Table [dbo].[AppRefreshToken]    Script Date: 11/14/2024 12:04:46 PM ******/
 SET ANSI_NULLS ON
 GO
