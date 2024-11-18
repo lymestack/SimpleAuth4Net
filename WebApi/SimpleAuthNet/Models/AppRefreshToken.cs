@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SimpleNetAuth.Models;
+namespace SimpleAuthNet.Models;
 
 [Table("AppRefreshToken")]
 public class AppRefreshToken

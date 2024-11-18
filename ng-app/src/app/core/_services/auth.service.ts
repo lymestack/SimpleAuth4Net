@@ -1,7 +1,13 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { map, catchError, of, timer } from 'rxjs';
-import { Observable } from 'rxjs';
+import {
+  map,
+  catchError,
+  timer,
+  Observable,
+  throwError,
+  Subscription,
+} from 'rxjs';
 import { AppConfig, LoginModel } from '../../_api';
 import { APP_CONFIG } from './config-injection';
 
@@ -10,7 +16,7 @@ import { APP_CONFIG } from './config-injection';
 })
 export class AuthService {
   apiUrl: string;
-  private refreshTokenInterval: any;
+  private refreshTokenInterval: Subscription | undefined;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -20,97 +26,116 @@ export class AuthService {
   }
 
   login(loginModel: LoginModel): Observable<any> {
-    const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.post(this.apiUrl + 'Auth/Login', loginModel, {
-      headers: header,
-      withCredentials: true,
-    });
-  }
-
-  loginWithGoogle(credentials: string): Observable<any> {
-    const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.post(
-      this.apiUrl + 'Auth/LoginWithGoogle',
-      JSON.stringify(credentials),
-      {
-        headers: header,
-        withCredentials: true,
-      }
-    );
-  }
-
-  refreshToken(): Observable<any> {
-    const header = new HttpHeaders().set('Content-type', 'application/json');
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
     return this.httpClient
-      .get(this.apiUrl + 'RefreshToken', {
+      .post<any>(`${this.apiUrl}/Auth/Login`, loginModel, {
         headers: header,
         withCredentials: true,
       })
       .pipe(
+        map((response) => {
+          this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
+          this.scheduleTokenRefresh(response.expires);
+          return response;
+        })
+      );
+  }
+
+  loginWithGoogle(credentials: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient
+      .post<any>(
+        `${this.apiUrl}/Auth/LoginWithGoogle`,
+        JSON.stringify(credentials),
+        {
+          headers: header,
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response) => {
+          this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
+          this.scheduleTokenRefresh(response.expires);
+          return response;
+        })
+      );
+  }
+
+  refreshToken(): Observable<any> {
+    return this.httpClient
+      .get<any>(`${this.apiUrl}/Auth/RefreshToken`, { withCredentials: true })
+      .pipe(
+        map((response: any) => {
+          console.log('Token refreshed successfully');
+          this.storeTokenExpiration(response.expires); // Update expiration
+          this.scheduleTokenRefresh(response.expires);
+          return response;
+        }),
         catchError((error) => {
+          console.error('Token refresh failed', error);
           this.clearRefreshToken();
-          return of(null);
+          return throwError(() => new Error('Unauthorized'));
         })
       );
   }
 
   revokeToken(): Observable<any> {
-    // FUTURE: Fix this:
-    let username = '';
-    const header = new HttpHeaders().set('Content-type', 'application/json');
-    return this.httpClient.delete(this.apiUrl + 'RevokeToken/' + username, {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.delete(`${this.apiUrl}/Auth/RevokeToken`, {
       headers: header,
       withCredentials: true,
     });
   }
 
-  signOutExternal() {
-    this.clearRefreshToken();
-    console.log('Logged out and token deleted');
+  isLoggedIn(): boolean {
+    const expires = this.getStoredTokenExpiration();
+    if (!expires) {
+      return false;
+    }
+    const now = new Date().getTime();
+    return now < expires;
   }
 
-  // registerUser(username: string) {
-  //   let url = this.apiUrl + 'Register';
-  //   let postData = {
-  //     username: username,
-  //     password: '12345',
-  //     confirmPassword: '12345',
-  //   };
+  private storeTokenExpiration(expiration: string): void {
+    const expirationTime = new Date(expiration).getTime();
+    localStorage.setItem('tokenExpiration', expirationTime.toString());
+  }
 
-  //   return this.httpClient.post(url, postData);
-  // }
+  private getStoredTokenExpiration(): number | null {
+    const expiration = localStorage.getItem('tokenExpiration');
+    return expiration ? parseInt(expiration, 10) : null;
+  }
 
-  // ZOMBIE: Debug code:
-  // checkToken(): Observable<boolean> {
-  //   const header = new HttpHeaders().set('Content-type', 'application/json');
-  //   return this.httpClient.get<boolean>(this.apiUrl + 'CheckTokenCookie', {
-  //     headers: header,
-  //     withCredentials: true,
-  //   });
-  // }
+  private scheduleTokenRefresh(expiration: string): void {
+    this.clearRefreshToken(); // Clear any existing interval
+    const expirationTime = new Date(expiration).getTime();
+    const now = new Date().getTime();
+    const timeUntilRefresh = expirationTime - now - 60 * 1000; // Refresh 1 minute before expiration
 
-  // getSecureResource(url: string): Observable<any> {
-  //   const header = new HttpHeaders().set('Content-type', 'application/json');
-  //   return this.httpClient.get(url, { headers: header, withCredentials: true });
-  // }
+    if (timeUntilRefresh > 0) {
+      this.refreshTokenInterval = timer(timeUntilRefresh).subscribe(() => {
+        this.refreshToken().subscribe(
+          () => console.log('Token refreshed'),
+          (error) => console.error('Error refreshing token:', error)
+        );
+      });
+    }
+  }
 
-  private clearRefreshToken() {
+  private clearRefreshToken(): void {
     if (this.refreshTokenInterval) {
       this.refreshTokenInterval.unsubscribe();
     }
   }
 
-  isLoggedIn(): boolean {
-    const token = this.getCookie('X-Access-Token');
-    return !!token;
-  }
-
-  private getCookie(name: string): string | null {
-    const matches = document.cookie.match(
-      new RegExp(
-        '(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)'
-      )
+  signOut(): void {
+    this.clearRefreshToken();
+    this.revokeToken().subscribe(
+      () => {
+        console.log('User logged out and tokens revoked.');
+        localStorage.removeItem('tokenExpiration');
+      },
+      (error) => console.error('Error revoking token:', error)
     );
-    return matches ? decodeURIComponent(matches[1]) : null;
   }
 }

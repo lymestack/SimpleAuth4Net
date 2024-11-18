@@ -1,9 +1,9 @@
-﻿using SimpleNetAuth.Models;
-using SimpleNetAuth.Models.Config;
-using SimpleNetAuth.Models.ViewModels;
+﻿using SimpleAuthNet.Models;
+using SimpleAuthNet.Models.Config;
+using SimpleAuthNet.Models.ViewModels;
 using TypeGen.Core.SpecGeneration;
 
-namespace SimpleNetAuth;
+namespace SimpleAuthNet;
 
 /// <summary>
 /// This file exports C# classes into TypeScript classes of the Angular application.

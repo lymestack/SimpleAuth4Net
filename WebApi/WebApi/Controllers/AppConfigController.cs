@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SimpleNetAuth.Models.Config;
+using SimpleAuthNet.Models.Config;
 using System.Diagnostics;
 
 namespace WebApi.Controllers;

@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SimpleNetAuth\SimpleNetAuth.csproj" />
+    <ProjectReference Include="..\SimpleAuthNet\SimpleAuthNet.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SimpleNetAuth.Extensions;
-using SimpleNetAuth.Models.Api;
+using SimpleAuthNet.Extensions;
+using SimpleAuthNet.Models.Api;
 
-namespace SimpleNetAuth.Tools;
+namespace SimpleAuthNet.Tools;
 public class SearchResultsHelper
 {
     public static ApiSearchResults<T> GetApiSearchResults<T>(IQueryable<T> query, int pageSize,

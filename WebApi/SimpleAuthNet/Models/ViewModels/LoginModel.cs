@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SimpleNetAuth.Models.ViewModels;
+namespace SimpleAuthNet.Models.ViewModels;
 
 public class LoginModel
 {

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace SimpleNetAuth.Extensions;
+namespace SimpleAuthNet.Extensions;
 
 /// <summary>
 /// Lifted from: https://ronniediaz.com/2011/05/24/orderby-string-in-linq-c-net-dynamic-sorting-of-anonymous-types/

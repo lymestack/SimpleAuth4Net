@@ -1,4 +1,4 @@
-﻿namespace SimpleNetAuth.Models.Api;
+﻿namespace SimpleAuthNet.Models.Api;
 
 public class ApiSearchResults<T>
 {

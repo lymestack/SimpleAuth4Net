@@ -1,4 +1,4 @@
-﻿namespace SimpleNetAuth.Models.SearchOptions;
+﻿namespace SimpleAuthNet.Models.SearchOptions;
 
 public interface ISearchOptions
 {

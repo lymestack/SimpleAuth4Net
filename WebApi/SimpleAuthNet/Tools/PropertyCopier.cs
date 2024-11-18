@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 
-namespace SimpleNetAuth.Tools;
+namespace SimpleAuthNet.Tools;
 
 public static class PropertyCopy
 {

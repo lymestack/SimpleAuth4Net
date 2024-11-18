@@ -15,7 +15,7 @@ I've been developing apps for nearly 25 years and much of my collective life has
 
 Not only does auth suck, but it's the first thing that needs to be built into any semi-serious scale of web application. At minimum a user needs to sign in so that the app knows who the user is in order to deliver a personalized experience. This prerequisite of functionality has set the start to my new projects by up to weeks depending on what provider I'm dealing with and how good or bad their documentation is.
 
-## Why SimpleNetAuth
+## Why SimpleAuthNet
 
 Simply put, the number of options for free self-hosted identity options for .NET are limited. Referencing [this article](https://learn.microsoft.com/en-us/aspnet/core/security/identity-management-solutions?view=aspnetcore-8.0), we'll see this list of provider's from Microsoft's documentation:
 

@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SimpleNetAuth.Data;
-using SimpleNetAuth.Models;
-using SimpleNetAuth.Models.SearchOptions;
-using SimpleNetAuth.Tools;
+using SimpleAuthNet.Data;
+using SimpleAuthNet.Models;
+using SimpleAuthNet.Models.SearchOptions;
+using SimpleAuthNet.Tools;
 
 namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AppUserController(SimpleNetAuthDataContext db, IConfiguration config) : ControllerBase
+public class AppUserController(SimpleAuthNetDataContext db, IConfiguration config) : ControllerBase
 {
     #region GET
 

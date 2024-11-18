@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SimpleNetAuth.Models;
+using SimpleAuthNet.Models;
 
-namespace SimpleNetAuth.Data;
+namespace SimpleAuthNet.Data;
 
-public class SimpleNetAuthDataContext(IConfiguration configuration) : DbContext
+public class SimpleAuthNetDataContext(IConfiguration configuration) : DbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

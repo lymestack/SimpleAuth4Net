@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SimpleNetAuth.Data;
-using SimpleNetAuth.Models;
-using SimpleNetAuth.Models.Config;
-using SimpleNetAuth.Models.ViewModels;
+using SimpleAuthNet.Data;
+using SimpleAuthNet.Models;
+using SimpleAuthNet.Models.Config;
+using SimpleAuthNet.Models.ViewModels;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,7 +18,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleNetAuthDataContext db) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthNetDataContext db) : ControllerBase
 {
     private readonly ApiConfig? _apiConfig = configuration.GetSection("ApiConfig").Get<ApiConfig>();
     private readonly AppConfig? _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
@@ -271,7 +271,7 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
     private AppRefreshToken GenerateRefreshToken()
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
-        var expiresInDays = _appConfig.AuthSettings.RefreshTokenExpirationDays);
+        var expiresInDays = _appConfig.AuthSettings.RefreshTokenExpirationDays;
 
         var refreshToken = new AppRefreshToken
         {

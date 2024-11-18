@@ -6,5 +6,7 @@
 export class AuthSettings {
     googleClientId: string;
     accessTokenExpirationMinutes: number;
+    useRefreshTokens: boolean;
     refreshTokenExpirationDays: number;
+    storeTokensInCookies: boolean;
 }

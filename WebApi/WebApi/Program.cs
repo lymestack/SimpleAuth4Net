@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using SimpleNetAuth.Data;
+using SimpleAuthNet.Data;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -14,7 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Database Context:
-builder.Services.AddDbContext<SimpleNetAuthDataContext>();
+builder.Services.AddDbContext<SimpleAuthNetDataContext>();
 // builder.Services.AddScoped<IAuthService, AuthService>();
 // builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 

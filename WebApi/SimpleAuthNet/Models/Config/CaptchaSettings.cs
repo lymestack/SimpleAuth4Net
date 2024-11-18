@@ -1,4 +1,4 @@
-﻿namespace SimpleNetAuth.Models.Config;
+﻿namespace SimpleAuthNet.Models.Config;
 
 public class CaptchaSettings
 {

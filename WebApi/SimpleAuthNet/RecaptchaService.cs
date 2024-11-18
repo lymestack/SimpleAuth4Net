@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
-namespace SimpleNetAuth;
+namespace SimpleAuthNet;
 
 public interface IRecaptchaService
 {
