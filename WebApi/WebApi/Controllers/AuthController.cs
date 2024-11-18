@@ -56,10 +56,10 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         var user = db.AppUsers.Include(x => x.AppUserCredential).FirstOrDefault(x => x.Username == model.Username);
-        if (user == null) return BadRequest("AppUser or password was invalid.");
+        if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
 
         var match = CheckPassword(model.Password, user);
-        if (!match) return BadRequest("AppUser or password was invalid.");
+        if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
 
         var jwt = await JwtGenerator(user);
         return Ok(jwt);
@@ -91,29 +91,61 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
     public async Task<ActionResult<string>> RefreshToken()
     {
         var tokenValue = Request.Cookies["X-Refresh-Token"];
-        var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser).FirstOrDefault(x => x.Token == tokenValue);
+        if (string.IsNullOrEmpty(tokenValue))
+        {
+            return Unauthorized("No refresh token provided.");
+        }
+
+        // Find the refresh token in the database
+        var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser)
+            .FirstOrDefault(x => x.Token == tokenValue);
 
         if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
         {
-            return Unauthorized("The token has expired.");
+            return Unauthorized("The refresh token is invalid or has expired.");
         }
 
-        Debug.Assert(refreshToken.AppUser != null, "refreshToken.AppUser != null");
+        // Ensure the associated user exists
+        if (refreshToken.AppUser == null)
+        {
+            return Unauthorized("Invalid refresh token - user not found.");
+        }
+
+        // Generate a new access token and refresh token
         var jwt = await JwtGenerator(refreshToken.AppUser);
+
+        // Generate and save a new refresh token
+        var newRefreshToken = GenerateRefreshToken();
+        await WriteRefreshTokenToDatabase(newRefreshToken, refreshToken.AppUser);
+
+        // Delete the old refresh token
+        db.AppRefreshTokens.Remove(refreshToken);
+        await db.SaveChangesAsync();
+
+        // Set the new refresh token in a secure cookie
+        SetJwtRefreshTokenCookie(newRefreshToken.Token, newRefreshToken.Expires);
+
         return Ok(jwt);
     }
+
+
 
     #endregion
 
     #region DELETE / RevokeToken
 
-    [HttpDelete]
+    [HttpDelete("RevokeToken")]
     public async Task<IActionResult> RevokeToken(string username)
     {
-        //var users = db.AppUsers.Where(x => x.Username == username).ToList();
-        //foreach (var user in users) user.Token = "";
-        //await db.SaveChangesAsync();
-        return Ok();
+        var user = await db.AppUsers.Include(x => x.AppRefreshTokens)
+            .FirstOrDefaultAsync(x => x.Username == username);
+
+        if (user == null) return NotFound("User not found.");
+
+        db.AppRefreshTokens.RemoveRange(user.AppRefreshTokens);
+        await db.SaveChangesAsync();
+
+        return Ok("Tokens revoked.");
     }
 
     #endregion
@@ -139,6 +171,13 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
     #endregion
 
     #region Private methods
+
+    private string HashToken(string token)
+    {
+        using var sha256 = SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(token);
+        return Convert.ToBase64String(sha256.ComputeHash(bytes));
+    }
 
     private async Task<dynamic> JwtGenerator(AppUser user)
     {
@@ -217,7 +256,13 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
     {
         var dbItem = db.AppRefreshTokens.FirstOrDefault(x => x.Token == refreshToken.Token) ?? new AppRefreshToken();
         dbItem.AppUserId = user.Id;
-        dbItem.Token = refreshToken.Token;
+
+        // ZOMBIE: Old code:
+        //dbItem.Token = refreshToken.Token;
+
+        var hashedToken = HashToken(refreshToken.Token);
+        dbItem.Token = hashedToken;
+
         dbItem.Created = refreshToken.Created;
         dbItem.Expires = refreshToken.Expires;
         await db.SaveChangesAsync();
