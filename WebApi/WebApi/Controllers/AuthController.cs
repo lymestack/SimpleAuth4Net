@@ -93,7 +93,7 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         var tokenValue = Request.Cookies["X-Refresh-Token"];
         var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser).FirstOrDefault(x => x.Token == tokenValue);
 
-        if (refreshToken == null || refreshToken.Expires < DateTime.Now)
+        if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
         {
             return Unauthorized("The token has expired.");
         }
@@ -159,7 +159,7 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Username)
             }),
-            Expires = DateTime.Now.AddDays(expiresInDays),
+            Expires = DateTime.UtcNow.AddDays(expiresInDays),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
 
@@ -189,7 +189,7 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
             new CookieOptions
             {
-                Expires = DateTime.Now.AddMinutes(expireInMinutes),
+                Expires = DateTime.UtcNow.AddMinutes(expireInMinutes),
                 HttpOnly = true,
                 Secure = true,
                 IsEssential = true,
@@ -231,8 +231,8 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         var refreshToken = new AppRefreshToken
         {
             Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
-            Expires = DateTime.Now.AddDays(expiresInDays),
-            Created = DateTime.Now
+            Expires = DateTime.UtcNow.AddDays(expiresInDays),
+            Created = DateTime.UtcNow
         };
 
         return refreshToken;
