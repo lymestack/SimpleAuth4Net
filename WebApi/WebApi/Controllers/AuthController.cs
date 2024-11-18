@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SimpleAuthNet;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
@@ -20,7 +21,7 @@ namespace WebApi.Controllers;
 [AllowAnonymous]
 public class AuthController(IConfiguration configuration, SimpleAuthNetDataContext db) : ControllerBase
 {
-    private readonly ApiConfig? _apiConfig = configuration.GetSection("ApiConfig").Get<ApiConfig>();
+    private readonly AuthSettings? _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>();
     private readonly AppConfig? _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
 
     #region Register
@@ -94,7 +95,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            Audience = new List<string> { _appConfig.AuthSettings.GoogleClientId }
+            Audience = new List<string> { _appConfig.GoogleClientId }
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
@@ -171,6 +172,30 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
+    #region CheckPasswordComplexity
+
+    [HttpPost("CheckPasswordComplexity")]
+    public IActionResult CheckPasswordComplexity([FromBody] string password)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            return BadRequest(new { error = "INVALID_INPUT", message = "Password cannot be empty." });
+        }
+
+        Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
+        var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
+        var result = validator.Validate(password);
+
+        if (result.Succeeded)
+        {
+            return Ok(new { success = true, message = "Password is valid." });
+        }
+
+        return BadRequest(new { success = false, errors = result.Errors });
+    }
+
+    #endregion
+
     #region DELETE / RevokeToken
 
     [HttpDelete("RevokeToken")]
@@ -220,12 +245,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private async Task<dynamic> JwtGenerator(AppUser user)
     {
-        Debug.Assert(_apiConfig != null, nameof(_apiConfig) + " != null");
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+        Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
 
-        var authSettings = _appConfig.AuthSettings;
-        var key = Encoding.ASCII.GetBytes(_apiConfig.TokenSecret);
-        var expiresInDays = authSettings.RefreshTokenExpirationDays;
+        var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
+        var expiresInDays = _authSettings.RefreshTokenExpirationDays;
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -246,23 +270,23 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         SetJwtAccessTokenCookie(encryptedToken);
 
-        if (authSettings.UseRefreshTokens)
+        if (_authSettings.UseRefreshTokens)
         {
             var refreshToken = GenerateRefreshToken();
             SetJwtRefreshTokenCookie(refreshToken.Token, refreshToken.Expires);
             await WriteRefreshTokenToDatabase(refreshToken, user);
         }
 
-        if (_appConfig.AuthSettings.UseRefreshTokens) encryptedToken = "REDACTED";
+        if (_authSettings.UseRefreshTokens) encryptedToken = "REDACTED";
         return new { token = encryptedToken, username = user.Username };
     }
 
     private void SetJwtAccessTokenCookie(string encryptedToken)
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
-        if (!_appConfig.AuthSettings.StoreTokensInCookies) return;
+        if (!_authSettings.StoreTokensInCookies) return;
 
-        var expireInMinutes = _appConfig.AuthSettings.AccessTokenExpirationMinutes;
+        var expireInMinutes = _authSettings.AccessTokenExpirationMinutes;
 
         HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
             new CookieOptions
@@ -278,7 +302,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     private void SetJwtRefreshTokenCookie(string tokenValue, DateTime expires)
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
-        if (!_appConfig.AuthSettings.StoreTokensInCookies) return;
+        if (!_authSettings.StoreTokensInCookies) return;
 
         HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue,
             new CookieOptions
@@ -310,7 +334,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     private AppRefreshToken GenerateRefreshToken()
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
-        var expiresInDays = _appConfig.AuthSettings.RefreshTokenExpirationDays;
+        var expiresInDays = _authSettings.RefreshTokenExpirationDays;
 
         var refreshToken = new AppRefreshToken
         {

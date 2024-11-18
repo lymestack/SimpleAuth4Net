@@ -9,6 +9,4 @@ public class Environment
     public string Api { get; set; }
 
     public string Description { get; set; }
-
-    public string BootstrapLabelCss { get; set; }
 }

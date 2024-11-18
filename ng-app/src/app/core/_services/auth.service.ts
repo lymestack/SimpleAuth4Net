@@ -106,6 +106,17 @@ export class AuthService {
     });
   }
 
+  checkPasswordComplexity(password: string) {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    const url = `${
+      this.apiUrl
+    }Auth/CheckPasswordComplexity?password=${encodeURIComponent(password)}`;
+    return this.httpClient.delete(url, {
+      headers: header,
+      withCredentials: true,
+    });
+  }
+
   isLoggedIn(): boolean {
     const expires = this.getStoredTokenExpiration();
     if (!expires) {

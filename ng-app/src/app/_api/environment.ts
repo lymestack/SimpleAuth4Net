@@ -8,5 +8,4 @@ export class Environment {
     url: string;
     api: string;
     description: string;
-    bootstrapLabelCss: string;
 }

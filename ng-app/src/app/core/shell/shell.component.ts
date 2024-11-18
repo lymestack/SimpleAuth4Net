@@ -36,12 +36,6 @@ export class ShellComponent implements OnInit {
       .subscribe((data: AppUser) => (this.appUser = data));
   }
 
-  logout() {
-    this.currentUser.logout();
-    this.router.navigateByUrl('/account/login');
-    this.logger.success("You've been signed out successfully.");
-  }
-
   toggleDrawer(): void {
     this.drawer.toggle(); // Safely toggles the drawer
   }

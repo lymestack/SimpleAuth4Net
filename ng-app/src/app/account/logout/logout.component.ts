@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
-import { Router } from '@angular/router';
-import { LoggerService } from '../../core/_services/logger.service';
 import { LocalStorageService } from '../../core/_services/local-storage.service';
+import { AppConfig } from '../../_api';
+import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
   selector: 'app-logout',
@@ -11,16 +11,14 @@ import { LocalStorageService } from '../../core/_services/local-storage.service'
 })
 export class LogoutComponent implements OnInit {
   constructor(
+    @Inject(APP_CONFIG) public config: AppConfig,
     private auth: AuthService,
-    private localStorage: LocalStorageService,
-    private logger: LoggerService,
-    private router: Router
+    private localStorage: LocalStorageService
   ) {}
 
   ngOnInit(): void {
     this.auth.logout();
     this.localStorage.remove('AppUser');
-    this.router.navigateByUrl('/account/login');
-    this.logger.success('Successfully signed out...');
+    window.location.href = this.config.environment.url;
   }
 }

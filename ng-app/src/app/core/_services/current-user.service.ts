@@ -52,8 +52,7 @@ export class CurrentUserService {
   }
 
   logout() {
-    // TODO: Reimplement
-    // this.auth.signOutExternal();
+    this.auth.logout();
   }
 
   isInRole(roleName: string): boolean {

@@ -31,7 +31,8 @@ export class LoginComponent implements OnInit {
     this.auth.login(this.model).subscribe(
       (data: any) => {
         console.log('Logged in');
-        this.router.navigateByUrl('/');
+        // this.router.navigateByUrl('/');
+        window.location.href = this.config.environment.url;
       },
       (err: any) => {
         this.logger.warning('Invalid login. Try again.');

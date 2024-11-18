@@ -35,7 +35,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var secret = configuration["ApiConfig:tokenSecret"];
+var secret = configuration["AuthSettings:TokenSecret"];
 
 // Define Authentication
 builder.Services.AddAuthentication(x =>

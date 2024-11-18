@@ -2,7 +2,9 @@
 
 public class AuthSettings
 {
-    public string GoogleClientId { get; set; }
+    public string TokenSecret { get; set; }
+
+    public int RefreshTokenLengthBytes { get; set; }
 
     public int AccessTokenExpirationMinutes { get; set; }
 
@@ -11,4 +13,6 @@ public class AuthSettings
     public int RefreshTokenExpirationDays { get; set; }
 
     public bool StoreTokensInCookies { get; set; }
+
+    public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new PasswordComplexityOptions();
 }

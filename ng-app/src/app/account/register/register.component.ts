@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RestService } from '../../core/_services/rest.service';
 import { LoggerService } from '../../core/_services/logger.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../core/_services/auth.service';
 
 @Component({
   selector: 'app-register',
@@ -27,8 +28,11 @@ export class RegisterComponent {
   captchaSiteKey = 'YOUR_RECAPTCHA_SITE_KEY';
   captchaResolved = true;
   isCaptchaEnabled = false;
+  checkedComplexity = false;
+  metComplexityStandard = false;
 
   constructor(
+    private auth: AuthService,
     private logger: LoggerService,
     private rest: RestService,
     private router: Router
@@ -58,6 +62,12 @@ export class RegisterComponent {
         /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(String(email).toLowerCase());
     }
+  }
+
+  onPasswordChanged() {
+    this.auth
+      .checkPasswordComplexity('Auth/CheckPasswordComplexity')
+      .subscribe((data) => {});
   }
 
   onSubmit() {

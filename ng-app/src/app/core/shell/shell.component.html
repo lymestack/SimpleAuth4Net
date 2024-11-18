@@ -69,9 +69,14 @@
         <mat-icon>account_circle</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item>Profile</button>
-        <button mat-menu-item>Settings</button>
-        <button mat-menu-item (click)="logout()">Logout</button>
+        <ng-container *ngIf="appUser">
+          <button mat-menu-item disabled>Profile</button>
+          <button mat-menu-item disabled>Settings</button>
+          <button mat-menu-item routerLink="/account/logout">Logout</button>
+        </ng-container>
+        <ng-container *ngIf="!appUser">
+          <button mat-menu-item routerLink="/account/login">Login</button>
+        </ng-container>
       </mat-menu>
     </mat-toolbar>
 

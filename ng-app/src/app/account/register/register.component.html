@@ -55,6 +55,9 @@
         <mat-error *ngIf="!model.password"
           >Please enter your password.</mat-error
         >
+        <mat-error *ngIf="checkedComplexity && metComplexityStandard">
+          Password doesn't meet complexity standards
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field class="form-field" appearance="fill">
