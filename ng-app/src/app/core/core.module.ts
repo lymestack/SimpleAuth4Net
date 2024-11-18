@@ -17,11 +17,11 @@ import { LocalStorageService } from './_services/local-storage.service';
   imports: [CommonModule, BrowserAnimationsModule, SharedModule],
   exports: [ShellComponent],
   providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: JwtInterceptor,
-      multi: true,
-    },
+    // {
+    //   provide: HTTP_INTERCEPTORS,
+    //   useClass: JwtInterceptor,
+    //   multi: true,
+    // },
     CurrentUserService,
     LocalStorageService,
     LoggerService,

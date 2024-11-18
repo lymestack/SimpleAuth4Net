@@ -28,7 +28,7 @@ export class AuthService {
   login(loginModel: LoginModel): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     return this.httpClient
-      .post<any>(`${this.apiUrl}/Auth/Login`, loginModel, {
+      .post<any>(`${this.apiUrl}Auth/Login`, loginModel, {
         headers: header,
         withCredentials: true,
       })
@@ -45,7 +45,7 @@ export class AuthService {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     return this.httpClient
       .post<any>(
-        `${this.apiUrl}/Auth/LoginWithGoogle`,
+        `${this.apiUrl}Auth/LoginWithGoogle`,
         JSON.stringify(credentials),
         {
           headers: header,
@@ -61,9 +61,20 @@ export class AuthService {
       );
   }
 
+  logout(): void {
+    this.clearRefreshToken();
+    this.destroyCookieValues().subscribe(
+      () => {
+        console.log('User logged out.');
+        localStorage.removeItem('tokenExpiration');
+      },
+      (error) => console.error('Error revoking token:', error)
+    );
+  }
+
   refreshToken(): Observable<any> {
     return this.httpClient
-      .get<any>(`${this.apiUrl}/Auth/RefreshToken`, { withCredentials: true })
+      .get<any>(`${this.apiUrl}Auth/RefreshToken`, { withCredentials: true })
       .pipe(
         map((response: any) => {
           console.log('Token refreshed successfully');
@@ -81,7 +92,15 @@ export class AuthService {
 
   revokeToken(): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.delete(`${this.apiUrl}/Auth/RevokeToken`, {
+    return this.httpClient.delete(`${this.apiUrl}Auth/RevokeToken`, {
+      headers: header,
+      withCredentials: true,
+    });
+  }
+
+  destroyCookieValues(): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.delete(`${this.apiUrl}Auth/Logout`, {
       headers: header,
       withCredentials: true,
     });
@@ -126,16 +145,5 @@ export class AuthService {
     if (this.refreshTokenInterval) {
       this.refreshTokenInterval.unsubscribe();
     }
-  }
-
-  signOut(): void {
-    this.clearRefreshToken();
-    this.revokeToken().subscribe(
-      () => {
-        console.log('User logged out and tokens revoked.');
-        localStorage.removeItem('tokenExpiration');
-      },
-      (error) => console.error('Error revoking token:', error)
-    );
   }
 }

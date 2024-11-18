@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent implements OnInit {
+  pageTitle = '';
   isHandset$: Observable<boolean>;
   @ViewChild('drawer') drawer!: MatDrawer;
   appUser: AppUser;

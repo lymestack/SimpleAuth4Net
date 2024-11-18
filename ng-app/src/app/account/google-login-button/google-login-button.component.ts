@@ -56,13 +56,12 @@ export class GoogleLoginButtonComponent implements OnInit {
   }
 
   async handleCredentialResponse(response: CredentialResponse) {
-    debugger;
     await this.auth.loginWithGoogle(response.credential).subscribe(
       (x) => {
         // localStorage.setItem('token', x.token);
 
         this.ngZone.run(() => {
-          this.router.navigate(['/home']);
+          this.router.navigate(['/']);
         });
       },
       (error: any) => {

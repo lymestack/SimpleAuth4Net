@@ -28,8 +28,17 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("Register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("AppUser already exists...");
-        var user = new AppUser { Username = model.Username, AppUserCredential = new AppUserCredential() };
+        if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("User already exists...");
+
+        var user = new AppUser
+        {
+            Username = model.Username,
+            AppUserCredential = new AppUserCredential(),
+            DateEntered = DateTime.UtcNow,
+            EmailAddress = model.Username,
+            FirstName = model.FirstName,
+            LastName = model.LastName
+        };
 
         if (model.ConfirmPassword == model.Password)
         {
@@ -46,6 +55,19 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         await db.AppUsers.AddAsync(user);
         await db.SaveChangesAsync();
         return Ok(user);
+    }
+
+    #endregion
+
+    #region UserExists
+
+    [HttpGet("UserExists")]
+    public async Task<IActionResult> UserExists([FromQuery] string username)
+    {
+        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
+        var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
+        var exists = appUser != null;
+        return Ok(new { exists });
     }
 
     #endregion
@@ -85,6 +107,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
+    #region Logout
+
+    [HttpDelete("Logout")]
+    public async Task<IActionResult> Logout()
+    {
+        SetJwtAccessTokenCookie("");
+        SetJwtRefreshTokenCookie("", DateTime.UtcNow);
+        return Ok();
+    }
+
+    #endregion
+
     #region RefreshToken
 
     [HttpGet("RefreshToken")]
@@ -96,9 +130,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             return Unauthorized("No refresh token provided.");
         }
 
+        //// Find the refresh token in the database
+        //var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser)
+        //    .FirstOrDefault(x => x.Token == tokenValue);
+
         // Find the refresh token in the database
+        var hashedInput = HashToken(tokenValue);
         var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser)
-            .FirstOrDefault(x => x.Token == tokenValue);
+            .FirstOrDefault(x => x.Token == hashedInput);
 
         if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
         {

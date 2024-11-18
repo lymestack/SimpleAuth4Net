@@ -15,12 +15,35 @@
     </div>
     <mat-divider></mat-divider>
     <mat-nav-list>
-      <a mat-list-item routerLink="/" routerLinkActive="active-link"> Home </a>
+      <a mat-list-item routerLink="/" routerLinkActive="active-link">
+        <i class="fa fa-user"></i>
+        Home
+      </a>
       <a mat-list-item routerLink="/about" routerLinkActive="active-link">
+        <i class="fa fa-info-circle"></i>
         About
       </a>
-      <a mat-list-item routerLink="/contact" routerLinkActive="active-link">
-        Contact
+
+      <mat-divider></mat-divider>
+
+      <h6 style="margin-top: 25px; margin-left: 10px; font-weight: 500">
+        Admin
+      </h6>
+      <a
+        mat-list-item
+        routerLink="/auth-admin/app-users"
+        routerLinkActive="active-link"
+      >
+        <i class="fa fa-user"></i>
+        Users
+      </a>
+      <a
+        mat-list-item
+        routerLink="/auth-admin/app-roles"
+        routerLinkActive="active-link"
+      >
+        <i class="fa fa-users"></i>
+        Roles
       </a>
     </mat-nav-list>
   </mat-sidenav>
@@ -37,7 +60,10 @@
       >
         <mat-icon>menu</mat-icon>
       </button>
-      <span>SimpleAuthNet</span>
+      <span class="only-handset">SimpleAuth4Net</span>
+      <span class="no-handset"
+        >SimpleAuth4Net <span *ngIf="pageTitle">- {{ pageTitle }}</span>
+      </span>
       <span class="spacer"></span>
       <button mat-icon-button [matMenuTriggerFor]="menu">
         <mat-icon>account_circle</mat-icon>

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { RestService } from '../../core/_services/rest.service';
 import { LoggerService } from '../../core/_services/logger.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -27,7 +28,11 @@ export class RegisterComponent {
   captchaResolved = true;
   isCaptchaEnabled = false;
 
-  constructor(private logger: LoggerService, private rest: RestService) {}
+  constructor(
+    private logger: LoggerService,
+    private rest: RestService,
+    private router: Router
+  ) {}
 
   onCaptchaResolved(captchaResponse: any) {
     console.log('Captcha resolved:', captchaResponse);
@@ -65,8 +70,7 @@ export class RegisterComponent {
     let url = 'Auth/Register';
     this.rest.postResource(url, this.model).subscribe(
       (data: any) => {
-        debugger;
-        // TODO: Redirect to a confirmation page.
+        this.router.navigateByUrl('/account/register-confirmation');
 
         console.log('Done:', data);
       },

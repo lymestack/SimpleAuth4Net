@@ -23,7 +23,8 @@ function getConfigUrl() {
     return 'https://www.yourdomain.com/api/AppConfig';
 
   // ZOMBIE - Use for IIS:
-  // return 'http://localhost/LymeTemplateApp/api/AppConfig';
+  return 'http://localhost/SimpleAuthNet/api/AppConfig';
 
+  // Kestrel:
   return 'https://localhost:7214/AppConfig';
 }

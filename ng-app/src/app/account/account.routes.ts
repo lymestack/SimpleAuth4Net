@@ -5,6 +5,7 @@ import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { RegisterComponent } from './register/register.component';
+import { RegisterConfirmationComponent } from './register-confirmation/register-confirmation.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,11 @@ const routes: Routes = [
     path: 'register',
     component: RegisterComponent,
     data: { state: 'Register' },
+  },
+  {
+    path: 'register-confirmation',
+    component: RegisterConfirmationComponent,
+    data: { state: 'Registration Confirmed' },
   },
   {
     path: 'forgot-password',

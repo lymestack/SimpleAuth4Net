@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AppConfig, LoginModel } from '../../_api';
 import { AuthService } from '../../core/_services/auth.service';
 import { APP_CONFIG } from '../../core/_services/config-injection';
@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   model: LoginModel = new LoginModel();
   useBootstrap = false;
 
@@ -20,6 +20,12 @@ export class LoginComponent {
     private logger: LoggerService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (this.auth.isLoggedIn()) {
+      this.router.navigateByUrl('/');
+    }
+  }
 
   onSubmit() {
     this.auth.login(this.model).subscribe(

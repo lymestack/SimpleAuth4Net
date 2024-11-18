@@ -9,6 +9,7 @@ import { RegisterComponent } from './register/register.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { GoogleLoginButtonComponent } from './google-login-button/google-login-button.component';
 import { UsernameEmailInputComponent } from './username-email-input/username-email-input.component';
+import { RegisterConfirmationComponent } from './register-confirmation/register-confirmation.component';
 
 @NgModule({
   declarations: [
@@ -19,6 +20,7 @@ import { UsernameEmailInputComponent } from './username-email-input/username-ema
     ForgotPasswordComponent,
     GoogleLoginButtonComponent,
     UsernameEmailInputComponent,
+    RegisterConfirmationComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
 })

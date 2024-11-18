@@ -107,3 +107,22 @@ body {
 .fa-exclamation-triangle {
   color: orange;
 }
+
+.only-handset {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .only-handset {
+    display: inherit;
+  }
+
+  .no-handset {
+    display: none;
+  }
+
+  #content {
+    padding: 5px 0px;
+    background-color: transparent;
+  }
+}
