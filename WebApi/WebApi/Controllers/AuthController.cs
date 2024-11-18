@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SimpleNetAuth.Data;
 using SimpleNetAuth.Models;
+using SimpleNetAuth.Models.Config;
 using SimpleNetAuth.Models.ViewModels;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,6 +20,9 @@ namespace WebApi.Controllers;
 [AllowAnonymous]
 public class AuthController(IConfiguration configuration, SimpleNetAuthDataContext db) : ControllerBase
 {
+    private readonly ApiConfig? _apiConfig = configuration.GetSection("ApiConfig").Get<ApiConfig>();
+    private readonly AppConfig? _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
+
     #region Register
 
     [HttpPost("Register")]
@@ -57,24 +61,26 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest("AppUser or password was invalid.");
 
-        await JwtGenerator(user);
-        return Ok();
+        var jwt = await JwtGenerator(user);
+        return Ok(jwt);
     }
 
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
     {
+        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            Audience = new List<string> { configuration["AppSettings:googleClientId"] }
+            Audience = new List<string> { _appConfig.AuthSettings.GoogleClientId }
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
         var user = db.AppUsers.FirstOrDefault(x => x.Username == payload.Email);
         if (user == null) return BadRequest();
 
-        await JwtGenerator(user);
-        return Ok();
+        var jwt = await JwtGenerator(user);
+        return Ok(jwt);
     }
 
     #endregion
@@ -93,8 +99,8 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         }
 
         Debug.Assert(refreshToken.AppUser != null, "refreshToken.AppUser != null");
-        await JwtGenerator(refreshToken.AppUser);
-        return Ok();
+        var jwt = await JwtGenerator(refreshToken.AppUser);
+        return Ok(jwt);
     }
 
     #endregion
@@ -136,9 +142,14 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
 
     private async Task<dynamic> JwtGenerator(AppUser user)
     {
+        Debug.Assert(_apiConfig != null, nameof(_apiConfig) + " != null");
+        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+
+        var authSettings = _appConfig.AuthSettings;
+        var key = Encoding.ASCII.GetBytes(_apiConfig.TokenSecret);
+        var expiresInDays = authSettings.RefreshTokenExpirationDays;
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(configuration["ApiConfig:tokenSecret"]);
-        var expiresInDays = int.Parse(configuration["AppConfig:authSettings:refreshTokenExpirationDays"]);
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -155,16 +166,25 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var encryptedToken = tokenHandler.WriteToken(token);
 
-        SetJwt(encryptedToken);
-        var refreshToken = GenerateRefreshToken();
-        await SetRefreshTokenAsync(refreshToken, user);
+        SetJwtAccessTokenCookie(encryptedToken);
 
+        if (authSettings.UseRefreshTokens)
+        {
+            var refreshToken = GenerateRefreshToken();
+            SetJwtRefreshTokenCookie(refreshToken.Token, refreshToken.Expires);
+            await WriteRefreshTokenToDatabase(refreshToken, user);
+        }
+
+        if (_appConfig.AuthSettings.UseRefreshTokens) encryptedToken = "REDACTED";
         return new { token = encryptedToken, username = user.Username };
     }
 
-    private void SetJwt(string encryptedToken)
+    private void SetJwtAccessTokenCookie(string encryptedToken)
     {
-        var expireInMinutes = int.Parse(configuration["AppConfig:authSettings:accessTokenExpirationMinutes"]);
+        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+        if (!_appConfig.AuthSettings.StoreTokensInCookies) return;
+
+        var expireInMinutes = _appConfig.AuthSettings.AccessTokenExpirationMinutes;
 
         HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
             new CookieOptions
@@ -177,28 +197,24 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
             });
     }
 
-    private static bool CheckPassword(string password, AppUser user)
+    private void SetJwtRefreshTokenCookie(string tokenValue, DateTime expires)
     {
-        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
-        using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
-        var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-        var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
-        return result;
-    }
+        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+        if (!_appConfig.AuthSettings.StoreTokensInCookies) return;
 
-    private async Task SetRefreshTokenAsync(AppRefreshToken refreshToken, AppUser user)
-    {
-        HttpContext.Response.Cookies.Append("X-Refresh-Token", refreshToken.Token,
+        HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue,
             new CookieOptions
             {
-                Expires = refreshToken.Expires,
+                Expires = expires,
                 HttpOnly = true,
                 Secure = true,
                 IsEssential = true,
                 SameSite = SameSiteMode.None
             });
+    }
 
-        // var dbItem = db.AppUsers.Single(x => x.Username == user.Username);
+    private async Task WriteRefreshTokenToDatabase(AppRefreshToken refreshToken, AppUser user)
+    {
         var dbItem = db.AppRefreshTokens.FirstOrDefault(x => x.Token == refreshToken.Token) ?? new AppRefreshToken();
         dbItem.AppUserId = user.Id;
         dbItem.Token = refreshToken.Token;
@@ -209,7 +225,8 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
 
     private AppRefreshToken GenerateRefreshToken()
     {
-        var expiresInDays = int.Parse(configuration["AppConfig:authSettings:refreshTokenExpirationDays"]);
+        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+        var expiresInDays = _appConfig.AuthSettings.RefreshTokenExpirationDays);
 
         var refreshToken = new AppRefreshToken
         {
@@ -219,6 +236,15 @@ public class AuthController(IConfiguration configuration, SimpleNetAuthDataConte
         };
 
         return refreshToken;
+    }
+
+    private static bool CheckPassword(string password, AppUser user)
+    {
+        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
+        using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
+        var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+        var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
+        return result;
     }
 
     #endregion
