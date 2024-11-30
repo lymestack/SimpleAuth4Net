@@ -102,15 +102,8 @@ GO
 ALTER TABLE [dbo].[AppUserRole] CHECK CONSTRAINT [FK_AppUser_AppRole_AppUser]
 GO
 
-CREATE TRIGGER trg_DeleteExpiredTokens
-ON [dbo].[AppRefreshToken]
-AFTER INSERT
-AS
-BEGIN
-    SET NOCOUNT ON
 
-    -- Delete expired tokens
-    DELETE FROM [dbo].[AppRefreshToken]
-    WHERE [Expires] < GETDATE()
-END
+ALTER TABLE dbo.AppUser ADD
+	Verified bit NOT NULL CONSTRAINT DF_AppUser_Verified DEFAULT 0
 GO
+

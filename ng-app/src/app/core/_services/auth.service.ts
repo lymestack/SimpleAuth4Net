@@ -34,6 +34,7 @@ export class AuthService {
       })
       .pipe(
         map((response) => {
+          debugger;
           this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
           this.scheduleTokenRefresh(response.expires);
           return response;
@@ -54,6 +55,7 @@ export class AuthService {
       )
       .pipe(
         map((response) => {
+          debugger;
           this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
           this.scheduleTokenRefresh(response.expires);
           return response;
@@ -119,6 +121,7 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     const expires = this.getStoredTokenExpiration();
+    debugger;
     if (!expires) {
       return false;
     }
@@ -127,13 +130,26 @@ export class AuthService {
   }
 
   private storeTokenExpiration(expiration: string): void {
-    const expirationTime = new Date(expiration).getTime();
-    localStorage.setItem('tokenExpiration', expirationTime.toString());
+    try {
+      // Ensure the expiration is parsed correctly as a timestamp
+      const expirationTime = Date.parse(expiration);
+      if (!isNaN(expirationTime)) {
+        localStorage.setItem('tokenExpiration', expirationTime.toString());
+      } else {
+        console.error('Invalid expiration format:', expiration);
+      }
+    } catch (error) {
+      console.error('Error storing token expiration:', error);
+    }
   }
 
   private getStoredTokenExpiration(): number | null {
     const expiration = localStorage.getItem('tokenExpiration');
-    return expiration ? parseInt(expiration, 10) : null;
+    if (expiration) {
+      const parsedExpiration = parseInt(expiration, 10);
+      return !isNaN(parsedExpiration) ? parsedExpiration : null;
+    }
+    return null;
   }
 
   private scheduleTokenRefresh(expiration: string): void {

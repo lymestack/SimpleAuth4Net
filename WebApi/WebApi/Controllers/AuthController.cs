@@ -131,14 +131,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             return Unauthorized("No refresh token provided.");
         }
 
-        //// Find the refresh token in the database
-        //var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser)
-        //    .FirstOrDefault(x => x.Token == tokenValue);
+        // Hash the input token to compare with the database
+        var hashedInput = HashToken(tokenValue);
 
         // Find the refresh token in the database
-        var hashedInput = HashToken(tokenValue);
-        var refreshToken = db.AppRefreshTokens.Include(x => x.AppUser)
-            .FirstOrDefault(x => x.Token == hashedInput);
+        var refreshToken = await db.AppRefreshTokens.Include(x => x.AppUser)
+            .FirstOrDefaultAsync(x => x.Token == hashedInput);
 
         if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
         {
@@ -154,12 +152,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         // Generate a new access token and refresh token
         var jwt = await JwtGenerator(refreshToken.AppUser);
 
-        // Generate and save a new refresh token
+        // Generate a new refresh token
         var newRefreshToken = GenerateRefreshToken();
-        await WriteRefreshTokenToDatabase(newRefreshToken, refreshToken.AppUser);
 
-        // Delete the old refresh token
-        db.AppRefreshTokens.Remove(refreshToken);
+        // Update the database atomically
+        refreshToken.Token = HashToken(newRefreshToken.Token);
+        refreshToken.Created = newRefreshToken.Created;
+        refreshToken.Expires = newRefreshToken.Expires;
+
         await db.SaveChangesAsync();
 
         // Set the new refresh token in a secure cookie
@@ -167,7 +167,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         return Ok(jwt);
     }
-
 
 
     #endregion
@@ -249,7 +248,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
 
         var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
-        var expiresInDays = _authSettings.RefreshTokenExpirationDays;
+        var expiresInMinutes = _authSettings.AccessTokenExpirationMinutes;
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -261,7 +260,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Username)
             }),
-            Expires = DateTime.UtcNow.AddDays(expiresInDays),
+            Expires = DateTime.UtcNow.AddMinutes(expiresInMinutes),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
 
@@ -277,9 +276,17 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             await WriteRefreshTokenToDatabase(refreshToken, user);
         }
 
+        var expires = tokenDescriptor.Expires ?? DateTime.UtcNow.AddMinutes(expiresInMinutes);
         if (_authSettings.UseRefreshTokens) encryptedToken = "REDACTED";
-        return new { token = encryptedToken, username = user.Username };
+
+        return new
+        {
+            token = encryptedToken,
+            username = user.Username,
+            expires = expires.ToString("o") // Return in ISO 8601 format
+        };
     }
+
 
     private void SetJwtAccessTokenCookie(string encryptedToken)
     {
@@ -317,19 +324,37 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private async Task WriteRefreshTokenToDatabase(AppRefreshToken refreshToken, AppUser user)
     {
-        var dbItem = db.AppRefreshTokens.FirstOrDefault(x => x.Token == refreshToken.Token) ?? new AppRefreshToken();
-        dbItem.AppUserId = user.Id;
-
-        // ZOMBIE: Old code:
-        //dbItem.Token = refreshToken.Token;
-
         var hashedToken = HashToken(refreshToken.Token);
-        dbItem.Token = hashedToken;
 
-        dbItem.Created = refreshToken.Created;
-        dbItem.Expires = refreshToken.Expires;
+        // Check if an existing refresh token is associated with this user
+        var existingToken = await db.AppRefreshTokens
+            .FirstOrDefaultAsync(x => x.AppUserId == user.Id);
+
+        if (existingToken != null)
+        {
+            // Update the existing token
+            existingToken.Token = hashedToken;
+            existingToken.Created = refreshToken.Created;
+            existingToken.Expires = refreshToken.Expires;
+
+            db.Entry(existingToken).State = EntityState.Modified;
+        }
+        else
+        {
+            // Add a new token
+            var newToken = new AppRefreshToken
+            {
+                AppUserId = user.Id,
+                Token = hashedToken,
+                Created = refreshToken.Created,
+                Expires = refreshToken.Expires
+            };
+            await db.AppRefreshTokens.AddAsync(newToken);
+        }
+
         await db.SaveChangesAsync();
     }
+
 
     private AppRefreshToken GenerateRefreshToken()
     {
