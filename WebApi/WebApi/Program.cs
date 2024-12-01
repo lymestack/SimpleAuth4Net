@@ -28,7 +28,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy("default", builder =>
     {
         builder
-            .WithOrigins("http://localhost:4200", "https://your-production-url.com") // Exact origin of your Angular app
+            .WithOrigins(
+                "http://localhost:4200",  // Angular App
+                "https://your-production-url.com",
+                "http://localhost:3000") // React App
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials(); // Required to allow cookies with cross-origin requests
