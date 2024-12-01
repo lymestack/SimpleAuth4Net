@@ -4,8 +4,6 @@ public class AuthSettings
 {
     public string TokenSecret { get; set; }
 
-    public int RefreshTokenLengthBytes { get; set; }
-
     public int AccessTokenExpirationMinutes { get; set; }
 
     public bool UseRefreshTokens { get; set; }
@@ -14,5 +12,5 @@ public class AuthSettings
 
     public bool StoreTokensInCookies { get; set; }
 
-    public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new PasswordComplexityOptions();
+    public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
 }

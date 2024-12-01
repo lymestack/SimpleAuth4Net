@@ -2,14 +2,9 @@
 
 namespace SimpleAuthNet;
 
-public class PasswordComplexityValidator
+public class PasswordComplexityValidator(PasswordComplexityOptions options)
 {
-    private readonly PasswordComplexityOptions _options;
-
-    public PasswordComplexityValidator(PasswordComplexityOptions options)
-    {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
-    }
+    private readonly PasswordComplexityOptions _options = options ?? throw new ArgumentNullException(nameof(options));
 
     public PasswordValidationResult Validate(string password)
     {

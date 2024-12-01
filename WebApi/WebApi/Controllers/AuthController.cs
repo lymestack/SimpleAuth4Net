@@ -8,7 +8,6 @@ using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 using SimpleAuthNet.Models.ViewModels;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -21,14 +20,16 @@ namespace WebApi.Controllers;
 [AllowAnonymous]
 public class AuthController(IConfiguration configuration, SimpleAuthNetDataContext db) : ControllerBase
 {
-    private readonly AuthSettings? _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>();
-    private readonly AppConfig? _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
+    private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+    private readonly AppConfig _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>()!;
 
     #region Register
 
     [HttpPost("Register")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
+        if (!_appConfig.AllowRegistration) return BadRequest("Public registration is not allowed.");
         if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("User already exists...");
 
         var user = new AppUser
@@ -43,6 +44,10 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         if (model.ConfirmPassword == model.Password)
         {
+            var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
+            var result = validator.Validate(model.Password);
+            if (!result.Succeeded) return BadRequest(new { success = false, errors = result.Errors });
+
             using var hmac = new HMACSHA512();
             user.AppUserCredential.PasswordSalt = hmac.Key;
             user.AppUserCredential.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(model.Password));
@@ -78,6 +83,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
+
         var user = db.AppUsers.Include(x => x.AppUserCredential).FirstOrDefault(x => x.Username == model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
 
@@ -91,7 +98,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
     {
-        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
+        if (!_appConfig.EnableGoogle) return BadRequest("Sign in with Google is not enabled.");
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
@@ -173,15 +180,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #region CheckPasswordComplexity
 
-    [HttpPost("CheckPasswordComplexity")]
-    public IActionResult CheckPasswordComplexity([FromBody] string password)
+    [HttpGet("CheckPasswordComplexity")]
+    public IActionResult CheckPasswordComplexity([FromQuery] string password)
     {
         if (string.IsNullOrWhiteSpace(password))
         {
             return BadRequest(new { error = "INVALID_INPUT", message = "Password cannot be empty." });
         }
 
-        Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
         var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
         var result = validator.Validate(password);
 
@@ -190,7 +196,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             return Ok(new { success = true, message = "Password is valid." });
         }
 
-        return BadRequest(new { success = false, errors = result.Errors });
+        return Ok(new { success = false, errors = result.Errors });
     }
 
     #endregion
@@ -206,9 +212,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private async Task<dynamic> JwtGenerator(AppUser user, string deviceId)
     {
-        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
-        Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
-
         var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
         var expiresInMinutes = _authSettings.AccessTokenExpirationMinutes;
         var refreshTokenExpires = DateTime.UtcNow;
@@ -255,7 +258,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private void SetJwtAccessTokenCookie(string encryptedToken)
     {
-        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
         if (!_authSettings.StoreTokensInCookies) return;
 
         var expireInMinutes = _authSettings.AccessTokenExpirationMinutes;
@@ -273,7 +275,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private void SetJwtRefreshTokenCookie(string tokenValue, DateTime expires)
     {
-        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
         if (!_authSettings.StoreTokensInCookies) return;
 
         HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue,
@@ -320,7 +321,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private AppRefreshToken GenerateRefreshToken()
     {
-        Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
         var expiresInDays = _authSettings.RefreshTokenExpirationDays;
 
         var refreshToken = new AppRefreshToken
@@ -335,7 +335,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private static bool CheckPassword(string password, AppUser user)
     {
-        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
         using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
         var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);

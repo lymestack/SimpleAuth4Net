@@ -13,6 +13,9 @@ import { Router } from '@angular/router';
 export class LoginComponent implements OnInit {
   model: LoginModel = new LoginModel();
   useBootstrap = false;
+  enableLocalAccounts: boolean;
+  enableGoogle: boolean;
+  allowRegistration: boolean;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -22,6 +25,10 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.enableGoogle = this.config.enableGoogle;
+    this.allowRegistration = this.config.allowRegistration;
+    this.enableLocalAccounts = this.config.enableLocalAccounts;
+
     if (this.auth.isLoggedIn()) {
       this.router.navigateByUrl('/');
     }

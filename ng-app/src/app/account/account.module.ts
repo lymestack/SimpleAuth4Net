@@ -23,5 +23,6 @@ import { RegisterConfirmationComponent } from './register-confirmation/register-
     RegisterConfirmationComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
+  exports: [UsernameEmailInputComponent],
 })
 export class AccountModule {}

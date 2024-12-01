@@ -11,4 +11,7 @@ export class AppConfig {
     captchaSettings: CaptchaSettings;
     googleClientId: string;
     sessionId: string;
+    enableLocalAccounts: boolean;
+    enableGoogle: boolean;
+    allowRegistration: boolean;
 }

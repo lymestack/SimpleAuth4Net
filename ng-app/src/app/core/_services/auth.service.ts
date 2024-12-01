@@ -100,7 +100,7 @@ export class AuthService {
     const url = `${
       this.apiUrl
     }Auth/CheckPasswordComplexity?password=${encodeURIComponent(password)}`;
-    return this.httpClient.delete(url, {
+    return this.httpClient.get(url, {
       headers: header,
       withCredentials: true,
     });

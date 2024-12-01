@@ -49,15 +49,24 @@
           type="password"
           placeholder="Enter your password"
           [(ngModel)]="model.password"
+          (change)="onPasswordChanged()"
           name="password"
           required
         />
         <mat-error *ngIf="!model.password"
           >Please enter your password.</mat-error
         >
-        <mat-error *ngIf="checkedComplexity && metComplexityStandard">
+        <!-- ZOMBIE: Why doesn't this work?
+         <mat-error *ngIf="checkedComplexity && !metComplexityStandard">
           Password doesn't meet complexity standards
-        </mat-error>
+        </mat-error> 
+        -->
+        <mat-hint
+          style="color: red"
+          *ngIf="checkedComplexity && !metComplexityStandard"
+        >
+          Password doesn't meet complexity standards
+        </mat-hint>
       </mat-form-field>
 
       <mat-form-field class="form-field" appearance="fill">
@@ -91,7 +100,8 @@
           !captchaResolved ||
           theform.invalid ||
           !usernameValid ||
-          !usernameAvailable
+          !usernameAvailable ||
+          !metComplexityStandard
         "
       >
         Register

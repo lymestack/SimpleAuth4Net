@@ -66,8 +66,11 @@ export class RegisterComponent {
 
   onPasswordChanged() {
     this.auth
-      .checkPasswordComplexity('Auth/CheckPasswordComplexity')
-      .subscribe((data) => {});
+      .checkPasswordComplexity(this.model.password)
+      .subscribe((data: any) => {
+        this.checkedComplexity = true;
+        this.metComplexityStandard = data.success;
+      });
   }
 
   onSubmit() {
