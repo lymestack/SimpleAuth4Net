@@ -3,8 +3,7 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-export class LoginModel {
-    username: string;
-    password: string;
+export class LoginWithGoogleModel {
+    credentialsFromGoogle: string;
     deviceId: string;
 }

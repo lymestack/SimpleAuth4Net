@@ -51,6 +51,10 @@ export class CurrentUserService {
     return matches ? decodeURIComponent(matches[1]) : null;
   }
 
+  isLoggedIn(): boolean {
+    return this.auth.isLoggedIn();
+  }
+
   logout() {
     this.auth.logout();
   }

@@ -6,9 +6,11 @@
 import { AppUser } from "./app-user";
 
 export class AppRefreshToken {
+    id: number;
     appUserId: number;
+    appUser: AppUser;
+    deviceId: string;
     token: string;
     created: Date;
     expires: Date;
-    appUser: AppUser;
 }

@@ -17,6 +17,7 @@ public class TypeScriptExports : GenerationSpec
         AddClass<AppRole>();
         AddClass<AppConfig>();
         AddClass<LoginModel>();
+        AddClass<LoginWithGoogleModel>();
         AddClass<RegisterModel>();
     }
 }

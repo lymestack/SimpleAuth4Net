@@ -84,12 +84,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
 
-        var jwt = await JwtGenerator(user);
+        var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
     }
 
     [HttpPost("LoginWithGoogle")]
-    public async Task<IActionResult> LoginWithGoogle([FromBody] string credential)
+    public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
 
@@ -98,11 +98,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             Audience = new List<string> { _appConfig.GoogleClientId }
         };
 
-        var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
+        var payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
         var user = db.AppUsers.FirstOrDefault(x => x.Username == payload.Email);
         if (user == null) return BadRequest();
 
-        var jwt = await JwtGenerator(user);
+        var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
     }
 
@@ -123,7 +123,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     #region RefreshToken
 
     [HttpGet("RefreshToken")]
-    public async Task<ActionResult<string>> RefreshToken()
+    public async Task<ActionResult<string>> RefreshToken(string deviceId)
     {
         var tokenValue = Request.Cookies["X-Refresh-Token"];
         if (string.IsNullOrEmpty(tokenValue))
@@ -136,7 +136,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         // Find the refresh token in the database
         var refreshToken = await db.AppRefreshTokens.Include(x => x.AppUser)
-            .FirstOrDefaultAsync(x => x.Token == hashedInput);
+            .FirstOrDefaultAsync(x => x.Token == hashedInput && x.DeviceId == deviceId);
 
         if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
         {
@@ -150,7 +150,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         }
 
         // Generate a new access token and refresh token
-        var jwt = await JwtGenerator(refreshToken.AppUser);
+        var jwt = await JwtGenerator(refreshToken.AppUser, deviceId);
 
         // Generate a new refresh token
         var newRefreshToken = GenerateRefreshToken();
@@ -195,44 +195,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
-    #region DELETE / RevokeToken
-
-    [HttpDelete("RevokeToken")]
-    public async Task<IActionResult> RevokeToken(string username)
-    {
-        var user = await db.AppUsers.Include(x => x.AppRefreshTokens)
-            .FirstOrDefaultAsync(x => x.Username == username);
-
-        if (user == null) return NotFound("User not found.");
-
-        db.AppRefreshTokens.RemoveRange(user.AppRefreshTokens);
-        await db.SaveChangesAsync();
-
-        return Ok("Tokens revoked.");
-    }
-
-    #endregion
-
-    #region ZOMBIE: Debug Endpoints
-
-    [HttpGet("WhoAmI")]
-    public async Task<IActionResult> WhoAmI()
-    {
-        if (User.Identity == null) return Ok("Nobody");
-        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
-        return Ok(User.Identity.Name);
-    }
-
-    // ZOMBIE: For Debugging:
-    //[HttpGet("CheckTokenCookie")]
-    //public IActionResult CheckTokenCookie()
-    //{
-    //    var token = HttpContext.Request.Cookies["X-Access-Token"];
-    //    return Ok(new { token });
-    //}
-
-    #endregion
-
     #region Private methods
 
     private string HashToken(string token)
@@ -242,13 +204,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         return Convert.ToBase64String(sha256.ComputeHash(bytes));
     }
 
-    private async Task<dynamic> JwtGenerator(AppUser user)
+    private async Task<dynamic> JwtGenerator(AppUser user, string deviceId)
     {
         Debug.Assert(_appConfig != null, nameof(_appConfig) + " != null");
         Debug.Assert(_authSettings != null, nameof(_authSettings) + " != null");
 
         var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
         var expiresInMinutes = _authSettings.AccessTokenExpirationMinutes;
+        var refreshTokenExpires = DateTime.UtcNow;
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -266,6 +229,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var encryptedToken = tokenHandler.WriteToken(token);
+        var expires = tokenDescriptor.Expires.Value;
 
         SetJwtAccessTokenCookie(encryptedToken);
 
@@ -273,17 +237,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         {
             var refreshToken = GenerateRefreshToken();
             SetJwtRefreshTokenCookie(refreshToken.Token, refreshToken.Expires);
-            await WriteRefreshTokenToDatabase(refreshToken, user);
+            refreshTokenExpires = refreshToken.Expires;
+            await WriteRefreshTokenToDatabase(refreshToken, user, deviceId);
         }
 
-        var expires = tokenDescriptor.Expires ?? DateTime.UtcNow.AddMinutes(expiresInMinutes);
         if (_authSettings.UseRefreshTokens) encryptedToken = "REDACTED";
 
         return new
         {
             token = encryptedToken,
             username = user.Username,
-            expires = expires.ToString("o") // Return in ISO 8601 format
+            expires = expires.ToString("o"),
+            refreshTokenExpires = refreshTokenExpires.ToString("o") // Return in ISO 8601 format
         };
     }
 
@@ -322,29 +287,27 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             });
     }
 
-    private async Task WriteRefreshTokenToDatabase(AppRefreshToken refreshToken, AppUser user)
+    private async Task WriteRefreshTokenToDatabase(AppRefreshToken refreshToken, AppUser user, string deviceId)
     {
         var hashedToken = HashToken(refreshToken.Token);
 
-        // Check if an existing refresh token is associated with this user
         var existingToken = await db.AppRefreshTokens
-            .FirstOrDefaultAsync(x => x.AppUserId == user.Id);
+            .FirstOrDefaultAsync(x => x.AppUserId == user.Id && x.DeviceId == deviceId);
 
         if (existingToken != null)
         {
-            // Update the existing token
+            // Update existing token for this device
             existingToken.Token = hashedToken;
             existingToken.Created = refreshToken.Created;
             existingToken.Expires = refreshToken.Expires;
-
-            db.Entry(existingToken).State = EntityState.Modified;
         }
         else
         {
-            // Add a new token
+            // Add new token for this device
             var newToken = new AppRefreshToken
             {
                 AppUserId = user.Id,
+                DeviceId = deviceId, // Store the device ID
                 Token = hashedToken,
                 Created = refreshToken.Created,
                 Expires = refreshToken.Expires
@@ -354,7 +317,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         await db.SaveChangesAsync();
     }
-
 
     private AppRefreshToken GenerateRefreshToken()
     {
@@ -379,6 +341,58 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
         return result;
     }
+
+    #endregion
+
+    #region ZOMBIE - Reimplement ... DELETE / RevokeToken
+
+    //[HttpGet("ActiveSessions")]
+    //public async Task<IActionResult> ActiveSessions(int userId)
+    //{
+    //    var sessions = await db.AppRefreshTokens
+    //        .Where(x => x.AppUserId == userId)
+    //        .Select(x => new { x.DeviceId, x.Created, x.Expires })
+    //        .ToListAsync();
+
+    //    return Ok(sessions);
+    //}
+
+    //[HttpDelete("RevokeSession")]
+    //public async Task<IActionResult> RevokeSession(int userId, string deviceId)
+    //{
+    //    var session = await db.AppRefreshTokens
+    //        .FirstOrDefaultAsync(x => x.AppUserId == userId && x.DeviceId == deviceId);
+
+    //    if (session == null)
+    //    {
+    //        return NotFound("Session not found.");
+    //    }
+
+    //    db.AppRefreshTokens.Remove(session);
+    //    await db.SaveChangesAsync();
+
+    //    return Ok("Session revoked.");
+    //}
+
+    #endregion
+
+    #region ZOMBIE: Debug Endpoints
+
+    [HttpGet("WhoAmI")]
+    public async Task<IActionResult> WhoAmI()
+    {
+        if (User.Identity == null) return Ok("Nobody");
+        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
+        return Ok(User.Identity.Name);
+    }
+
+    // ZOMBIE: For Debugging:
+    //[HttpGet("CheckTokenCookie")]
+    //public IActionResult CheckTokenCookie()
+    //{
+    //    var token = HttpContext.Request.Cookies["X-Access-Token"];
+    //    return Ok(new { token });
+    //}
 
     #endregion
 }

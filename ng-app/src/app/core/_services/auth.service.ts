@@ -8,7 +8,7 @@ import {
   throwError,
   Subscription,
 } from 'rxjs';
-import { AppConfig, LoginModel } from '../../_api';
+import { AppConfig, LoginModel, LoginWithGoogleModel } from '../../_api';
 import { APP_CONFIG } from './config-injection';
 
 @Injectable({
@@ -17,16 +17,21 @@ import { APP_CONFIG } from './config-injection';
 export class AuthService {
   apiUrl: string;
   private refreshTokenInterval: Subscription | undefined;
+  private deviceId: string;
+  private debug = false;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
     private httpClient: HttpClient
   ) {
     this.apiUrl = this.config.environment.api;
+    this.deviceId = this.getOrGenerateDeviceId();
   }
 
   login(loginModel: LoginModel): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
+    loginModel.deviceId = this.getOrGenerateDeviceId();
+
     return this.httpClient
       .post<any>(`${this.apiUrl}Auth/Login`, loginModel, {
         headers: header,
@@ -34,7 +39,6 @@ export class AuthService {
       })
       .pipe(
         map((response) => {
-          debugger;
           this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
           this.scheduleTokenRefresh(response.expires);
           return response;
@@ -44,15 +48,17 @@ export class AuthService {
 
   loginWithGoogle(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
+
+    const loginWithGoogleModel: LoginWithGoogleModel = {
+      credentialsFromGoogle: credentials,
+      deviceId: this.deviceId,
+    };
+
     return this.httpClient
-      .post<any>(
-        `${this.apiUrl}Auth/LoginWithGoogle`,
-        JSON.stringify(credentials),
-        {
-          headers: header,
-          withCredentials: true,
-        }
-      )
+      .post<any>(`${this.apiUrl}Auth/LoginWithGoogle`, loginWithGoogleModel, {
+        headers: header,
+        withCredentials: true,
+      })
       .pipe(
         map((response) => {
           debugger;
@@ -67,29 +73,11 @@ export class AuthService {
     this.clearRefreshToken();
     this.destroyCookieValues().subscribe(
       () => {
-        console.log('User logged out.');
+        this.log('User logged out.');
         localStorage.removeItem('tokenExpiration');
       },
-      (error) => console.error('Error revoking token:', error)
+      (error) => this.error('Error revoking token:', error)
     );
-  }
-
-  refreshToken(): Observable<any> {
-    return this.httpClient
-      .get<any>(`${this.apiUrl}Auth/RefreshToken`, { withCredentials: true })
-      .pipe(
-        map((response: any) => {
-          console.log('Token refreshed successfully');
-          this.storeTokenExpiration(response.expires); // Update expiration
-          this.scheduleTokenRefresh(response.expires);
-          return response;
-        }),
-        catchError((error) => {
-          console.error('Token refresh failed', error);
-          this.clearRefreshToken();
-          return throwError(() => new Error('Unauthorized'));
-        })
-      );
   }
 
   revokeToken(): Observable<any> {
@@ -120,27 +108,92 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    const expires = this.getStoredTokenExpiration();
-    debugger;
-    if (!expires) {
-      return false;
-    }
+    const accessTokenExpires = this.getStoredTokenExpiration();
+    const refreshTokenExpires = this.getStoredRefreshTokenExpiration();
+
     const now = new Date().getTime();
-    return now < expires;
+
+    // Check access token expiration
+    if (accessTokenExpires && now < accessTokenExpires) {
+      return true; // Access token is still valid
+    }
+
+    // If the access token is expired, check refresh token expiration
+    if (refreshTokenExpires && now < refreshTokenExpires) {
+      this.log('Access token expired, but refresh token is valid.');
+      return true; // Refresh token is still valid
+    }
+
+    // If neither token is valid, user is not logged in
+    return false;
   }
 
-  private storeTokenExpiration(expiration: string): void {
+  private getStoredRefreshTokenExpiration(): number | null {
+    const expiration = localStorage.getItem('refreshTokenExpiration');
+    if (expiration) {
+      const parsedExpiration = parseInt(expiration, 10);
+      return !isNaN(parsedExpiration) ? parsedExpiration : null;
+    }
+    return null;
+  }
+
+  private storeTokenExpiration(
+    accessExpiration: string,
+    refreshExpiration?: string
+  ): void {
     try {
-      // Ensure the expiration is parsed correctly as a timestamp
-      const expirationTime = Date.parse(expiration);
-      if (!isNaN(expirationTime)) {
-        localStorage.setItem('tokenExpiration', expirationTime.toString());
+      // Parse and store access token expiration
+      const accessExpirationTime = Date.parse(accessExpiration);
+      if (!isNaN(accessExpirationTime)) {
+        localStorage.setItem(
+          'tokenExpiration',
+          accessExpirationTime.toString()
+        );
       } else {
-        console.error('Invalid expiration format:', expiration);
+        this.error('Invalid access token expiration format:', accessExpiration);
+      }
+
+      // Parse and store refresh token expiration (optional)
+      if (refreshExpiration) {
+        const refreshExpirationTime = Date.parse(refreshExpiration);
+        if (!isNaN(refreshExpirationTime)) {
+          localStorage.setItem(
+            'refreshTokenExpiration',
+            refreshExpirationTime.toString()
+          );
+        } else {
+          this.error(
+            'Invalid refresh token expiration format:',
+            refreshExpiration
+          );
+        }
       }
     } catch (error) {
-      console.error('Error storing token expiration:', error);
+      this.error('Error storing token expiration:', error);
     }
+  }
+
+  refreshToken(): Observable<any> {
+    return this.httpClient
+      .get<any>(`${this.apiUrl}Auth/RefreshToken?deviceId=${this.deviceId}`, {
+        withCredentials: true,
+      })
+      .pipe(
+        map((response: any) => {
+          this.log('Token refreshed successfully');
+          this.storeTokenExpiration(
+            response.expires,
+            response.refreshTokenExpires
+          ); // Update access and refresh token expirations
+          this.scheduleTokenRefresh(response.expires);
+          return response;
+        }),
+        catchError((error) => {
+          this.error('Token refresh failed', error);
+          this.clearRefreshToken();
+          return throwError(() => new Error('Unauthorized'));
+        })
+      );
   }
 
   private getStoredTokenExpiration(): number | null {
@@ -154,17 +207,35 @@ export class AuthService {
 
   private scheduleTokenRefresh(expiration: string): void {
     this.clearRefreshToken(); // Clear any existing interval
+
     const expirationTime = new Date(expiration).getTime();
     const now = new Date().getTime();
-    const timeUntilRefresh = expirationTime - now - 60 * 1000; // Refresh 1 minute before expiration
+    const bufferTime = 30 * 1000; // 30 seconds buffer to account for clock skew
+    const timeUntilRefresh = expirationTime - now - 60 * 1000 - bufferTime; // Refresh 1 minute before expiration
+
+    this.log('Scheduling token refresh in:', timeUntilRefresh, 'ms');
 
     if (timeUntilRefresh > 0) {
       this.refreshTokenInterval = timer(timeUntilRefresh).subscribe(() => {
         this.refreshToken().subscribe(
-          () => console.log('Token refreshed'),
-          (error) => console.error('Error refreshing token:', error)
+          () => this.log('Token refreshed'),
+          (error) => this.error('Error refreshing token:', error)
         );
       });
+    } else {
+      this.error('Invalid timeUntilRefresh:', timeUntilRefresh);
+    }
+  }
+
+  private log(...args: any[]): void {
+    if (this.debug) {
+      this.log(...args);
+    }
+  }
+
+  private error(...args: any[]): void {
+    if (this.debug) {
+      this.error(...args);
     }
   }
 
@@ -172,5 +243,26 @@ export class AuthService {
     if (this.refreshTokenInterval) {
       this.refreshTokenInterval.unsubscribe();
     }
+  }
+
+  private getOrGenerateDeviceId(): string {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+      // Generate a new UUID and save it
+      deviceId = this.generateUUID();
+      localStorage.setItem('deviceId', deviceId);
+    }
+    return deviceId;
+  }
+
+  private generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0,
+          v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
   }
 }

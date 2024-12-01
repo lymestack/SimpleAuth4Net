@@ -11,7 +11,7 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
-    public async Task<ActionResult<AppConfig>> Get()
+    public ActionResult<AppConfig> Get()
     {
         var appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
         Debug.Assert(appConfig != null, nameof(appConfig) + " != null");
