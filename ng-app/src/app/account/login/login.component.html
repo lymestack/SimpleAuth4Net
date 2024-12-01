@@ -3,7 +3,7 @@
     <mat-card class="mat-card">
       <h3 class="mat-title text-center">Login</h3>
       <form (ngSubmit)="onSubmit()" class="form" *ngIf="enableLocalAccounts">
-        <mat-form-field class="form-field" appearance="fill">
+        <mat-form-field class="form-field half-width" appearance="fill">
           <mat-label>Email address</mat-label>
           <input
             matInput
@@ -39,6 +39,7 @@
             color="primary"
             class="text-link"
             routerLink="/account/forgot-password"
+            tabIndex="-1"
             >Forgot password?</a
           >
           <a
@@ -47,6 +48,7 @@
             color="primary"
             class="text-link"
             routerLink="/account/register"
+            tabIndex="-1"
             >Register</a
           >
         </div>

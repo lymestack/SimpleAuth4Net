@@ -15,4 +15,6 @@ public class AppConfig
     public bool EnableGoogle { get; set; }
 
     public bool AllowRegistration { get; set; }
+
+    public int PasswordResetCodeExpiresInMinutes { get; set; }
 }

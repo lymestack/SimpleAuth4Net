@@ -14,4 +14,5 @@ export class AppConfig {
     enableLocalAccounts: boolean;
     enableGoogle: boolean;
     allowRegistration: boolean;
+    passwordResetCodeExpiresInMinutes: number;
 }

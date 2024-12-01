@@ -98,3 +98,8 @@ ALTER TABLE dbo.AppRefreshToken ADD CONSTRAINT
 	
 GO
 
+ALTER TABLE AppUserCredential
+ADD PasswordResetToken NVARCHAR(6) NULL,
+    PasswordResetExpires DATETIME NULL,
+    PasswordResetUsed BIT DEFAULT 0
+

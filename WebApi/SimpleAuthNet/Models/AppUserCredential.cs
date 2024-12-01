@@ -15,4 +15,10 @@ public class AppUserCredential
     public byte[] PasswordHash { get; set; }
 
     public DateTime DateCreated { get; set; }
+
+    public string PasswordResetToken { get; set; }
+
+    public DateTime PasswordResetExpires { get; set; }
+
+    public bool PasswordResetUsed { get; set; }
 }

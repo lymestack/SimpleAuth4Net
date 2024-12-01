@@ -8,7 +8,9 @@ using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 using SimpleAuthNet.Models.ViewModels;
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -198,6 +200,82 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         return Ok(new { success = false, errors = result.Errors });
     }
+
+    #endregion
+
+    #region ForgotPassword / ResetPassword
+
+    [HttpPost("ForgotPassword")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.EmailAddress == model.Email);
+
+        if (user == null)
+            return BadRequest("No user found with that email.");
+
+        // Generate a 6-digit code
+        var resetToken = new Random().Next(100000, 999999).ToString();
+        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
+        user.AppUserCredential.PasswordResetToken = resetToken;
+        user.AppUserCredential.PasswordResetExpires = DateTime.UtcNow.AddMinutes(30);
+        user.AppUserCredential.PasswordResetUsed = false;
+
+        await db.SaveChangesAsync();
+
+        // Send the email (use your preferred email service)
+        await SendPasswordResetEmail(user.EmailAddress, resetToken);
+
+        var message = "Password reset email sent.";
+        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {resetToken}";
+        return Ok(new { message });
+    }
+
+    private async Task SendPasswordResetEmail(string email, string token)
+    {
+        var mailMessage = new MailMessage
+        {
+            Subject = "Password Reset Verification Code",
+            Body = $"Your verification code is: {token}",
+            IsBodyHtml = true
+        };
+
+        mailMessage.To.Add(email);
+
+        var emailService = new EmailService(configuration);
+        emailService.SendEmailMessage(mailMessage);
+
+        await Task.CompletedTask; // Simulating async behavior
+    }
+
+
+    [HttpPost("ResetPassword")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.AppUserCredential.PasswordResetToken == model.Token);
+
+        if (user == null || user.AppUserCredential.PasswordResetExpires < DateTime.UtcNow ||
+            user.AppUserCredential.PasswordResetUsed)
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired reset token." } });
+
+        // Validate the new password
+        var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
+        var result = validator.Validate(model.NewPassword);
+        if (!result.Succeeded) return BadRequest(new { success = false, errors = result.Errors });
+
+        // Hash and save the new password
+        using var hmac = new HMACSHA512();
+        user.AppUserCredential.PasswordSalt = hmac.Key;
+        user.AppUserCredential.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+        user.AppUserCredential.PasswordResetUsed = true; // Invalidate the token
+
+        await db.SaveChangesAsync();
+        return Ok(new { success = true, message = "Password reset successfully." });
+    }
+
 
     #endregion
 

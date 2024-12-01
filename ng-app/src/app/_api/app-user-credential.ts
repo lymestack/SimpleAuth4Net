@@ -11,4 +11,7 @@ export class AppUserCredential {
     passwordSalt: number[];
     passwordHash: number[];
     dateCreated: Date;
+    passwordResetToken: string;
+    passwordResetExpires: Date;
+    passwordResetUsed: boolean;
 }

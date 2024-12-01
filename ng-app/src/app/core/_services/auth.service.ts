@@ -68,14 +68,42 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  forgotPassword(email: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/ForgotPassword`,
+      { email },
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/ResetPassword`,
+      { token, newPassword },
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
+  logout(): Observable<any> {
     this.clearRefreshToken();
-    this.destroyCookieValues().subscribe(
-      () => {
+    return this.destroyCookieValues().pipe(
+      map((response) => {
         this.log('User logged out.');
         localStorage.removeItem('tokenExpiration');
-      },
-      (error) => this.error('Error revoking token:', error)
+        localStorage.removeItem('AppUser');
+        localStorage.removeItem('refreshTokenExpiration');
+      }),
+      catchError((error) => {
+        return throwError(() => error);
+      })
     );
   }
 
