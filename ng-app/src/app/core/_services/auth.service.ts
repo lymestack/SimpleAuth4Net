@@ -61,7 +61,6 @@ export class AuthService {
       })
       .pipe(
         map((response) => {
-          debugger;
           this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
           this.scheduleTokenRefresh(response.expires);
           return response;

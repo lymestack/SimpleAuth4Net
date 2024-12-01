@@ -19,6 +19,7 @@ export class LogoutComponent implements OnInit {
   ngOnInit(): void {
     this.auth.logout();
     this.localStorage.remove('AppUser');
+    this.localStorage.remove('refreshTokenExpiration');
     window.location.href = this.config.environment.url;
   }
 }

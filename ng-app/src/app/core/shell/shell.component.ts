@@ -33,7 +33,6 @@ export class ShellComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Check if the user is already logged in
     if (this.authService.isLoggedIn()) {
       console.log('User is logged in. Validating token.');
 
