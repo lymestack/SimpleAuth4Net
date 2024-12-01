@@ -7,18 +7,16 @@ namespace WebApi.Controllers
     /// This is a test secure endpoint.
     /// </summary>
     [Authorize]
+    [Route("[controller]")]
     [ApiController]
-    public class ItemController : ControllerBase
+    public class SecureController : ControllerBase
     {
-
-        private readonly List<string> _colorList = ["Red", "Green", "Blue"];
-
         [HttpGet("GetColorList")]
         public List<string> GetColorList()
         {
             try
             {
-                return _colorList;
+                return ["Red", "Green", "Blue"];
             }
             catch (Exception e)
             {

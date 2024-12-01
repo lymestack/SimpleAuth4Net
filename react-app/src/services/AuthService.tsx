@@ -12,8 +12,12 @@ export interface LoginWithGoogleModel {
 }
 
 class AuthService {
-  private apiUrl: string = 'http://localhost:5000/Auth/';
+  private apiUrl: string = 'http://localhost/SimpleAuthNet/api/';
   private deviceId: string = this.getOrGenerateDeviceId();
+
+  public getApiUrl(): string {
+    return this.apiUrl;
+  }
 
   // Store token expiration in local storage
   private storeTokenExpiration(accessTokenExpires: string, refreshTokenExpires?: string): void {
@@ -41,7 +45,7 @@ class AuthService {
 
   public async login(loginModel: LoginModel): Promise<any> {
     try {
-      const response = await axios.post(`${this.apiUrl}Login`, loginModel, {
+      const response = await axios.post(`${this.apiUrl}Auth/Login`, loginModel, {
         withCredentials: true,
       });
       this.storeTokenExpiration(response.data.expires, response.data.refreshTokenExpires);
@@ -55,7 +59,7 @@ class AuthService {
   public async loginWithGoogle(credentialsFromGoogle: string): Promise<any> {
     try {
       const response = await axios.post(
-        `${this.apiUrl}LoginWithGoogle`,
+        `${this.apiUrl}Auth/LoginWithGoogle`,
         {
           credentialsFromGoogle,
           deviceId: this.deviceId,
@@ -72,7 +76,7 @@ class AuthService {
 
   public async refreshToken(): Promise<any> {
     try {
-      const response = await axios.get(`${this.apiUrl}RefreshToken?deviceId=${this.deviceId}`, {
+      const response = await axios.get(`${this.apiUrl}Secure/RefreshToken?deviceId=${this.deviceId}`, {
         withCredentials: true,
       });
       this.storeTokenExpiration(response.data.expires, response.data.refreshTokenExpires);
@@ -88,10 +92,14 @@ class AuthService {
       await axios.delete(`${this.apiUrl}Logout`, { withCredentials: true });
       localStorage.removeItem('accessTokenExpiration');
       localStorage.removeItem('refreshTokenExpiration');
+      localStorage.removeItem('deviceId');
+      alert('Logged out successfully.');
     } catch (error) {
       console.error('Error during logout:', error);
+      alert('Error logging out. Please try again.');
     }
   }
+  
 
   public isLoggedIn(): boolean {
     const now = new Date().getTime();

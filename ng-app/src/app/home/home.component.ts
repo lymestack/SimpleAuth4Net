@@ -38,7 +38,7 @@ export class HomeComponent implements OnInit {
   }
 
   testSecureEndpoint() {
-    this.rest.getResource('GetColorList').subscribe(
+    this.rest.getResource('Secure/GetColorList').subscribe(
       (data) => {
         console.log('Success', data);
         this.logger.success('That endpoint worked!');
