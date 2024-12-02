@@ -31,6 +31,7 @@ builder.Services.AddCors(options =>
             .WithOrigins(
                 "http://localhost:4200",  // Angular App
                 "https://your-production-url.com",
+                "http://localhost:8080",
                 "http://localhost:3000") // React App
             .AllowAnyMethod()
             .AllowAnyHeader()
