@@ -421,7 +421,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
-    #region ZOMBIE - Reimplement ... DELETE / RevokeToken
+    #region ZOMBIE - DELETE / RevokeToken - FUTURE: Reimplement as an Admin endpoints
 
     //[HttpGet("ActiveSessions")]
     //public async Task<IActionResult> ActiveSessions(int userId)
