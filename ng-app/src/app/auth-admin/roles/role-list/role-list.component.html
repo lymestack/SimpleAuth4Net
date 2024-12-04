@@ -1,0 +1,32 @@
+<mat-list *ngIf="roles" class="striped">
+  <table class="table table-striped">
+    <thead class="table-dark">
+      <tr>
+        <th>&nbsp;</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let role of roles">
+        <td>
+          <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="edit.emit(role)">
+              <i class="fa fa-pencil padded-right"></i>
+              <span>Edit</span>
+            </button>
+            <button mat-menu-item (click)="remove.emit(role)">
+              <i class="fa fa-trash padded-right"></i>
+              <span>Delete</span>
+            </button>
+          </mat-menu>
+        </td>
+        <td>{{ role.name }}</td>
+        <td>{{ role.description }}</td>
+      </tr>
+    </tbody>
+  </table></mat-list
+>

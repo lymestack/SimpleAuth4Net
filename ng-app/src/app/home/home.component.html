@@ -15,7 +15,7 @@
     </div>
 
     <div
-      *ngIf="loggedIn == true"
+      *ngIf="loggedIn == true && appUser"
       class="alert alert-success padded-top padded-bottom"
     >
       You are logged in as {{ appUser.username }}.

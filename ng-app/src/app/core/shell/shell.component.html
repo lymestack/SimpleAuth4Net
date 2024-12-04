@@ -24,27 +24,33 @@
         About
       </a>
 
-      <mat-divider></mat-divider>
+      <ng-container *ngIf="isAdmin">
+        <mat-divider></mat-divider>
 
-      <h6 style="margin-top: 25px; margin-left: 10px; font-weight: 500">
-        Admin
-      </h6>
-      <a
-        mat-list-item
-        routerLink="/auth-admin/app-users"
-        routerLinkActive="active-link"
-      >
-        <i class="fa fa-user"></i>
-        Users
-      </a>
-      <a
-        mat-list-item
-        routerLink="/auth-admin/app-roles"
-        routerLinkActive="active-link"
-      >
-        <i class="fa fa-users"></i>
-        Roles
-      </a>
+        <h6 style="margin-top: 25px; margin-left: 10px; font-weight: 500">
+          Admin
+          <i
+            class="fa fa-shield"
+            matTooltip="Only Admin users can see this."
+          ></i>
+        </h6>
+        <a
+          mat-list-item
+          routerLink="/auth-admin/users"
+          routerLinkActive="active-link"
+        >
+          <i class="fa fa-user"></i>
+          Users
+        </a>
+        <a
+          mat-list-item
+          routerLink="/auth-admin/roles"
+          routerLinkActive="active-link"
+        >
+          <i class="fa fa-users"></i>
+          Roles
+        </a>
+      </ng-container>
     </mat-nav-list>
   </mat-sidenav>
 

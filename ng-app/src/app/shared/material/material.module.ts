@@ -9,12 +9,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTooltip } from '@angular/material/tooltip';
 import { SnackBarTemplateComponent } from './snack-bar-template/snack-bar-template.component';
 
 @NgModule({
-  declarations: [
-    SnackBarTemplateComponent
-  ],
+  declarations: [SnackBarTemplateComponent],
   imports: [
     CommonModule,
     MatCardModule,
@@ -26,6 +27,9 @@ import { SnackBarTemplateComponent } from './snack-bar-template/snack-bar-templa
     MatMenuModule,
     MatFormFieldModule,
     MatInputModule,
+    MatProgressSpinner,
+    MatPaginator,
+    MatTooltip,
   ],
   exports: [
     MatCardModule,
@@ -37,6 +41,9 @@ import { SnackBarTemplateComponent } from './snack-bar-template/snack-bar-templa
     MatMenuModule,
     MatFormFieldModule,
     MatInputModule,
+    MatProgressSpinner,
+    MatPaginator,
+    MatTooltip,
   ],
 })
 export class MaterialModule {}

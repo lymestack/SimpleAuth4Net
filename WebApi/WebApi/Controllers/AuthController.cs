@@ -87,7 +87,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     {
         if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
 
-        var user = db.AppUsers.Include(x => x.AppUserCredential).FirstOrDefault(x => x.Username == model.Username);
+        var user = await GetUserWithRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
 
         var match = CheckPassword(model.Password, user);
@@ -108,11 +108,21 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
-        var user = db.AppUsers.FirstOrDefault(x => x.Username == payload.Email);
+        var user = await GetUserWithRoles(payload.Email);
         if (user == null) return BadRequest();
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
+    }
+
+    private async Task<AppUser?> GetUserWithRoles(string username)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserRoles)
+            .ThenInclude(x => x.AppRole)
+            .SingleOrDefaultAsync(x => x.Username == username);
+
+        return user;
     }
 
     #endregion
@@ -124,6 +134,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     {
         SetJwtAccessTokenCookie("");
         SetJwtRefreshTokenCookie("", DateTime.UtcNow);
+        await Task.CompletedTask;
         return Ok();
     }
 
@@ -144,7 +155,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var hashedInput = HashToken(tokenValue);
 
         // Find the refresh token in the database
-        var refreshToken = await db.AppRefreshTokens.Include(x => x.AppUser)
+        var refreshToken = await db.AppRefreshTokens
+            .Include(x => x.AppUser)
+            .Include(x => x.AppUser.AppUserRoles).ThenInclude(x => x.AppRole)
             .FirstOrDefaultAsync(x => x.Token == hashedInput && x.DeviceId == deviceId);
 
         if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
@@ -253,6 +266,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
+        // Future: Need to lookup by username in case two tokens exist that are the same. Unlikey, but possible...
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.AppUserCredential.PasswordResetToken == model.Token);
@@ -296,14 +310,21 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var tokenHandler = new JwtSecurityTokenHandler();
 
+        var claims = new ClaimsIdentity(new[]
+        {
+            new Claim("id", user.Username),
+            new Claim(ClaimTypes.Name, user.Username),
+            new Claim(ClaimTypes.Email, user.Username)
+        });
+
+        foreach (var role in user.AppUserRoles)
+        {
+            claims.AddClaim(new Claim(ClaimTypes.Role, role.AppRole.Name));
+        }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[]
-            {
-                new Claim("id", user.Username),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Username)
-            }),
+            Subject = claims,
             Expires = DateTime.UtcNow.AddMinutes(expiresInMinutes),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
@@ -413,6 +434,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private static bool CheckPassword(string password, AppUser user)
     {
+        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
         using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
         var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
@@ -453,23 +475,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
-    #region ZOMBIE: Debug Endpoints
+    #region WhoAmI
 
     [HttpGet("WhoAmI")]
     public async Task<IActionResult> WhoAmI()
     {
         if (User.Identity == null) return Ok("Nobody");
         if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
+        await Task.CompletedTask;
         return Ok(User.Identity.Name);
     }
-
-    // ZOMBIE: For Debugging:
-    //[HttpGet("CheckTokenCookie")]
-    //public IActionResult CheckTokenCookie()
-    //{
-    //    var token = HttpContext.Request.Cookies["X-Access-Token"];
-    //    return Ok(new { token });
-    //}
 
     #endregion
 }

@@ -1,1 +1,69 @@
-<p>roles works!</p>
+<div class="roles">
+  <form #searchForm="ngForm">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Roles</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <app-role-search-options
+          [searchOptions]="searchOptions"
+        ></app-role-search-options>
+      </mat-card-content>
+      <mat-card-actions>
+        <button
+          type="submit"
+          mat-raised-button
+          color="primary"
+          (click)="onSearch()"
+        >
+          <i class="fa fa-search"></i>
+          Search
+        </button>
+        <button mat-raised-button type="button" (click)="onReset()">
+          Reset
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </form>
+
+  <mat-card class="padded-top">
+    <mat-card-header>
+      <mat-card-title class="secondary">Search Results</mat-card-title>
+    </mat-card-header>
+    <mat-card-actions>
+      <div class="float-right">
+        <button mat-raised-button type="button" (click)="onAdd()">
+          <i class="fa fa-plus-circle"></i>
+          Add Role
+        </button>
+      </div>
+    </mat-card-actions>
+    <mat-card-content>
+      <mat-spinner *ngIf="loading"></mat-spinner>
+      <div *ngIf="results" [hidden]="loading">
+        <div *ngIf="results.totalCount > 0">
+          <app-role-list
+            [roles]="results.results"
+            [sortDirection]="searchOptions.sortDirection"
+            [sortField]="searchOptions.sortField"
+            (edit)="onEdit($event)"
+            (remove)="onRemove($event)"
+            (sort)="onSort($event)"
+          ></app-role-list>
+
+          <mat-paginator
+            [length]="results.totalCount"
+            [pageSize]="pageSize"
+            [pageSizeOptions]="[10, 25, 50, 100]"
+            (page)="onPageEvent($event)"
+          >
+          </mat-paginator>
+        </div>
+
+        <p *ngIf="results.totalCount == 0">No results were found.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
+<!-- 
+<app-return-to-button name="Admin"></app-return-to-button> -->

@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit {
       (data: any) => {
         console.log('Logged in');
         // this.router.navigateByUrl('/');
-        window.location.href = this.config.environment.url;
+        window.location.reload();
       },
       (err: any) => {
         this.logger.warning('Invalid login. Try again.');

@@ -15,6 +15,11 @@ const routes: Routes = [
       import('./account/account.module').then((m) => m.AccountModule),
   },
   {
+    path: 'auth-admin',
+    loadChildren: () =>
+      import('./auth-admin/auth-admin.module').then((m) => m.AuthAdminModule),
+  },
+  {
     path: 'about',
     component: AboutComponent,
     data: { state: 'About', allowAnonymous: true },

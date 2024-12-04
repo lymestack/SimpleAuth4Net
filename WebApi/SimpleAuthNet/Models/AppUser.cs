@@ -19,17 +19,17 @@ public class AppUser
 
     public DateTime? LastSeen { get; set; }
 
-    public AppUserCredential? AppUserCredential { get; set; } = null;
+    public AppUserCredential AppUserCredential { get; set; } = new();
 
     /// <summary>
     /// EF Navigation Property
     /// </summary>
-    public IList<AppUserRole>? AppUserRoles { get; set; }
+    public IList<AppUserRole> AppUserRoles { get; set; } = [];
 
     /// <summary>
     /// EF Navigation Property
     /// </summary>
-    public IList<AppRefreshToken> AppRefreshTokens { get; set; }
+    public IList<AppRefreshToken> AppRefreshTokens { get; set; } = [];
 
     [NotMapped] public IList<string> Roles { get; set; } = [];
 

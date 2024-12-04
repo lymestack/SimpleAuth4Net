@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SimpleAuthNet.Data;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -51,6 +52,8 @@ builder.Services.AddAuthentication(x =>
         {
             x.RequireHttpsMetadata = false;
             x.SaveToken = true;
+
+            Debug.Assert(secret != null, nameof(secret) + " != null");
             x.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,

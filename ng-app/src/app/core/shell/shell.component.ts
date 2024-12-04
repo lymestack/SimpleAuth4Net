@@ -18,6 +18,7 @@ export class ShellComponent implements OnInit {
   isHandset$: Observable<boolean>;
   @ViewChild('drawer') drawer!: MatDrawer;
   appUser: AppUser | null = null;
+  isAdmin = false;
 
   constructor(
     private authService: AuthService,
@@ -48,6 +49,8 @@ export class ShellComponent implements OnInit {
           this.router.navigate(['/account/login']);
         }
       );
+
+      this.isAdmin = this.currentUser.isInRole('Admin');
     } else {
       console.log('User is not logged in.');
       this.appUser = null;

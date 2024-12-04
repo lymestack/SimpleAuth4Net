@@ -63,6 +63,7 @@ export class AuthService {
         map((response) => {
           this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
           this.scheduleTokenRefresh(response.expires);
+          setTimeout(() => window.location.reload(), 100);
           return response;
         })
       );

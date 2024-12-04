@@ -108,12 +108,22 @@ body {
   width: 100%;
 }
 
+.third-width {
+  width: 33.333%;
+}
+
 .mat-mdc-snack-bar-container .mat-mdc-snackbar-surface {
   background-color: inherit !important;
 }
 
 .fa-exclamation-triangle {
   color: orange;
+}
+
+.float-right {
+  display: flex;
+  justify-content: flex-end; /* Align items to the right */
+  width: 100%;
 }
 
 .only-handset {

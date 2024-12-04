@@ -10,7 +10,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class AppUserController(SimpleAuthNetDataContext db, IConfiguration config) : ControllerBase
+public class AppUserController(SimpleAuthNetDataContext db) : ControllerBase
 {
     #region GET
 
@@ -24,6 +24,8 @@ public class AppUserController(SimpleAuthNetDataContext db, IConfiguration confi
             .ThenInclude(x => x.AppRole)
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.Username == User.Identity.Name);
+
+        if (appUser == null) return Ok(null);
 
         foreach (var userRole in appUser.AppUserRoles)
         {
