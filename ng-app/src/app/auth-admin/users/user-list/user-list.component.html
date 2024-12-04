@@ -1,0 +1,38 @@
+<table class="table table-striped">
+  <thead class="table-dark">
+    <tr>
+      <th>&nbsp;</th>
+      <th>Name</th>
+      <th>Username</th>
+      <th>Date Entered</th>
+      <th>Last Seen</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let user of users">
+      <td>
+        <button mat-raised-button (click)="edit.emit(user)">
+          <i class="fa fa-pencil padded-right"></i>
+          <span>Edit</span>
+        </button>
+        <button mat-raised-button (click)="remove.emit(user)">
+          <i class="fa fa-trash padded-right"></i>
+          <span>Delete</span>
+        </button>
+      </td>
+      <td>
+        {{ user.firstName }}
+        {{ user.lastName }}
+      </td>
+      <td>
+        {{ user.username }}
+      </td>
+      <td>
+        {{ user.dateEntered | date : "M/d/yyyy" }}
+      </td>
+      <td>
+        {{ user.lastSeen | date : "M/d/yyyy" }}
+      </td>
+    </tr>
+  </tbody>
+</table>

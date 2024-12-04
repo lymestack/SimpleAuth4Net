@@ -19,7 +19,11 @@ public class AppUser
 
     public DateTime? LastSeen { get; set; }
 
-    public AppUserCredential AppUserCredential { get; set; } = new();
+    public bool Verified { get; set; } = false;
+
+    public bool Active { get; set; } = true;
+
+    public AppUserCredential AppUserCredential { get; set; }
 
     /// <summary>
     /// EF Navigation Property

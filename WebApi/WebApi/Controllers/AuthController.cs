@@ -89,6 +89,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var user = await GetUserWithRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
+        if (!user.Active) return Unauthorized("The user is inactive.");
 
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
@@ -110,6 +111,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
         var user = await GetUserWithRoles(payload.Email);
         if (user == null) return BadRequest();
+        if (!user.Active) return Unauthorized("The user is inactive.");
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
@@ -304,6 +306,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     private async Task<dynamic> JwtGenerator(AppUser user, string deviceId)
     {
+        user.LastSeen = DateTime.UtcNow;
         var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
         var expiresInMinutes = _authSettings.AccessTokenExpirationMinutes;
         var refreshTokenExpires = DateTime.UtcNow;

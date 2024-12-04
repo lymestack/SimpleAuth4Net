@@ -1,0 +1,34 @@
+<div class="row">
+  <div class="col-md-6">
+    <mat-form-field class="full-width">
+      <input
+        matInput
+        type="text"
+        placeholder="Filter by Username"
+        name="username"
+        [(ngModel)]="searchOptions.username"
+        maxlength="100"
+      />
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <input
+        matInput
+        type="text"
+        placeholder="Filter by Last Name"
+        name="lastName"
+        [(ngModel)]="searchOptions.lastName"
+        maxlength="100"
+      />
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label> Online Now </mat-label>
+      <mat-select [(ngModel)]="searchOptions.online" name="online">
+        <mat-option [value]="null">Both Online or Offline Users</mat-option>
+        <mat-option [value]="true">Online Users</mat-option>
+        <mat-option [value]="false">Offline Users</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</div>

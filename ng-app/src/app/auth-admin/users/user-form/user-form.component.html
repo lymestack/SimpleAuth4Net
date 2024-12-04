@@ -1,0 +1,146 @@
+<form #userForm="ngForm" *ngIf="model">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title
+        >{{ model.id ? "Editing" : "Adding" }} a User</mat-card-title
+      >
+    </mat-card-header>
+    <mat-card-content>
+      <div class="row">
+        <div class="col-md-6">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>General Information</mat-card-title>
+              <mat-card-subtitle *ngIf="model.id">
+                <div>
+                  <label>Date Entered:</label>
+                  <span>{{ model.dateEntered | date : "M/d/yyyy" }}</span>
+                </div>
+                <div *ngIf="model.lastSeen">
+                  <label>Last Seen on</label>
+                  <span>{{ model.lastSeen | date : "M/d/yyyy" }}</span>
+                </div>
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <app-username-email-input
+                [emailAddress]="model.username"
+                [available]="usernameAvailable"
+                [checking]="checkingUsername"
+                [checked]="checkedUsername"
+                [disabled]="!!model.id"
+                [valid]="usernameValid"
+                [labelText]="'Username'"
+                (emailAddressUpdated)="onEmailAddressChanged($event)"
+              ></app-username-email-input>
+
+              <mat-form-field class="full-width">
+                <input
+                  matInput
+                  placeholder="First Name"
+                  #nameFiled="ngModel"
+                  name="firstName"
+                  required
+                  [(ngModel)]="model.firstName"
+                />
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <input
+                  matInput
+                  placeholder="Last Name"
+                  #nameFiled="ngModel"
+                  name="lastName"
+                  required
+                  [(ngModel)]="model.lastName"
+                />
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <input
+                  matInput
+                  placeholder="Email Address"
+                  #nameFiled="ngModel"
+                  name="emailAddress"
+                  required
+                  [(ngModel)]="model.emailAddress"
+                />
+                <mat-hint
+                  ><a
+                    href="javascript:;"
+                    (click)="model.emailAddress = model.username"
+                    >Same as username</a
+                  ></mat-hint
+                >
+              </mat-form-field>
+
+              <mat-checkbox [(ngModel)]="model.active" name="active">
+                The user is active.
+              </mat-checkbox>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        <div class="col-md-6">
+          <mat-card>
+            <mat-card-header>
+              <mat-card-title>Role Assignment</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-selection-list
+                #rolesList
+                (selectionChange)="onRoleChanged($event)"
+              >
+                <mat-list-option
+                  [selected]="this.model.roles.indexOf(role.name) !== -1"
+                  [value]="role.name"
+                  *ngFor="let role of roles"
+                >
+                  <h3 matLine>{{ role.name }}</h3>
+                  <p matLine class="smaller">
+                    <span> {{ role.description }} </span>
+                  </p>
+                </mat-list-option>
+              </mat-selection-list>
+
+              <div
+                class="warning padded-top text-center"
+                *ngIf="rolesChanged && model.id"
+              >
+                <i class="fa fa-exclamation-triangle"></i> Warning: The user
+                will need to logout and log back in for these changes to take
+                effect.
+              </div>
+
+              <div
+                class="warning padded-top text-center"
+                *ngIf="model.roles.length === 0"
+              >
+                <i class="fa fa-exclamation-triangle"></i> At least one role
+                needs to be selected.
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        type="submit"
+        mat-raised-button
+        (click)="onSave()"
+        color="primary"
+        [disabled]="
+          saving ||
+          model.roles.length === 0 ||
+          (model.id === 0 && !usernameAvailable) ||
+          !userForm.valid
+        "
+      >
+        <i class="fa fa-spinner fa-spin padded-right" *ngIf="saving"></i>
+        Save
+      </button>
+      <button mat-raised-button type="button" (click)="onCancel()">
+        Cancel
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

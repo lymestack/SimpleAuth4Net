@@ -104,4 +104,7 @@ ADD PasswordResetToken NVARCHAR(6) NULL,
     PasswordResetUsed BIT DEFAULT 0
 
 INSERT INTO AppRole (Name, Description) VALUES ('Admin', 'App Administrator Role')
+GO
 
+ALTER TABLE AppUser ADD Active BIT DEFAULT 1
+GO

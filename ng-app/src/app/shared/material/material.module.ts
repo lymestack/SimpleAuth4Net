@@ -1,16 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltip } from '@angular/material/tooltip';
 import { SnackBarTemplateComponent } from './snack-bar-template/snack-bar-template.component';
 
@@ -18,31 +20,35 @@ import { SnackBarTemplateComponent } from './snack-bar-template/snack-bar-templa
   declarations: [SnackBarTemplateComponent],
   imports: [
     CommonModule,
-    MatCardModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatIconModule,
     MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
     MatListModule,
     MatMenuModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressSpinner,
     MatPaginator,
+    MatProgressSpinner,
+    MatSelectModule,
+    MatSidenavModule,
+    MatToolbarModule,
     MatTooltip,
   ],
   exports: [
-    MatCardModule,
-    MatSidenavModule,
-    MatToolbarModule,
-    MatIconModule,
     MatButtonModule,
+    MatCardModule,
+    MatCheckboxModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
     MatListModule,
     MatMenuModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatProgressSpinner,
     MatPaginator,
+    MatProgressSpinner,
+    MatSelectModule,
+    MatSidenavModule,
+    MatToolbarModule,
     MatTooltip,
   ],
 })

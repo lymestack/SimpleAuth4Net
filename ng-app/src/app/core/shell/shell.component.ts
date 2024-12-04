@@ -19,6 +19,7 @@ export class ShellComponent implements OnInit {
   @ViewChild('drawer') drawer!: MatDrawer;
   appUser: AppUser | null = null;
   isAdmin = false;
+  debug = false;
 
   constructor(
     private authService: AuthService,
@@ -35,12 +36,12 @@ export class ShellComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
-      console.log('User is logged in. Validating token.');
+      this.log('User is logged in. Validating token.');
 
       // Attempt to refresh the token if necessary
       this.authService.refreshToken().subscribe(
         (response) => {
-          console.log('Token refreshed successfully.', response);
+          this.log('Token refreshed successfully.', response);
           this.loadCurrentUser(); // Load user data after successful token refresh
         },
         (error) => {
@@ -52,16 +53,20 @@ export class ShellComponent implements OnInit {
 
       this.isAdmin = this.currentUser.isInRole('Admin');
     } else {
-      console.log('User is not logged in.');
+      this.log('User is not logged in.');
       this.appUser = null;
     }
+  }
+
+  private log(s: string, o: any = null) {
+    if (this.debug) console.log(s, o);
   }
 
   private loadCurrentUser(): void {
     this.currentUser.getAppUser().subscribe(
       (data: AppUser) => {
         this.appUser = data;
-        console.log('Loaded current user:', data);
+        this.log('Loaded current user:', data);
       },
       (error) => {
         this.logger.error('Failed to load current user:', error);
