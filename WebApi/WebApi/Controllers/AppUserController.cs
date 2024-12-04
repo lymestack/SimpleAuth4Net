@@ -10,6 +10,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[Authorize(Roles = "Admin")]
 public class AppUserController(SimpleAuthNetDataContext db) : ControllerBase
 {
     #region GET
