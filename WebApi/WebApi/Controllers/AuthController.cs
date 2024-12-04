@@ -120,6 +120,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     private async Task<AppUser?> GetUserWithRoles(string username)
     {
         var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
             .Include(x => x.AppUserRoles)
             .ThenInclude(x => x.AppRole)
             .SingleOrDefaultAsync(x => x.Username == username);
