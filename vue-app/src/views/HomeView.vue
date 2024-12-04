@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Welcome to SimpleAuthNet</h1>
+    <h1>Welcome to SimpleAuth for .NET</h1>
     <p v-if="loggedIn">
       You are logged in.
       <button @click="logout" class="btn btn-danger">Log out</button>

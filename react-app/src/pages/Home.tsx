@@ -36,7 +36,7 @@ const Home: React.FC = () => {
     <div className="container">
       <div className="card mt-3">
         <div className="card-header">
-          <h3>Welcome to SimpleAuthNet</h3>
+          <h3>Welcome to SimpleAuth for .NET</h3>
           <p>Making Auth Suck Less in .NET 9 WebApi and React</p>
         </div>
         <div className="card-body">
