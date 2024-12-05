@@ -73,7 +73,7 @@ CREATE TABLE [dbo].[AppRefreshToken](
 	[Token] [varchar](100) NOT NULL,
 	[Created] [datetime] NOT NULL,
 	[Expires] [datetime] NOT NULL,
-	[DeviceId] [nvarchar](100) NULL,
+	[DeviceId] [nvarchar](100) NOT NULL,
  CONSTRAINT [PK_AppRefreshToken_1] PRIMARY KEY CLUSTERED 
 (
 	[Id] ASC
