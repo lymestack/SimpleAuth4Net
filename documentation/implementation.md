@@ -1,3 +1,0 @@
-# Implementation Guide
-
-Coming soonish...

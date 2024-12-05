@@ -1,27 +1,33 @@
-# SimpleAuthNet
+# SimpleAuth for .NET
 
-SimpleAuthNet is a free and open-source project intended to solve the headache
-of getting user and role based authorization / authentication up and running
-in your .NET WebApi and client application.
+**Note:** This project is an alpha version and this documentation is in draft form.
 
-## Why SimpleAuthNet
+SimpleAuth for .NET is a free and open-source project intended to solve the headache of getting user and role based authorization / authentication up and running in your .NET WebApi and client application.
+
+The mission of this project is to provide small to medium sized businesses and organizations with a free, simple and fast-tracked infrastructure to support identity in an application powered by a .NET 9 WebApi backend to serve as a viable alternative to [expensive commercial products](./documentation/background.md#other-commercial-providers) and the complicated Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework.
+
+## Why SimpleAuth?
 
 - Implementing Auth generally sucks
-- Alternative to Microsoft Identity
+- Alternative to Microsoft's ASP.NET Core Identity framework, which has a high learning curve
 - Free alternative to expensive Identity Management for small to medium sized entities
+- Get started with the real work in your app and stop fumbling around with auth implementations
 
-## What does SimpleAuthNet offer?
+## What does SimpleAuth offer?
 
-The API offers two classifications of endpoints:
+SimpleAuth is designed to be just that... simple...
 
-- Authentication / Registration / Password Reset - Public
-- Administration Endpoints (Private) - Protected
+### The API
 
-The first version of this project uses Angular as a client application, but
-it's hopeful that I'll get other client front ends up and running using the
-WebApi as well including React, Vue, Blazor & ASP.NET MVC. Contributions of
-other front-end clients is encouraged as well.
+[The API](./documentation/api.md) offers two classifications of endpoints:
 
-## How do I get started with SimpleAuthNet
+- Authentication / Registration / Password Reset - Public / Anonymous Endpoints
+- Administration Endpoints (Private) - Protected by an "Admin" role
 
-Find out more about how to get started in the [SimpleAuthNet Documentation](./documentation/index.md).
+### Client Frontend
+
+So far, there are three client applications that I have authenticating with the API - Angular v18, React v18, and Vue v3. The Angular version of the front-end is more polished whereas the React and Vue apps aren't quiet as refined just yet. Contributions to support other front-end tech stacks are encouraged as well as improvements to the existing front-ends, especially in the React and Vue spaces.
+
+## How do I get started with SimpleAuth?
+
+Find out more by checking out the docs. To get started with SimpleAuth for .NET on your local computer visit the  [Getting Started Guide](./documentation/index.md) for a guided walkthrough.
