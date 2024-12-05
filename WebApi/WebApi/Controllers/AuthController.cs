@@ -34,6 +34,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         if (!_appConfig.AllowRegistration) return BadRequest("Public registration is not allowed.");
         if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("User already exists...");
 
+        var userCount = await db.AppUsers.CountAsync();
         var user = new AppUser
         {
             Username = model.Username,
@@ -61,6 +62,17 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         }
 
         await db.AppUsers.AddAsync(user);
+        await db.SaveChangesAsync();
+
+        // If this is the first user in the system, grant admin access:
+        if (userCount != 0) return Ok(user);
+        var appUserRole = new AppUserRole
+        {
+            AppUserId = user.Id,
+            AppRoleId = 1
+        };
+
+        user.AppUserRoles.Add(appUserRole);
         await db.SaveChangesAsync();
         return Ok(user);
     }
@@ -237,7 +249,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         user.AppUserCredential.PasswordResetToken = resetToken;
         user.AppUserCredential.PasswordResetExpires = DateTime.UtcNow.AddMinutes(30);
         user.AppUserCredential.PasswordResetUsed = false;
-
         await db.SaveChangesAsync();
 
         // Send the email (use your preferred email service)
@@ -269,7 +280,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
-        // Future: Need to lookup by username in case two tokens exist that are the same. Unlikey, but possible...
+        // Future: Need to lookup by username in case two tokens exist that are the same. Unlikey, but definitely possible...
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.AppUserCredential.PasswordResetToken == model.Token);
@@ -287,7 +298,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         using var hmac = new HMACSHA512();
         user.AppUserCredential.PasswordSalt = hmac.Key;
         user.AppUserCredential.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-        user.AppUserCredential.PasswordResetUsed = true; // Invalidate the token
+        user.AppUserCredential.PasswordResetUsed = true;
+        user.Verified = true;
 
         await db.SaveChangesAsync();
         return Ok(new { success = true, message = "Password reset successfully." });
