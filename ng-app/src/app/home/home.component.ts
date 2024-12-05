@@ -21,6 +21,12 @@ export class HomeComponent implements OnInit {
       description: 'You are here',
       icon: 'fa fa-home',
     },
+    {
+      title: 'About',
+      description: 'A brief explanation and link to docs',
+      icon: 'fa fa-info-circle',
+      routerLink: '/about',
+    },
   ];
 
   constructor(
@@ -32,6 +38,16 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loggedIn = this.currentUser.isLoggedIn();
+
+    if (this.currentUser.isInRole('Admin')) {
+      this.menuItems.push({
+        title: 'Admin',
+        description: 'Manage Users and Roles',
+        icon: 'fa fa-shield',
+        routerLink: '/auth-admin',
+      });
+    }
+
     this.currentUser.getAppUser().subscribe((data: AppUser) => {
       this.appUser = data;
     });
