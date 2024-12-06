@@ -1,6 +1,6 @@
 # SimpleAuth for .NET
 
-**Note:** This project is currently in alpha, and the documentation is in draft form.
+**Note:** This project is currently in alpha stages, and the documentation is in draft form.
 
 SimpleAuth for .NET is a free and open-source solution designed to simplify user and role-based authentication and authorization in .NET WebAPI and client applications.
 
