@@ -30,17 +30,17 @@ Administrative endpoints are all locked down to be accessible by users with the 
 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
-| {id} | GET | /AppUser/123 | Gets a single record from the database |
-| {id} | POST | /AppUser/123 | Saves a single record from the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppUser object as the body of the HTTP request. |
-| {id} | DELETE | /AppUser/123 | Deletes a record from the database. |
-| Search | POST | /AppUser/Search?pageSize=10&pageIndex=0 | Search the AppUser database table. Submit the AppUserSearchOptions object to indicate what fields are to be searched. The `pageSize` and `pageIndex` query parameters handle pagination |
-| Me | GET | /AppUser/Me | Anonymous endpoint - Allows the current user to get their own AppUser record. If the user is not authenticated, this endpoint will return a `null` value. |
+| {id} | GET | `/AppUser/123` | Gets a single record from the database |
+| {id} | POST | `/AppUser/123` | Saves a single record from the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppUser object as the body of the HTTP request. |
+| {id} | DELETE | `/AppUser/123` | Deletes a record from the database. |
+| Search | POST | `/AppUser/Search?pageSize=10&pageIndex=0` | Search the AppUser database table. Submit the AppUserSearchOptions object to indicate what fields are to be searched. The `pageSize` and `pageIndex` query parameters handle pagination |
+| Me | GET | `/AppUser/Me` | Anonymous endpoint - Allows the current user to get their own AppUser record. If the user is not authenticated, this endpoint will return a `null` value. |
 
 ### AppRole Controller
 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
-| {id} | GET | /AppRole/123 | Gets a single record from the database |
-| {id} | POST | /AppRole/123 | Saves a single record from the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppRole object as the body of the HTTP request. |
-| {id} | DELETE | /AppRole/123 | Deletes a record from the database. |
-| Search | POST | /AppRole/Search?pageSize=10&pageIndex=0 | Search the AppRole database table. Submit the AppRoleSearchOptions object to indicate what fields are to be searched. The `pageSize` and `pageIndex` query parameters handle pagination |
+| {id} | GET | `/AppRole/123` | Gets a single record from the database |
+| {id} | POST | `/AppRole/123` | Saves a single record from the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppRole object as the body of the HTTP request. |
+| {id} | DELETE | `/AppRole/123` | Deletes a record from the database. |
+| Search | POST | `/AppRole/Search?pageSize=10&pageIndex=0` | Search the AppRole database table. Submit the AppRoleSearchOptions object to indicate what fields are to be searched. The `pageSize` and `pageIndex` query parameters handle pagination |
