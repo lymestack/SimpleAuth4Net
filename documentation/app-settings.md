@@ -20,7 +20,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | UseRefreshTokens | `true` | Indicates whether or not to use refresh tokens. Refresh tokens are stored in the `AppRefresh` token [database table](the-database.md). |
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
-| RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
+| RequireUserVerification | `true` | Indicates whether or not email verification is required for a user to be able to login. |
 
 ## EmailSettings Section
 

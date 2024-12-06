@@ -69,6 +69,19 @@ export class AuthService {
       );
   }
 
+  userVerified(username: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.get<any>(
+      `${this.apiUrl}Auth/UserVerified?username=${encodeURIComponent(
+        username
+      )}`,
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
   forgotPassword(email: string): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     return this.httpClient.post<any>(

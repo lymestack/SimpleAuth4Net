@@ -35,15 +35,22 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    this.auth.login(this.model).subscribe(
-      (data: any) => {
-        console.log('Logged in');
-        // this.router.navigateByUrl('/');
-        window.location.reload();
-      },
-      (err: any) => {
-        this.logger.warning('Invalid login. Try again.');
+    this.auth.userVerified(this.model.username).subscribe((data) => {
+      if (!data) {
+        this.router.navigateByUrl('/account/verification-pending');
+        return;
       }
-    );
+
+      this.auth.login(this.model).subscribe(
+        (data: any) => {
+          console.log('Logged in');
+          // this.router.navigateByUrl('/');
+          window.location.reload();
+        },
+        (err: any) => {
+          this.logger.warning('Invalid login. Try again.');
+        }
+      );
+    });
   }
 }

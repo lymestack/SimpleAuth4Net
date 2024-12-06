@@ -7,6 +7,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { RegisterComponent } from './register/register.component';
 import { RegisterConfirmationComponent } from './register-confirmation/register-confirmation.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
 
 const routes: Routes = [
   {
@@ -42,7 +43,12 @@ const routes: Routes = [
   {
     path: 'reset-password',
     component: ResetPasswordComponent,
-    data: { state: 'Reset Passowrd' },
+    data: { state: 'Reset Password' },
+  },
+  {
+    path: 'verification-pending',
+    component: VerificationPendingComponent,
+    data: { state: 'Verification Pending' },
   },
 
   // otherwise redirect to home

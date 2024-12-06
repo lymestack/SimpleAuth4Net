@@ -1,0 +1,28 @@
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Verification Pending</mat-card-title>
+    <mat-card-subtitle></mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    You can not yet login because your account hasn't been verified. You can
+    invoke the verification process by simply resetting your password<span
+      *ngIf="googleEnabled"
+    >
+      or by signing in with Google</span
+    >.
+  </mat-card-content>
+  <mat-card-actions>
+    <button mat-raised-button routerLink="/account/forgot-password">
+      Reset Password
+    </button>
+
+    <button
+      class="padded-left"
+      mat-raised-button
+      *ngIf="googleEnabled"
+      routerLink="/account/login"
+    >
+      Login Using Google
+    </button>
+  </mat-card-actions>
+</mat-card>
