@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { AuthAdminComponent } from './auth-admin.component';
 
 const routes: Routes = [
-  //   {
-  //     path: '',
-  //     component: AdminComponent,
-  //     data: { state: 'AdminHome' },
-  //   },
+  {
+    path: '',
+    component: AuthAdminComponent,
+    data: { state: 'Auth Admin Home' },
+  },
   {
     path: 'roles',
     loadChildren: () =>
