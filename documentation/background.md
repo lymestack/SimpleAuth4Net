@@ -1,10 +1,10 @@
 # Background
 
-## AUTH SUCKS
+## IMPLEMENTING AUTH SUCKS
 
 SimpleAuth.NET is a product of frustration with the task of implementing authorization / authentication into my .NET WebApi based applications.
 
-I've been developing apps for nearly 25 years and much of my collective life has been spent tackling auth. It's tedious and tempermental and I could often spend weeks getting auth up and running especially when having to implement a new tech stack or implementing s 3rd party SSO provider. The process goes like this:
+I've been developing apps for nearly 25 years and much of my collective life has been spent tackling auth. It's tedious and temperamental and I could often spend weeks getting auth up and running especially when having to implement a new tech stack or implementing s 3rd party SSO provider. The process goes like this:
 
 1. Pick from the endless list of SSO providers to implement.
 2. Search Google for implementation guides given your tech stack.
@@ -23,7 +23,7 @@ We'll note that there are 3 self-hosted options, only one of which, [ASP.NET Cor
 
 ## Why not ASP.NET Core Identity?
 
-It's effing complicated! ASP.NET Core Identity is is it's own academic unto itself. While it's open source and extendable, it's still pretty complicated and difficult for a beginner to wrap their head around. I also could never seem to find the right tutorial to get it working well with 3rd party SSO providers.
+It's effing complicated! ASP.NET Core Identity is it's own academic unto itself. While it's open source and extendable, it's still pretty complicated and difficult for a beginner to wrap their head around. I also could never seem to find the right tutorial to get it working well with 3rd party SSO providers.
 
 ## Why Self Hosted?
 
@@ -32,7 +32,3 @@ For small projects, managing identity shouldn't cost anything. Also, while you c
 ## Disable Local Accounts for added security
 
 For much of the time, local accounts, even those that use SSO to authenticate, are enough security for 90% of the secured apps out there. Non-mission critical, non-sensitive product or service providers. However, if you're nervous about storing passwords in your database, you can disable local accounts while still storing your user's data. This allows credentials to be managed by SSO providers, but still relate to user records in your database.
-
-## Other Commercial Providers
-
-[Auth0](https://www.auth0.com) - One of the best providers, but unfortunately not free.

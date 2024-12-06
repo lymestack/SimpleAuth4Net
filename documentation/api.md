@@ -6,7 +6,29 @@ The API is built using ASP.NET 9 WebApi technology reside in the `WebApi/WebApi/
 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
-| AppConfig | POST | `api/AppConfig` | The [configuration endpoint](configuration-endpoint.md) is an anonymously accessible endpoint that deliver settings that describe API features to the client application. |
+| AppConfig | POST | `api/AppConfig` | The configuration endpoint is an anonymously accessible endpoint that deliver settings that describe API features to the client application. |
+
+Here's an example of the response given from the API:
+
+``` json
+{
+    "environment": {
+        "name": "Local",
+        "url": "http://localhost:4200/",
+        "api": "http://localhost/SimpleAuthNet/api/",
+        "description": "This is the local instance."
+    },
+    "sessionId": "103efe17-bc1f-4348-bc97-5ca4cdd8b4eb",
+    "enableLocalAccounts": true,
+    "enableGoogle": true,
+    "googleClientId": "753678842669-fthjsfcjhp45sas8f5tir7rsb2kt6nu6.apps.googleusercontent.com",
+    "allowRegistration": true,
+    "passwordResetCodeExpiresInMinutes": 0,
+    "requireUserVerification": true
+}
+```
+
+Here's a breakdown on the meaning of the information in this response can be found on the [App Config Section](app-settings.md#appconfig-section) of the appsettings.json file.
 
 ## Auth Endpoints
 

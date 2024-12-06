@@ -39,7 +39,7 @@ The `EmailSettings` section of the config file controls how emails are sent to u
 
 ## AppConfig Section
 
-The `ApiConfig` section of the config file contains data that is shared between both the client application and the API. This information is exposed to the client via the [Configuration Endpoint](configuration-endpoint.md).
+The `ApiConfig` section of the config file contains data that is shared between both the client application and the API. This information is exposed to the client via the [Configuration Endpoint](api.md#configuration-endpoint).
 
 | Name | Default | Description |
 | ---- | ------- | ---------- |
