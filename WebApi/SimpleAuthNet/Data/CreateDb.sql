@@ -37,6 +37,7 @@ CREATE TABLE [dbo].[AppUserCredential](
 ) ON [PRIMARY]
 GO
 
+
 CREATE TABLE [dbo].[AppUserRole](
 	[AppUserId] [int] NOT NULL,
 	[AppRoleId] [int] NOT NULL,
@@ -99,9 +100,9 @@ ALTER TABLE dbo.AppRefreshToken ADD CONSTRAINT
 GO
 
 ALTER TABLE AppUserCredential
-ADD PasswordResetToken NVARCHAR(6) NULL,
-    PasswordResetExpires DATETIME NULL,
-    PasswordResetUsed BIT DEFAULT 0
+ADD VerifyToken NVARCHAR(50) NULL,
+    VerifyTokenExpires DATETIME NULL,
+    VerifyTokenUsed BIT DEFAULT 0
 
 INSERT INTO AppRole (Name, Description) VALUES ('Admin', 'App Administrator Role')
 GO

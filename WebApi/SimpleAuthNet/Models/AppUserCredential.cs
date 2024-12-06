@@ -16,9 +16,9 @@ public class AppUserCredential
 
     public DateTime DateCreated { get; set; }
 
-    public string PasswordResetToken { get; set; }
+    public string VerifyToken { get; set; }
 
-    public DateTime PasswordResetExpires { get; set; }
+    public DateTime VerifyTokenExpires { get; set; }
 
-    public bool PasswordResetUsed { get; set; }
+    public bool VerifyTokenUsed { get; set; }
 }

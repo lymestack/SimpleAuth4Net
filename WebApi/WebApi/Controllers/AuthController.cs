@@ -249,9 +249,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var resetToken = new Random().Next(100000, 999999).ToString();
         Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
-        user.AppUserCredential.PasswordResetToken = resetToken;
-        user.AppUserCredential.PasswordResetExpires = DateTime.UtcNow.AddMinutes(30);
-        user.AppUserCredential.PasswordResetUsed = false;
+        user.AppUserCredential.VerifyToken = resetToken;
+        user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
+        user.AppUserCredential.VerifyTokenUsed = false;
         await db.SaveChangesAsync();
         await SendPasswordResetEmail(user.EmailAddress, resetToken);
 
@@ -282,10 +282,10 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         // Future: Need to lookup by username in case two tokens exist that are the same. Unlikey, but definitely possible...
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
-            .FirstOrDefaultAsync(x => x.AppUserCredential.PasswordResetToken == model.Token);
+            .FirstOrDefaultAsync(x => x.AppUserCredential.VerifyToken == model.Token);
 
-        if (user == null || user.AppUserCredential.PasswordResetExpires < DateTime.UtcNow ||
-            user.AppUserCredential.PasswordResetUsed)
+        if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
+            user.AppUserCredential.VerifyTokenUsed)
             return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired reset token." } });
 
         // Validate the new password
@@ -297,7 +297,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         using var hmac = new HMACSHA512();
         user.AppUserCredential.PasswordSalt = hmac.Key;
         user.AppUserCredential.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-        user.AppUserCredential.PasswordResetUsed = true;
+        user.AppUserCredential.VerifyTokenUsed = true;
         user.Verified = true;
 
         await db.SaveChangesAsync();

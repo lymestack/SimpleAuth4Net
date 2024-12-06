@@ -14,6 +14,8 @@ public class AuthSettings
 
     public bool RequireUserVerification { get; set; }
 
+    public int VerifyTokenExpiresInMinutes { get; set; }
+
     public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
 
     public string[] AllowedOrigins { get; set; } = [];
