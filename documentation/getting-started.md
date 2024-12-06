@@ -6,6 +6,7 @@ Note from the Developer: I hope to automate much of this initial set up process 
 
 - [Microsoft .NET Framework 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
 - [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (any edition) - For this documentation we will be using the free Express Edition in this documentation
+- [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) - Used for creating the database.
 - [NodeJS](https://www.nodejs.org)
 
 ## Step 1: Download the repo
@@ -47,4 +48,23 @@ Instructions for configuring this can be found on the [Google SSO](./google-sso.
 
 Create a folder called `C:\SmtpPickup` on your local computer. This folder will catch any forgot password emails that go out in a simulated manner.
 
-That's it! You should have a working app up and running. You can continue by [Creating Roles and Users using Admin UI](user-role-admin.md).
+## Step 8: Run the app
+
+On Windows, you can simply run the `Run.bat` batch file in the root of the project repo or you can run the following commands in two separate terminal windows starting from the repo root directory:
+
+### Command Windows 1 - Run the API
+
+``` console
+cd WebApi
+dotnet run
+```
+
+### Command Windows 2 - Run the Angular App
+
+``` console
+cd ng-app
+npm install
+npm start
+```
+
+That's it! You should have a working app up and running. From there you can continue to explore the [Angular App](./angular-app.md).

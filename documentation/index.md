@@ -10,7 +10,7 @@ Welcome to the SimpleAuth for .NET documentation.
   - [Auth Endpoints](auth-endpoints.md) - A series of API endpoints that are used for authentication and registration.
   - [Administrative Endpoints](admin-endpoints.md) - A series of API endpoints used for managing users and roles or manually revoking access tokens.
 - Front End Implementations
-  - [Angular App](implementation-ng.md) - Sample Angular app that authenticates with the API using either local accounts or Google SSO.
+  - [Angular App](angular-app.md) - Sample Angular app that authenticates with the API using either local accounts or Google SSO.
   - [React](implementation-react.md) - How to implement SimpleAuth for .NET into your React app.
   - [Vue](implementation-vue.md) - How to implement SimpleAuth for .NET into your Vue app.
 - [Credits](credits.md) - Much of my hard work is based on the hard work of others.

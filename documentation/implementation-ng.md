@@ -1,3 +1,0 @@
-# The Angular App
-
-Coming soon...

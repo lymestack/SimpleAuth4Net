@@ -1,6 +1,16 @@
-<app-card-menu [menuItems]="menuItems"></app-card-menu>
-
-<button class="padded-top" mat-raised-button routerLink="/">
-  <i class="fa fa-home"></i>
-  Return to Home
-</button>
+<mat-card>
+  <mat-card-header>
+    <mat-card-title>Welcome to the SimpleAuth Admin Area</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <div class="padded-top">
+      <app-card-menu [menuItems]="menuItems"></app-card-menu>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <button class="padded-top" mat-raised-button routerLink="/auth-admin">
+      <i class="fa fa-home"></i>
+      Return to Home
+    </button>
+  </mat-card-actions>
+</mat-card>
