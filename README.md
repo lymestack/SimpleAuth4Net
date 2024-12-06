@@ -32,6 +32,9 @@ SimpleAuth is designed to prioritize ease of use while delivering essential func
 
 SimpleAuth currently supports three client frameworks: Angular v18, React v18, and Vue v3. The Angular implementation is the most polished, while the React and Vue versions are in earlier stages of development. Contributions to enhance existing front-ends or add support for additional frameworks are highly encouraged.
 
+![Screenshot 1](./documentation/images/login.png)
+![Screenshot 2](./documentation/images/logged-in.png)
+
 ## Getting Started with SimpleAuth
 
 To begin using SimpleAuth for .NET on your local machine, follow the step-by-step instructions in the [Getting Started Guide](./documentation/index.md). The guide provides a comprehensive walkthrough to help you set up and begin leveraging SimpleAuth in your project.
