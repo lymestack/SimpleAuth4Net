@@ -468,6 +468,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
+    #region UserVerified
+
+    [HttpGet("UserVerified")]
+    public async Task<ActionResult<bool>> UserVerified([FromQuery] string username)
+    {
+        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
+        var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
+        return Ok(appUser is { Verified: true });
+    }
+
+    #endregion
+
     #region ZOMBIE - DELETE / RevokeToken - FUTURE: Reimplement as an Admin endpoints
 
     //[HttpGet("ActiveSessions")]
