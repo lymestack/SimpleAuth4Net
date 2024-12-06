@@ -25,6 +25,6 @@ function getConfigUrl() {
   // ZOMBIE - Use for IIS:
   return 'http://localhost/SimpleAuthNet/api/AppConfig';
 
-  // Kestrel:
-  return 'https://localhost:7214/AppConfig';
+  // Use for Kestrel (Command Line):
+  // return 'http://localhost:5218/AppConfig';
 }
