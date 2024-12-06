@@ -27,11 +27,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("default", builder =>
     {
+        // FUTURE: Put the Origins in the appsettings.json file.
         builder
             .WithOrigins(
                 "http://localhost:4200",  // Angular App
                 "https://your-production-url.com",
-                "http://localhost:8080",
+                "http://localhost:8080", // Vue App
                 "http://localhost:3000") // React App
             .AllowAnyMethod()
             .AllowAnyHeader()
@@ -96,8 +97,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 }
 
 app.UseCors("default");
