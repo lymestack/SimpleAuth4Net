@@ -125,7 +125,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var user = await GetUserWithRoles(payload.Email);
         if (user == null) return BadRequest();
         if (!user.Active) return Unauthorized("The user is inactive.");
-        if (_authSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
+
+        // Assume email is verified by receiving valid credentials from Google.
+        if (!user.Verified) user.Verified = true;
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
