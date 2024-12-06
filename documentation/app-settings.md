@@ -35,7 +35,7 @@ The `EmailSettings` section of the config file controls how emails are sent to u
 | SmtpServer | TBD | The IP Address or domain name of the SMTP Server. |
 | Port | `null` | The port to use when sending emails via SMTP. |
 | Username | `null` | The username to use when authenticating with the SMTP Server. |
-| Password | Default | The password to use when authenticating with the SMTP Server. |
+| Password | `null` | The password to use when authenticating with the SMTP Server. |
 
 ## AppConfig Section
 
