@@ -365,3 +365,5 @@ FodyWeavers.xsd
 **/appdata.db
 WebApi/appdata.db-shm
 WebApi/appdata.db-wal
+
+package-lock.json
