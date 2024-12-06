@@ -96,7 +96,7 @@ public class AppUserController(SimpleAuthNetDataContext db) : ControllerBase
     public async Task<ActionResult<AppUser>> Post([FromBody] AppUserSearchOptions searchOptions, int pageIndex = 0, int pageSize = 10)
     {
         var query = GetQuery(searchOptions);
-        if (string.IsNullOrEmpty(searchOptions.SortField)) searchOptions.SortField = "Name";
+        if (string.IsNullOrEmpty(searchOptions.SortField)) searchOptions.SortField = "Username";
         if (string.IsNullOrEmpty(searchOptions.SortDirection)) searchOptions.SortDirection = "ASC";
 
         var retVal = await SearchResultsHelper.GetApiSearchResultsAsync(query, pageSize, pageIndex, searchOptions.SortField,

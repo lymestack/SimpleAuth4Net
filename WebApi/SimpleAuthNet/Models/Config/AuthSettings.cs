@@ -12,5 +12,7 @@ public class AuthSettings
 
     public bool StoreTokensInCookies { get; set; }
 
+    public bool RequireUserVerification { get; set; }
+
     public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
 }
