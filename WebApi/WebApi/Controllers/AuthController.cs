@@ -97,11 +97,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
+        if (!_appConfig.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
 
         var user = await GetUserWithRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
         if (!user.Active) return Unauthorized("The user is inactive.");
+        if (_authSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
@@ -124,6 +125,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var user = await GetUserWithRoles(payload.Email);
         if (user == null) return BadRequest();
         if (!user.Active) return Unauthorized("The user is inactive.");
+        if (_authSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
@@ -243,15 +245,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         if (user == null)
             return BadRequest("No user found with that email.");
 
-        // Generate a 6-digit code
         var resetToken = new Random().Next(100000, 999999).ToString();
         Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
         user.AppUserCredential.PasswordResetToken = resetToken;
         user.AppUserCredential.PasswordResetExpires = DateTime.UtcNow.AddMinutes(30);
         user.AppUserCredential.PasswordResetUsed = false;
         await db.SaveChangesAsync();
-
-        // Send the email (use your preferred email service)
         await SendPasswordResetEmail(user.EmailAddress, resetToken);
 
         var message = "Password reset email sent.";
@@ -272,10 +271,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         var emailService = new EmailService(configuration);
         emailService.SendEmailMessage(mailMessage);
-
-        await Task.CompletedTask; // Simulating async behavior
+        await Task.CompletedTask;
     }
-
 
     [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
@@ -304,7 +301,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         await db.SaveChangesAsync();
         return Ok(new { success = true, message = "Password reset successfully." });
     }
-
 
     #endregion
 
@@ -459,6 +455,19 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
+    #region WhoAmI
+
+    [HttpGet("WhoAmI")]
+    public async Task<IActionResult> WhoAmI()
+    {
+        if (User.Identity == null) return Ok("Nobody");
+        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
+        await Task.CompletedTask;
+        return Ok(User.Identity.Name);
+    }
+
+    #endregion
+
     #region ZOMBIE - DELETE / RevokeToken - FUTURE: Reimplement as an Admin endpoints
 
     //[HttpGet("ActiveSessions")]
@@ -488,19 +497,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     //    return Ok("Session revoked.");
     //}
-
-    #endregion
-
-    #region WhoAmI
-
-    [HttpGet("WhoAmI")]
-    public async Task<IActionResult> WhoAmI()
-    {
-        if (User.Identity == null) return Ok("Nobody");
-        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
-        await Task.CompletedTask;
-        return Ok(User.Identity.Name);
-    }
 
     #endregion
 }
