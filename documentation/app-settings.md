@@ -21,6 +21,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
 | RequireUserVerification | `true` | Indicates whether or not email verification is required for a user to be able to login. |
+| AllowedOrigins | TBD | An array of strings to be allowed for CORS Security |
 
 ## EmailSettings Section
 

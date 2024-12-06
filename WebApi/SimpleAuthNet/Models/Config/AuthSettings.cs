@@ -2,7 +2,7 @@
 
 public class AuthSettings
 {
-    public string TokenSecret { get; set; }
+    public string TokenSecret { get; set; } = "";
 
     public int AccessTokenExpirationMinutes { get; set; }
 
@@ -15,4 +15,6 @@ public class AuthSettings
     public bool RequireUserVerification { get; set; }
 
     public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
+
+    public string[] AllowedOrigins { get; set; } = [];
 }

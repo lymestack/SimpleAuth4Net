@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SimpleAuthNet.Data;
+using SimpleAuthNet.Models.Config;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -16,11 +17,12 @@ builder.Services.AddSwaggerGen();
 
 // Database Context:
 builder.Services.AddDbContext<SimpleAuthNetDataContext>();
-// builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Enable Controllers:
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+var authSettings = builder.Configuration.GetSection("AuthSettings").Get<AuthSettings>();
 
 // Define CORS Policy:
 builder.Services.AddCors(options =>
@@ -29,11 +31,7 @@ builder.Services.AddCors(options =>
     {
         // FUTURE: Put the Origins in the appsettings.json file.
         builder
-            .WithOrigins(
-                "http://localhost:4200",  // Angular App
-                "https://your-production-url.com",
-                "http://localhost:8080", // Vue App
-                "http://localhost:3000") // React App
+            .WithOrigins(authSettings.AllowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials(); // Required to allow cookies with cross-origin requests
