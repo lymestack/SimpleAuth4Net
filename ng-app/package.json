@@ -24,7 +24,6 @@
     "@popperjs/core": "^2.11.8",
     "@types/google-one-tap": "^1.2.6",
     "bootstrap": "^5.3.3",
-    "ng-recaptcha": "^13.2.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "uuid": "^11.0.3",

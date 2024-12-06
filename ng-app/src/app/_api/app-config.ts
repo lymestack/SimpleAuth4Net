@@ -4,11 +4,9 @@
  */
 
 import { Environment } from "./environment";
-import { CaptchaSettings } from "./captcha-settings";
 
 export class AppConfig {
     environment: Environment;
-    captchaSettings: CaptchaSettings;
     googleClientId: string;
     sessionId: string;
     enableLocalAccounts: boolean;

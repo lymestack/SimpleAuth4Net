@@ -12,10 +12,6 @@ Here's an example of the response given from the API:
         "api": "http://localhost/SimpleAuthNet/api/",
         "description": "This is the local instance."
     },
-    "captchaSettings": {
-        "enabled": false,
-        "secretKey": "asdfasdfasdf"
-    },
     "sessionId": "103efe17-bc1f-4348-bc97-5ca4cdd8b4eb",
     "enableLocalAccounts": true,
     "enableGoogle": true,

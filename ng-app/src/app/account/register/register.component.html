@@ -84,20 +84,12 @@
         </mat-error>
       </mat-form-field>
 
-      <div class="captcha-container" *ngIf="isCaptchaEnabled">
-        <re-captcha
-          [siteKey]="captchaSiteKey"
-          (resolved)="onCaptchaResolved($event)"
-        ></re-captcha>
-      </div>
-
       <button
         mat-raised-button
         color="primary"
         class="submit-button"
         type="submit"
         [disabled]="
-          !captchaResolved ||
           theform.invalid ||
           !usernameValid ||
           !usernameAvailable ||

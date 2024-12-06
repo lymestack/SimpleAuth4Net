@@ -23,11 +23,6 @@ export class RegisterComponent {
   checkingUsername = false;
   checkedUsername = false;
   usernameValid = false;
-
-  // Replace with your reCAPTCHA site key
-  captchaSiteKey = 'YOUR_RECAPTCHA_SITE_KEY';
-  captchaResolved = true;
-  isCaptchaEnabled = false;
   checkedComplexity = false;
   metComplexityStandard = false;
 
@@ -37,11 +32,6 @@ export class RegisterComponent {
     private rest: RestService,
     private router: Router
   ) {}
-
-  onCaptchaResolved(captchaResponse: any) {
-    console.log('Captcha resolved:', captchaResponse);
-    this.captchaResolved = !!captchaResponse;
-  }
 
   onEmailAddressChanged(newEmailAddress: string) {
     this.model.username = newEmailAddress;
@@ -74,11 +64,6 @@ export class RegisterComponent {
   }
 
   onSubmit() {
-    if (this.isCaptchaEnabled && !this.captchaResolved) {
-      console.error('CAPTCHA must be resolved.');
-      return;
-    }
-
     console.log('Registration form submitted:', this.model);
     let url = 'Auth/Register';
     this.rest.postResource(url, this.model).subscribe(

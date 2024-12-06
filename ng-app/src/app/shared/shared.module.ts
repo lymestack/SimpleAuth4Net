@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { MaterialModule } from './material/material.module';
 import { CardMenuComponent } from './card-menu/card-menu.component';
 import { RouterModule } from '@angular/router';
-import { RecaptchaModule } from 'ng-recaptcha';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
@@ -15,14 +14,12 @@ import { HttpClientModule } from '@angular/common/http';
     HttpClientModule,
     MaterialModule,
     RouterModule,
-    RecaptchaModule,
   ],
   exports: [
     FormsModule,
     HttpClientModule,
     MaterialModule,
     RouterModule,
-    RecaptchaModule,
     CardMenuComponent,
   ],
 })

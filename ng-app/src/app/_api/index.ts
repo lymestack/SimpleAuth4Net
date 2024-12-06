@@ -10,7 +10,6 @@ export * from './app-refresh-token';
 export * from './app-role';
 export * from './app-config';
 export * from './environment';
-export * from './captcha-settings';
 export * from './login-model';
 export * from './login-with-google-model';
 export * from './register-model';

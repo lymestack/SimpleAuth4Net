@@ -17,7 +17,6 @@ builder.Services.AddSwaggerGen();
 // Database Context:
 builder.Services.AddDbContext<SimpleAuthNetDataContext>();
 // builder.Services.AddScoped<IAuthService, AuthService>();
-// builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 
 // Enable Controllers:
 builder.Services.AddControllers().AddJsonOptions(x =>
