@@ -12,7 +12,7 @@ const Home: React.FC = () => {
 
   const handleTestSecureEndpoint = async () => {
     try {
-      const response = await fetch(`${apiUrl}Item/GetColorList`, {
+      const response = await fetch(`${apiUrl}Secure/GetColorList`, {
         method: 'GET',
         credentials: 'include',
       });

@@ -76,7 +76,7 @@ class AuthService {
 
   public async refreshToken(): Promise<any> {
     try {
-      const response = await axios.get(`${this.apiUrl}Secure/RefreshToken?deviceId=${this.deviceId}`, {
+      const response = await axios.get(`${this.apiUrl}Auth/RefreshToken?deviceId=${this.deviceId}`, {
         withCredentials: true,
       });
       this.storeTokenExpiration(response.data.expires, response.data.refreshTokenExpires);
@@ -89,7 +89,7 @@ class AuthService {
 
   public async logout(): Promise<void> {
     try {
-      await axios.delete(`${this.apiUrl}Logout`, { withCredentials: true });
+      await axios.delete(`${this.apiUrl}Auth/Logout`, { withCredentials: true });
       localStorage.removeItem('accessTokenExpiration');
       localStorage.removeItem('refreshTokenExpiration');
       localStorage.removeItem('deviceId');
