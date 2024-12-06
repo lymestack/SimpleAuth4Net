@@ -2,11 +2,13 @@
 
 Tables are prefixed with `App` to help group entities together in SSMS and Model file names.
 
+![Database Schema](./images/schema.png)
+
 **TODO:** Detail each column of each table
 
 ## AppUser Table
 
-The AppUser table contains basic, non secret user information. This information should be safe to show somewhere on a public profile given user consent, of course.
+The AppUser table contains basic, non secret user information. This information should be considered safe to show somewhere on a public profile given user consent, of course.
 
 ## AppRole Table
 
