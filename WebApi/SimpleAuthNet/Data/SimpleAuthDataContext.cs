@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using SimpleAuthNet.Models;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
 namespace SimpleAuthNet.Data;
 
-public class SimpleAuthNetDataContext(IConfiguration configuration) : DbContext
+public class SimpleAuthDataContext(IConfiguration configuration) : DbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -24,21 +26,4 @@ public class SimpleAuthNetDataContext(IConfiguration configuration) : DbContext
     public DbSet<AppRole> AppRoles { get; set; }
 
     public DbSet<AppRefreshToken> AppRefreshTokens { get; set; }
-
-    //#region Adhoc Sql Queries
-
-    //public void DeleteRolesForUser(int userId)
-    //{
-    //    var idParam = new SqlParameter("@userId", userId);
-    //    Database.ExecuteSqlRaw("DELETE FROM UserInfo_AppRole WHERE UserInfoId = @userId", @idParam);
-    //}
-
-    //public void AddRoleForUser(int userId, string role)
-    //{
-    //    var idParam = new SqlParameter("@userId", userId);
-    //    var roleParam = new SqlParameter("@role", role);
-    //    Database.ExecuteSqlRaw("INSERT INTO AppUserRoles (AppUserId, AppRoleId) VALUES (@userId, (SELECT Id FROM AppRole WHERE Name = @role))", @idParam, roleParam);
-    //}
-
-    //#endregion
 }

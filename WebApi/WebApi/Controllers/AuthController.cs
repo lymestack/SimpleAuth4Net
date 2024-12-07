@@ -20,7 +20,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthNetDataContext db) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthDataContext db) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly AppConfig _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>()!;
@@ -55,6 +55,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             user.AppUserCredential.PasswordSalt = hmac.Key;
             user.AppUserCredential.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(model.Password));
             user.AppUserCredential.DateCreated = DateTime.UtcNow;
+            user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow;
         }
         else
         {
@@ -64,8 +65,17 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         await db.AppUsers.AddAsync(user);
         await db.SaveChangesAsync();
 
+        var message = "User Registered Successfully";
+
+        if (_appConfig.RequireUserVerification)
+        {
+            var verifyToken = await SetupVerifyToken(user);
+            await SendVerificationEmail(user.EmailAddress, verifyToken, "Verify your email address");
+            if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        }
+
         // If this is the first user in the system, grant admin access:
-        if (userCount != 0) return Ok(user);
+        if (userCount != 0) return Ok(new { success = true, message });
         var appUserRole = new AppUserRole
         {
             AppUserId = user.Id,
@@ -74,7 +84,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
         user.AppUserRoles.Add(appUserRole);
         await db.SaveChangesAsync();
-        return Ok(user);
+        return Ok(new { success = true, message });
     }
 
     #endregion
@@ -235,7 +245,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
 
     #endregion
 
-    #region ForgotPassword / ResetPassword
+    #region ForgotPassword / ResetPassword / VerifyAccount
 
     [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
@@ -247,7 +257,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         if (user == null) return BadRequest("No user found with that email.");
 
         var verifyToken = await SetupVerifyToken(user);
-        await SendPasswordResetEmail(user.EmailAddress, verifyToken);
+        await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
 
         var message = "Password reset email sent.";
         if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
@@ -257,14 +267,13 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
-        // Future: Need to lookup by username in case two tokens exist that are the same. Unlikey, but definitely possible...
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
-            .FirstOrDefaultAsync(x => x.AppUserCredential.VerifyToken == model.Token);
+            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
 
         if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
             user.AppUserCredential.VerifyTokenUsed)
-            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired reset token." } });
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
 
         // Validate the new password
         var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
@@ -282,15 +291,33 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         return Ok(new { success = true, message = "Password reset successfully." });
     }
 
+    [HttpPost("VerifyAccount")]
+    public async Task<IActionResult> VerifyAccount([FromBody] ResetPasswordModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
+
+        if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
+            user.AppUserCredential.VerifyTokenUsed)
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+
+        if (user.Verified) return Ok(new { success = true, message = "Account already verified..." });
+        user.Verified = true;
+
+        await db.SaveChangesAsync();
+        return Ok(new { success = true, message = "Account verified successfully..." });
+    }
+
     #endregion
 
     #region Private methods
 
-    private async Task SendPasswordResetEmail(string email, string token)
+    private async Task SendVerificationEmail(string email, string token, string subject)
     {
         var mailMessage = new MailMessage
         {
-            Subject = "Password Reset Verification Code",
+            Subject = subject,
             Body = $"Your verification code is: {token}",
             IsBodyHtml = true
         };

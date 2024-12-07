@@ -1,0 +1,48 @@
+<div class="reset-password-container mat-elevation-z8">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Verify Your Account</mat-card-title>
+      <mat-card-subtitle>
+        Enter the verification code that was sent to your email inbox
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div
+        class="alert alert-warning padded-top padded-bottom"
+        *ngIf="errors.length > 0"
+      >
+        Please fix the following errors:
+        <ul>
+          <li *ngFor="let error of errors">{{ error }}</li>
+        </ul>
+      </div>
+
+      <form (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Verification Code</mat-label>
+          <input
+            matInput
+            [(ngModel)]="verificationCode"
+            name="verificationCode"
+            type="text"
+            required
+          />
+          <mat-error *ngIf="verificationCode === ''">
+            Verification code is required.
+          </mat-error>
+        </mat-form-field>
+
+        <div class="action-buttons">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="!canSubmit()"
+          >
+            Verify
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

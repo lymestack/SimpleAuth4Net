@@ -8,6 +8,7 @@ import { RegisterComponent } from './register/register.component';
 import { RegisterConfirmationComponent } from './register-confirmation/register-confirmation.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
+import { VerifyAccountComponent } from './verify-account/verify-account.component';
 
 const routes: Routes = [
   {
@@ -49,6 +50,11 @@ const routes: Routes = [
     path: 'verification-pending',
     component: VerificationPendingComponent,
     data: { state: 'Verification Pending' },
+  },
+  {
+    path: 'verify',
+    component: VerifyAccountComponent,
+    data: { state: 'Verify Your Account' },
   },
 
   // otherwise redirect to home

@@ -39,7 +39,7 @@ export class AuthService {
       })
       .pipe(
         map((response) => {
-          this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
+          this.storeTokenExpiration(response.expires);
           this.scheduleTokenRefresh(response.expires);
           return response;
         })
@@ -61,49 +61,12 @@ export class AuthService {
       })
       .pipe(
         map((response) => {
-          this.storeTokenExpiration(response.expires); // Store expiration in localStorage or memory
+          this.storeTokenExpiration(response.expires);
           this.scheduleTokenRefresh(response.expires);
           setTimeout(() => window.location.reload(), 100);
           return response;
         })
       );
-  }
-
-  userVerified(username: string): Observable<any> {
-    const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.get<any>(
-      `${this.apiUrl}Auth/UserVerified?username=${encodeURIComponent(
-        username
-      )}`,
-      {
-        headers: header,
-        withCredentials: true,
-      }
-    );
-  }
-
-  forgotPassword(email: string): Observable<any> {
-    const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.post<any>(
-      `${this.apiUrl}Auth/ForgotPassword`,
-      { email },
-      {
-        headers: header,
-        withCredentials: true,
-      }
-    );
-  }
-
-  resetPassword(token: string, newPassword: string): Observable<any> {
-    const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.post<any>(
-      `${this.apiUrl}Auth/ResetPassword`,
-      { token, newPassword },
-      {
-        headers: header,
-        withCredentials: true,
-      }
-    );
   }
 
   logout(): Observable<any> {
@@ -121,17 +84,62 @@ export class AuthService {
     );
   }
 
+  userVerified(username: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.get<any>(
+      `${this.apiUrl}Auth/UserVerified?username=${encodeURIComponent(
+        username
+      )}`,
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    localStorage.setItem('verifyUsername', email);
+
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/ForgotPassword`,
+      { email },
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
+  resetPassword(verifyToken: string, newPassword: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    let username = localStorage.getItem('verifyUsername');
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/ResetPassword`,
+      { username, verifyToken, newPassword },
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
+  verifyAccount(verifyToken: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    let username = localStorage.getItem('verifyUsername');
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/VerifyAccount`,
+      { username, verifyToken },
+      {
+        headers: header,
+        withCredentials: true,
+      }
+    );
+  }
+
   revokeToken(): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     return this.httpClient.delete(`${this.apiUrl}Auth/RevokeToken`, {
-      headers: header,
-      withCredentials: true,
-    });
-  }
-
-  destroyCookieValues(): Observable<any> {
-    const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.delete(`${this.apiUrl}Auth/Logout`, {
       headers: header,
       withCredentials: true,
     });
@@ -151,22 +159,39 @@ export class AuthService {
   isLoggedIn(): boolean {
     const accessTokenExpires = this.getStoredTokenExpiration();
     const refreshTokenExpires = this.getStoredRefreshTokenExpiration();
-
     const now = new Date().getTime();
 
-    // Check access token expiration
-    if (accessTokenExpires && now < accessTokenExpires) {
-      return true; // Access token is still valid
-    }
+    if (accessTokenExpires && now < accessTokenExpires) return true;
 
-    // If the access token is expired, check refresh token expiration
     if (refreshTokenExpires && now < refreshTokenExpires) {
       this.log('Access token expired, but refresh token is valid.');
-      return true; // Refresh token is still valid
+      return true;
     }
 
-    // If neither token is valid, user is not logged in
     return false;
+  }
+
+  refreshToken(): Observable<any> {
+    return this.httpClient
+      .get<any>(`${this.apiUrl}Auth/RefreshToken?deviceId=${this.deviceId}`, {
+        withCredentials: true,
+      })
+      .pipe(
+        map((response: any) => {
+          this.log('Token refreshed successfully');
+          this.storeTokenExpiration(
+            response.expires,
+            response.refreshTokenExpires
+          ); // Update access and refresh token expirations
+          this.scheduleTokenRefresh(response.expires);
+          return response;
+        }),
+        catchError((error) => {
+          this.error('Token refresh failed', error);
+          this.clearRefreshToken();
+          return throwError(() => new Error('Unauthorized'));
+        })
+      );
   }
 
   private getStoredRefreshTokenExpiration(): number | null {
@@ -214,29 +239,6 @@ export class AuthService {
     }
   }
 
-  refreshToken(): Observable<any> {
-    return this.httpClient
-      .get<any>(`${this.apiUrl}Auth/RefreshToken?deviceId=${this.deviceId}`, {
-        withCredentials: true,
-      })
-      .pipe(
-        map((response: any) => {
-          this.log('Token refreshed successfully');
-          this.storeTokenExpiration(
-            response.expires,
-            response.refreshTokenExpires
-          ); // Update access and refresh token expirations
-          this.scheduleTokenRefresh(response.expires);
-          return response;
-        }),
-        catchError((error) => {
-          this.error('Token refresh failed', error);
-          this.clearRefreshToken();
-          return throwError(() => new Error('Unauthorized'));
-        })
-      );
-  }
-
   private getStoredTokenExpiration(): number | null {
     const expiration = localStorage.getItem('tokenExpiration');
     if (expiration) {
@@ -244,6 +246,14 @@ export class AuthService {
       return !isNaN(parsedExpiration) ? parsedExpiration : null;
     }
     return null;
+  }
+
+  private destroyCookieValues(): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.delete(`${this.apiUrl}Auth/Logout`, {
+      headers: header,
+      withCredentials: true,
+    });
   }
 
   private scheduleTokenRefresh(expiration: string): void {

@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Database Context:
-builder.Services.AddDbContext<SimpleAuthNetDataContext>();
+builder.Services.AddDbContext<SimpleAuthDataContext>();
 
 // Enable Controllers:
 builder.Services.AddControllers().AddJsonOptions(x =>

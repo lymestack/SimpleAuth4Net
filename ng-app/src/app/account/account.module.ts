@@ -12,6 +12,7 @@ import { UsernameEmailInputComponent } from './username-email-input/username-ema
 import { RegisterConfirmationComponent } from './register-confirmation/register-confirmation.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
+import { VerifyAccountComponent } from './verify-account/verify-account.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +26,7 @@ import { VerificationPendingComponent } from './verification-pending/verificatio
     RegisterConfirmationComponent,
     ResetPasswordComponent,
     VerificationPendingComponent,
+    VerifyAccountComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
   exports: [UsernameEmailInputComponent],

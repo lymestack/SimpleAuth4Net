@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { RestService } from '../../core/_services/rest.service';
 import { LoggerService } from '../../core/_services/logger.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/_services/auth.service';
+import { AppConfig } from '../../_api';
+import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
   selector: 'app-register',
@@ -19,6 +21,7 @@ export class RegisterComponent {
     confirmPassword: '',
   };
 
+  errors: string[] = [];
   usernameAvailable = false;
   checkingUsername = false;
   checkedUsername = false;
@@ -27,6 +30,7 @@ export class RegisterComponent {
   metComplexityStandard = false;
 
   constructor(
+    @Inject(APP_CONFIG) public config: AppConfig,
     private auth: AuthService,
     private logger: LoggerService,
     private rest: RestService,
@@ -60,6 +64,7 @@ export class RegisterComponent {
       .subscribe((data: any) => {
         this.checkedComplexity = true;
         this.metComplexityStandard = data.success;
+        this.errors = data.success ? [] : data.errors;
       });
   }
 
@@ -68,25 +73,18 @@ export class RegisterComponent {
     let url = 'Auth/Register';
     this.rest.postResource(url, this.model).subscribe(
       (data: any) => {
-        this.router.navigateByUrl('/account/register-confirmation');
+        let route = '/account/register-confirmation';
+        if (this.config.requireUserVerification) {
+          localStorage.setItem('verifyUsername', this.model.username);
+          route = '/account/verify';
+        }
 
+        this.router.navigateByUrl(route);
         console.log('Done:', data);
       },
       (err: any) => {
         this.logger.error('An error occurred. ' + err);
       }
     );
-  }
-
-  showSuccess() {
-    this.logger.success('Hey!');
-  }
-
-  showWarning() {
-    this.logger.warning('Hey!');
-  }
-
-  showDanger() {
-    this.logger.error('Hey!');
   }
 }

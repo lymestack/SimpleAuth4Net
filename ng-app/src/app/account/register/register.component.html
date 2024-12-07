@@ -1,6 +1,17 @@
 <div class="container mat-container padded-top">
   <mat-card class="mat-card">
     <h3 class="mat-title text-center">Register</h3>
+
+    <div
+      class="alert alert-warning padded-top padded-bottom"
+      *ngIf="errors.length > 0"
+    >
+      Please fix the following errors:
+      <ul>
+        <li *ngFor="let error of errors">{{ error }}</li>
+      </ul>
+    </div>
+
     <form (ngSubmit)="onSubmit()" #theform="ngForm" class="form">
       <app-username-email-input
         [emailAddress]="model.username"
