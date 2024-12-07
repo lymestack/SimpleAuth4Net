@@ -509,6 +509,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthDataContext 
     {
         if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
         var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
+        if (appUser == null) return BadRequest("User didn't exist.");
         return Ok(appUser is { Verified: true });
     }
 
