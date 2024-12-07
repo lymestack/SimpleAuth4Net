@@ -27,7 +27,7 @@ At a minimum, you should replace the `TokenSecret` value in the [App Settings](.
 1. Open SSMS and connect to the `.\SQLEXPRESS` instance.
 2. Create a new database or pick an existing database. For this doc, we are creating a new database called `SimpleAuth`.
 3. Right click the new database and select the "New Query" option.
-4. Copy the contents of the file `WebApi/WebApi.Data/CreateDb.sql` into the query window and press F5 to run the query.
+4. Copy the contents of the file `WebApi/SimleAuthNet/Data/CreateDb.sql` into the query window and press F5 to run the query.
 
 ## Step 4: Run the API & App
 
