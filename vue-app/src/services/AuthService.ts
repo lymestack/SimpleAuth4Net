@@ -12,7 +12,8 @@ export interface LoginWithGoogleModel {
 }
 
 class AuthService {
-  private apiUrl = "http://localhost/SimpleAuthNet/api/Auth/";
+  // private apiUrl: string = 'http://localhost/SimpleAuthNet/api/'; <-- Use this for IIS
+  private apiUrl: string = "http://localhost:5218/";
   private deviceId: string = this.getOrGenerateDeviceId();
 
   // Store token expiration in local storage

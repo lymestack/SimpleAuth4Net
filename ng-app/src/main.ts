@@ -22,9 +22,9 @@ function getConfigUrl() {
   if (window.location.href.includes('yourdomain.com'))
     return 'https://www.yourdomain.com/api/AppConfig';
 
-  // ZOMBIE - Use for IIS:
-  return 'http://localhost/SimpleAuthNet/api/AppConfig';
+  // ZOMBIE - Uncomment to use IIS:
+  // return 'http://localhost/SimpleAuthNet/api/AppConfig';
 
-  // Use for Kestrel (Command Line):
-  // return 'http://localhost:5218/AppConfig';
+  // Use Kestrel (Command Line):
+  return 'http://localhost:5218/AppConfig';
 }
