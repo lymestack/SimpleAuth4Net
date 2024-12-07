@@ -20,7 +20,6 @@ The `AuthSettings` section of the config file contains configuration variables t
 | UseRefreshTokens | `true` | Indicates whether or not to use refresh tokens. Refresh tokens are stored in the `AppRefresh` token [database table](the-database.md). |
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
-| RequireUserVerification | `true` | Indicates whether or not email verification is required for a user to be able to login. |
 | AllowedOrigins | TBD | An array of strings to be allowed for CORS Security |
 
 ## EmailSettings Section
@@ -40,7 +39,7 @@ The `EmailSettings` section of the config file controls how emails are sent to u
 
 ## AppConfig Section
 
-The `ApiConfig` section of the config file contains data that is shared between both the client application and the API. This information is exposed to the client via the [Configuration Endpoint](api.md#configuration-endpoint).
+The `AppConfig` section of the config file contains data that is shared between both the client application and the API. This information is exposed to the client via the [Configuration Endpoint](api.md#configuration-endpoint).
 
 | Name | Default | Description |
 | ---- | ------- | ---------- |
@@ -53,5 +52,6 @@ The `ApiConfig` section of the config file contains data that is shared between 
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
 | EnableGoogle | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
+| RequireUserVerification | `true` | Indicates whether or not email verification is required for a user to be able to login. |
 
 The remaining settings in the file are settings included by default in the Microsoft WebApi template.

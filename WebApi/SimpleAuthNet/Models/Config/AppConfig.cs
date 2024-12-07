@@ -14,5 +14,5 @@ public class AppConfig
 
     public bool AllowRegistration { get; set; }
 
-    public int PasswordResetCodeExpiresInMinutes { get; set; }
+    public bool RequireUserVerification { get; set; }
 }

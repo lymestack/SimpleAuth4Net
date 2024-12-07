@@ -102,7 +102,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
         var user = await GetUserWithRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
         if (!user.Active) return Unauthorized("The user is inactive.");
-        if (_authSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
+        if (_appConfig.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
@@ -244,36 +244,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.EmailAddress == model.Email);
 
-        if (user == null)
-            return BadRequest("No user found with that email.");
+        if (user == null) return BadRequest("No user found with that email.");
 
-        var resetToken = new Random().Next(100000, 999999).ToString();
-        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
-        user.AppUserCredential.VerifyToken = resetToken;
-        user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
-        user.AppUserCredential.VerifyTokenUsed = false;
-        await db.SaveChangesAsync();
-        await SendPasswordResetEmail(user.EmailAddress, resetToken);
+        var verifyToken = await SetupVerifyToken(user);
+        await SendPasswordResetEmail(user.EmailAddress, verifyToken);
 
         var message = "Password reset email sent.";
-        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {resetToken}";
+        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
         return Ok(new { message });
-    }
-
-    private async Task SendPasswordResetEmail(string email, string token)
-    {
-        var mailMessage = new MailMessage
-        {
-            Subject = "Password Reset Verification Code",
-            Body = $"Your verification code is: {token}",
-            IsBodyHtml = true
-        };
-
-        mailMessage.To.Add(email);
-
-        var emailService = new EmailService(configuration);
-        emailService.SendEmailMessage(mailMessage);
-        await Task.CompletedTask;
     }
 
     [HttpPost("ResetPassword")]
@@ -307,6 +285,33 @@ public class AuthController(IConfiguration configuration, SimpleAuthNetDataConte
     #endregion
 
     #region Private methods
+
+    private async Task SendPasswordResetEmail(string email, string token)
+    {
+        var mailMessage = new MailMessage
+        {
+            Subject = "Password Reset Verification Code",
+            Body = $"Your verification code is: {token}",
+            IsBodyHtml = true
+        };
+
+        mailMessage.To.Add(email);
+
+        var emailService = new EmailService(configuration);
+        emailService.SendEmailMessage(mailMessage);
+        await Task.CompletedTask;
+    }
+
+    private async Task<string> SetupVerifyToken(AppUser user)
+    {
+        var verifyToken = new Random().Next(100000, 999999).ToString();
+        Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
+        user.AppUserCredential.VerifyToken = verifyToken;
+        user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
+        user.AppUserCredential.VerifyTokenUsed = false;
+        await db.SaveChangesAsync();
+        return verifyToken;
+    }
 
     private string HashToken(string token)
     {
