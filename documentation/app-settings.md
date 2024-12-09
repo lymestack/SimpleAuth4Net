@@ -52,6 +52,6 @@ The `AppConfig` section of the config file contains data that is shared between 
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
 | EnableGoogle | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
-| RequireUserVerification | `true` | Indicates whether or not email verification is required for a user to be able to login. |
+| RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
 
 The remaining settings in the file are settings included by default in the Microsoft WebApi template.
