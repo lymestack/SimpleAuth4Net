@@ -1,45 +1,85 @@
 # SimpleAuth for .NET
 
-**Note:** This project is currently in alpha stages, has not yet been battle-tested, and the documentation is in draft form. Use at your own risk.
+**Note:** This project is currently in early alpha stages and has not yet been widely tested in production environments. Documentation is evolving, and contributions and feedback are highly encouraged to help improve stability and functionality.
 
 SimpleAuth for .NET is a free and open-source solution designed to simplify user and role-based authentication and authorization in .NET WebAPI and client applications.
 
 The goal of this project is to provide small to medium-sized businesses and organizations with a straightforward, cost-effective infrastructure for identity management. Built for a .NET 9 WebAPI backend, SimpleAuth serves as an alternative to expensive commercial products and Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework, which can be complex.
 
+> **Future Vision:** SimpleAuth is intended to be a core part of [LymeStack](https://www.lymestack.com), a full-stack web application template that simplifies application development. Once fully integrated, SimpleAuth will provide seamless authentication and authorization out-of-the-box within LymeStack.
+
+---
+
 ## Why Choose SimpleAuth?
 
-- Simplifies the often complex and tedious process of implementing authentication.
-- Offers an alternative to the steep learning curve of ASP.NET Core Identity.
-- Provides a free identity management option for smaller organizations with budget constraints.
-- Allows you to focus on building your application, rather than spending excessive time on authentication setup.
+- **Simplifies Auth Implementation:** Reduces the complexity of setting up user authentication and authorization.
+- **Free and Open-Source:** A budget-friendly alternative to expensive identity management tools.
+- **Lightweight and Flexible:** Designed to integrate quickly without the steep learning curve of ASP.NET Core Identity.
+- **SSO Support:** Use Google account credentials alongside or instead of local accounts.
+- **Local Accounts Optional:** Allows you to disable local accounts and rely solely on external providers for added security.
 
 ## Features of SimpleAuth
 
-SimpleAuth is designed to prioritize ease of use while delivering essential functionality:
+SimpleAuth is built to be simple and functional while supporting core identity management features:
 
-1. **Quick Integration:** Seamlessly integrate into an existing WebAPI project.
-2. **Core Workflows Supported Out of the Box:** Includes login, logout, registration, and password recovery.
-3. **User and Role Management:** Manage users and roles with minimal setup, eliminating the need to create extensive UI from scratch.
-4. **SSO Support Using Google** Use Google account credentials instead of or in addition to local accounts.
+1. **Quick Integration:** Seamlessly integrate into an existing WebAPI project with minimal configuration.
+2. **Core Workflows Included:** Out-of-the-box support for:
+   - Login and Logout
+   - User Registration
+   - Password Recovery with email verification codes
+3. **User and Role Management:** Manage users and roles without the need to build extensive UI components from scratch.
+4. **SSO Support:** Single Sign-On support for Google, with plans to expand to other providers.
+
+---
 
 ### API Overview
 
 [The API](./documentation/api.md) is organized into two primary categories:
 
-- **Public Endpoints:** Support authentication, registration, and password reset workflows.
-- **Private Administrative Endpoints:** Designed for user and role management, protected by an "Admin" role.
-
-### Frontend Support
-
-SimpleAuth currently supports three client frameworks: Angular v18, React v18, and Vue v3. The Angular implementation is the most polished, while the React and Vue versions are in earlier stages of development. Contributions to enhance existing front-ends or add support for additional frameworks are encouraged.
-
-![Screenshot 1](./documentation/images/login.png)
-![Screenshot 2](./documentation/images/logged-in.png)
-
-## Getting Started with SimpleAuth
-
-To begin using SimpleAuth for .NET on your local machine, follow the step-by-step instructions in the [Getting Started Guide](./documentation/getting-started.md). The guide provides a comprehensive walkthrough to help you set up and begin leveraging SimpleAuth in your project.
+- **Public Endpoints:** Support workflows like authentication, registration, and password recovery.
+- **Private Endpoints:** Administrative endpoints for user and role management, protected by the "Admin" role.
 
 ---
 
-We welcome your feedback and contributions to improve this project. Whether you're enhancing the documentation, refining the front-end clients, or suggesting new features, your input is valuable to making SimpleAuth better for everyone.
+### Frontend Support
+
+SimpleAuth currently supports three client frameworks:
+
+- **Angular v18** – The most polished implementation, ready to integrate.
+- **React v18** – Functional, but less refined.
+- **Vue v3** – Functional, but early-stage.
+
+Contributions to improve the existing front-ends or add support for other frameworks are welcome and encouraged.
+
+#### Screenshots
+
+![Screenshot 1](./documentation/images/login.png)  
+*Login Screen*
+
+![Screenshot 2](./documentation/images/logged-in.png)  
+*Logged-In Dashboard*
+
+---
+
+## Getting Started
+
+To begin using SimpleAuth for .NET on your local machine, follow the [Getting Started Guide](./documentation/getting-started.md). The guide provides a step-by-step walkthrough to help you set up SimpleAuth and start building secure applications.
+
+---
+
+## Contributing
+
+SimpleAuth is a community-driven project, and we welcome your contributions to make it even better. Here’s how you can help:
+
+- Improve the documentation
+- Refine or enhance the existing front-end implementations (Angular, React, Vue)
+- Add support for other front-end frameworks or third-party SSO providers
+- Report issues or suggest features to improve the project
+
+If you’re using SimpleAuth and find it helpful, we’d also love to hear your feedback.
+
+---
+
+**SimpleAuth for .NET** – Simplifying identity management for .NET developers.
+
+[Visit LymeStack for more solutions and templates](https://www.lymestack.com).

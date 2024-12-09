@@ -54,4 +54,4 @@ The `AppConfig` section of the config file contains data that is shared between 
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
 | RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
 
-The remaining settings in the file are settings included by default in the Microsoft WebApi template.
+The remaining settings in the file are settings included by default from the Microsoft WebApi template.
