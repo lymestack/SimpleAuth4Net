@@ -11,7 +11,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize(Roles = "Admin")]
-public class AppRoleController(SimpleAuthDataContext db) : ControllerBase
+public class AppRoleController(SimpleAuthContext db) : ControllerBase
 {
     #region GET
 

@@ -6,7 +6,7 @@ using SimpleAuthNet.Models;
 
 namespace SimpleAuthNet.Data;
 
-public class SimpleAuthDataContext(IConfiguration configuration) : DbContext
+public class SimpleAuthContext(IConfiguration configuration) : DbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {

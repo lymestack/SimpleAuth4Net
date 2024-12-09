@@ -20,7 +20,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthDataContext db) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthContext db) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly AppConfig _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>()!;
