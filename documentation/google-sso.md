@@ -1,10 +1,12 @@
 # Google SSO Support
 
-You can use Google SSO to authenticate your apps instead of or in addition to built in local accounts. Currently in order for Google SSO to work, a local account record needs to be explicitly created for each user. This means that a user must register or be created by an administrator prior to being able to get access to the system. THIS IS BY DESIGN. In the future, an option will be created to allow for the local account record to be automatically generated at first login.
+You can use Google SSO to authenticate your apps instead of or in addition to built in local accounts. Currently in order for Google SSO to work, a local account record needs to be explicitly created for each user. This means that a user must register or be created by an administrator prior to being able to gain access to the app. THIS IS BY DESIGN. In the future, an option will be created to allow for the local account record to be automatically generated at first login.
 
 ## Step 1: Create a Google App ID
 
-TODO: Instructions to obtain a google client id
+Register your app with Google using the [Google Cloud Console](https://console.cloud.google.com/home/dashboard).
+
+Coming Soon: Instructions to obtain a Google client id with screenshots
 
 ## Step 2: Enable Google SSO in the App Settings File
 
