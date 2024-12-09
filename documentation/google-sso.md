@@ -6,7 +6,9 @@ You can use Google SSO to authenticate your apps instead of or in addition to bu
 
 Register your app with Google using the [Google Cloud Console](https://console.cloud.google.com/home/dashboard).
 
-Coming Soon: Instructions to obtain a Google client id with screenshots
+Great instructions on how to do this can be found here: https://youtu.be/G4BBNq1tgwE?si=Jgisv680APgZuBi1&t=1067
+
+This video is by Israel Quiroz who is listed in the [credits](credits.md).
 
 ## Step 2: Enable Google SSO in the App Settings File
 
