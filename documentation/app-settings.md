@@ -10,7 +10,7 @@ This page documents the WebApi configuration file located in: `WebApi/WebApi/app
 
 ## AuthSettings Section
 
-The `AuthSettings` section of the config file contains configuration variables that are concerned with auth and that should not be shared with clients via the [Configuration Endpoint]
+The `AuthSettings` section of the config file contains configuration variables that are concerned with auth and that should not be shared with clients via the [Configuration Endpoint](./api#configuration-endpoint).
 
 | Name | Default | Description |
 | ---- | ------- | ---------- |
