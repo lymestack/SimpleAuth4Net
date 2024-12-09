@@ -1,6 +1,6 @@
 # App Settings
 
-This page documents the appsettings.json file in the WebApi.
+This page documents the WebApi configuration file located in: `WebApi/WebApi/appsettings.json`
 
 ## ConnectionStrings Section
 
