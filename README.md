@@ -1,10 +1,10 @@
 # SimpleAuth for .NET
 
-**Note:** This project is currently in alpha stages, and the documentation is in draft form.
+**Note:** This project is currently in alpha stages, has not yet been battle-tested, and the documentation is in draft form. Use at your own risk.
 
 SimpleAuth for .NET is a free and open-source solution designed to simplify user and role-based authentication and authorization in .NET WebAPI and client applications.
 
-The goal of this project is to provide small to medium-sized businesses and organizations with a straightforward, cost-effective infrastructure for identity management. Built for a .NET 9 WebAPI backend, SimpleAuth serves as an alternative to [expensive commercial products](./documentation/background.md#other-commercial-providers) and Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework, which can be complex.
+The goal of this project is to provide small to medium-sized businesses and organizations with a straightforward, cost-effective infrastructure for identity management. Built for a .NET 9 WebAPI backend, SimpleAuth serves as an alternative to expensive commercial products and Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework, which can be complex.
 
 ## Why Choose SimpleAuth?
 
@@ -20,6 +20,7 @@ SimpleAuth is designed to prioritize ease of use while delivering essential func
 1. **Quick Integration:** Seamlessly integrate into an existing WebAPI project.
 2. **Core Workflows Supported Out of the Box:** Includes login, logout, registration, and password recovery.
 3. **User and Role Management:** Manage users and roles with minimal setup, eliminating the need to create extensive UI from scratch.
+4. **SSO Support Using Google** Use Google account credentials instead of or in addition to local accounts.
 
 ### API Overview
 
@@ -30,7 +31,7 @@ SimpleAuth is designed to prioritize ease of use while delivering essential func
 
 ### Frontend Support
 
-SimpleAuth currently supports three client frameworks: Angular v18, React v18, and Vue v3. The Angular implementation is the most polished, while the React and Vue versions are in earlier stages of development. Contributions to enhance existing front-ends or add support for additional frameworks are highly encouraged.
+SimpleAuth currently supports three client frameworks: Angular v18, React v18, and Vue v3. The Angular implementation is the most polished, while the React and Vue versions are in earlier stages of development. Contributions to enhance existing front-ends or add support for additional frameworks are encouraged.
 
 ![Screenshot 1](./documentation/images/login.png)
 ![Screenshot 2](./documentation/images/logged-in.png)

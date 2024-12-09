@@ -15,13 +15,13 @@ The following software packages are required to follow along with this documenta
 ## Step 1: Download the repo
 
 ``` terminal
-git clone https://repolinkgoeshere/simple-auth
-cd simple-auth
+git clone https://github.com/lymestack/SimpleAuth4Net.git
+cd SimpleAuth4Net
 ```
 
 ## Step 2: Generate a "Token Secret"
 
-At a minimum, you should replace the `TokenSecret` value in the [App Settings](./app-settings.md) file with randomly generated 64 byte (or more) secret should be used for this value.
+First start by replacing the value of the `TokenSecret` config setting in the [App Settings](./app-settings.md) file with randomly generated 64 byte (or more) secret should be used for this value.
 
 To generate a secret, you an use the provided Powershell or Python scripts.
 
@@ -80,7 +80,9 @@ In your browser, navigate to: [https://localhost:7214/AppConfig](https://localho
 
 At this point you should see JSON configuration data and the API should be up and running.
 
-### Run the Angular App
+### Run the Client App
+
+There are currently 3 sample SPA apps that can authenticate with the API - Angular, react and VueJS. Currently, the Angular version is the most polished of the implementations whereas the React and Vue apps are more simplistic and academic in nature. The Angular client app also includes [UI to administer users and roles](./angular-app.md#administrative-area). This guide only covers getting the Angular app up and running, but instructions to run the [React](./react-app.md) and [Vue](./vue-app.md) apps are on their respective documentation pages.
 
 Open another command window in `ng-app` folder located in the root of the repo
 
@@ -90,6 +92,8 @@ npm start
 ```
 
 In your browser, navigate to: [http://localhost:4200](http://localhost:4200)
+
+####
 
 At this point you should see the home page of the [Angular App](./angular-app.md).
 
