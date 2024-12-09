@@ -38,7 +38,7 @@ SimpleAuth currently supports three client frameworks: Angular v18, React v18, a
 
 ## Getting Started with SimpleAuth
 
-To begin using SimpleAuth for .NET on your local machine, follow the step-by-step instructions in the [Getting Started Guide](./documentation/index.md). The guide provides a comprehensive walkthrough to help you set up and begin leveraging SimpleAuth in your project.
+To begin using SimpleAuth for .NET on your local machine, follow the step-by-step instructions in the [Getting Started Guide](./documentation/getting-started.md). The guide provides a comprehensive walkthrough to help you set up and begin leveraging SimpleAuth in your project.
 
 ---
 
