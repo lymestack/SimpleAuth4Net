@@ -2,6 +2,10 @@
 
 Welcome to the SimpleAuth for .NET documentation.
 
+>"Documentation is like sex. When it's good, it's really, really good and when it's bad it's better than nothing." - [Linus Torvalds](https://news.ycombinator.com/item?id=529479)
+
+Constructive criticism and contributions are welcome.
+
 - [Background](background.md) - How and why this project came to exist.
 - [Getting Started](getting-started.md) - Getting started with SimpleAuth for .NET
 - [Configuration Options](app-settings.md) - Configuration options for your API and configuration endpoint.
