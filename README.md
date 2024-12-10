@@ -45,9 +45,9 @@ SimpleAuth is built to be simple and functional while supporting core identity m
 
 SimpleAuth currently supports three client frameworks:
 
-- **Angular v18** – The most polished implementation, ready to integrate.
-- **React v18** – Functional, but less refined.
-- **Vue v3** – Functional, but early-stage.
+- [**Angular v18**](./documentation/angular-app.md) – The most polished implementation, ready to integrate.
+- [**React v18**](./documentation/react-app.md) – Functional, but less refined.
+- [**Vue v3**](./documentation/vue-app.md) – Functional, but early-stage.
 
 Contributions to improve the existing front-ends or add support for other frameworks are welcome and encouraged.
 
