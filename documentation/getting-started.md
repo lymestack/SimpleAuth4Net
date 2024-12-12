@@ -21,9 +21,9 @@ cd SimpleAuth4Net
 
 ## Step 2: Generate a "Token Secret"
 
-First start by replacing the value of the `TokenSecret` config setting in the [App Settings](./app-settings.md) file with randomly generated 64 byte (or more) secret should be used for this value.
+First start by replacing the value of the `TokenSecret` config setting in the [App Settings](./app-settings.md) file with randomly generated 64 byte (or more) secret.
 
-To generate a secret, you an use the provided Powershell or Python scripts.
+To generate a random secret, you can use the provided Powershell or Python scripts.
 
 In Powershell:
 
