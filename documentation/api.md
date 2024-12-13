@@ -1,6 +1,6 @@
 # The API
 
-The API is built using ASP.NET 9 WebApi technology reside in the `WebApi/WebApi/Controllers` directory and offers the following endpoints:
+The API is built using ASP.NET 9 WebApi technology and resides in the `WebApi/WebApi/Controllers` directory. It offers the following endpoints:
 
 ## Configuration Endpoint
 
