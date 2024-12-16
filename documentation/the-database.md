@@ -15,7 +15,7 @@ The AppUser table contains basic, non secret user information. This information 
 The AppRole table contains the list of Roles to be assigned to users. The name of the role would be used to help identify the access level of a user or lock down an endpoint. For example, to find out if the current user is in the "Admin" role, I could use this:
 `var isAdmin = User.Identity.IsInRole("Admin")`
 
-To secure a WebApi controller or endpoint, you can secure it using the following decorator:
+To secure a WebApi controller or endpoint, you can secure it using the following decorator (replacing "Admin" with any role or roles using a comma-separated string of role names as a substitute):
 `[Authorize(Roles = "Admin")]`
 
 ## AppUserRole Table
