@@ -17,6 +17,7 @@ export class AppUser {
     lastSeen: Date;
     verified: boolean;
     active: boolean = true;
+    locked: boolean;
     appUserCredential: AppUserCredential;
     appUserRoles: AppUserRole[] = [];
     appRefreshTokens: AppRefreshToken[] = [];

@@ -18,6 +18,9 @@ The `AuthSettings` section of the config file contains configuration variables t
 | AccessTokenExpirationMinutes | `15` | The number of minutes an access token is valid for. |
 | StoreTokensInCookies | `true` | If this value is true, access tokens will be stored in a HTTP only cookie, safe from CQRS attacks. If false, the access token will be in the body of the [Login API Endpoints](api.md#auth-endpoints). The access token is stored in a cookie named `X-Access-Token` and the refresh token in another cookie named `X-Refresh-Token`. |
 | UseRefreshTokens | `true` | Indicates whether or not to use refresh tokens. Refresh tokens are stored in the `AppRefresh` token [database table](the-database.md). |
+| RefreshTokenExpirationDays | `30` | Number of days a refresh token will remain valid. |
+| MaxFailedLoginAttempts | `5`, | The maximum number of failed login attempts before automatic account lockout. |
+| AccountLockoutDurationInMinutes | `15` | An account lockout will expire in this number of minutes. A value of 0 indicates no automatic unlock. Unlocks must happen manually by an Admin user. |
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
 | AllowedOrigins | TBD | An array of strings to be allowed for CORS Security. |

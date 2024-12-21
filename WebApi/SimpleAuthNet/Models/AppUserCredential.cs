@@ -23,4 +23,10 @@ public class AppUserCredential
     public bool VerifyTokenUsed { get; set; }
 
     public bool PendingMfaLogin { get; set; }
+
+    public int FailedLoginAttempts { get; set; } = 0;
+
+    public DateTime? LastFailedLoginAttempt { get; set; }
+
+    public DateTime? LockoutEndTime { get; set; }
 }

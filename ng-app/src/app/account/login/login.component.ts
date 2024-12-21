@@ -47,7 +47,7 @@ export class LoginComponent implements OnInit {
             this.router.navigateByUrl('/account/verify-mfa');
           } else {
             console.log('Logged in');
-            setTimeout(() => window.location.reload(), 100);
+            setTimeout(() => window.location.reload(), 1000);
           }
         },
         (err: any) => {

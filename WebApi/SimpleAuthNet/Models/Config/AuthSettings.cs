@@ -14,6 +14,10 @@ public class AuthSettings
 
     public int VerifyTokenExpiresInMinutes { get; set; }
 
+    public int MaxFailedLoginAttempts { get; set; }
+
+    public int AccountLockoutDurationInMinutes { get; set; }
+
     public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
 
     public string[] AllowedOrigins { get; set; } = [];

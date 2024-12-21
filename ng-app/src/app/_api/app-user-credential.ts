@@ -15,4 +15,7 @@ export class AppUserCredential {
     verifyTokenExpires: Date;
     verifyTokenUsed: boolean;
     pendingMfaLogin: boolean;
+    failedLoginAttempts: number;
+    lastFailedLoginAttempt: Date;
+    lockoutEndTime: Date;
 }

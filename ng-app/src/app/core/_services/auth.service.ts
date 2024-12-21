@@ -45,6 +45,10 @@ export class AuthService {
           }
 
           return response;
+        }),
+        catchError((error) => {
+          this.handleLoginError(error); // Call the error handler
+          return throwError(() => error);
         })
       );
   }
@@ -209,6 +213,22 @@ export class AuthService {
           return throwError(() => new Error('Unauthorized'));
         })
       );
+  }
+
+  private handleLoginError(error: any): void {
+    debugger;
+
+    if (
+      error?.status === 401 &&
+      (error.error.includes('locked') ||
+        error.error?.message === 'The account is locked.')
+    ) {
+      alert(
+        'Your account has been locked due to multiple failed login attempts. Please wait a few minutes to try again or contact support.'
+      );
+    } else {
+      console.error('Login error:', error);
+    }
   }
 
   private getStoredRefreshTokenExpiration(): number | null {

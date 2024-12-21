@@ -31,7 +31,7 @@ export class VerifyAccountComponent {
         if (location.href.includes('mfa')) {
           setTimeout(
             () => (window.location.href = this.config.environment.url),
-            100
+            1000
           );
         } else {
           this.logger.success('Account successfully verified.');

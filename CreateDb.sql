@@ -113,4 +113,19 @@ GO
 -------------------------------------------------------
 
 ALTER TABLE AppUserCredential ADD PendingMfaLogin bit NOT NULL DEFAULT 0
+GO
+
+ALTER TABLE AppUser ADD Locked bit NOT NULL DEFAULT 0
+GO
+
+ALTER TABLE AppUserCredential ADD FailedLoginAttempts int NOT NULL DEFAULT 0
+GO
+
+ALTER TABLE AppUserCredential ADD LastFailedLoginAttempt DATETIME NULL
+GO
+
+ALTER TABLE AppUserCredential ADD LockoutEndTime DATETIME NULL
+GO
+
+-------------------------------------------------------
 

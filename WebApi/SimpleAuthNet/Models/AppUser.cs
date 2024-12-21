@@ -23,6 +23,8 @@ public class AppUser
 
     public bool Active { get; set; } = true;
 
+    public bool Locked { get; set; } = false;
+
     public AppUserCredential AppUserCredential { get; set; }
 
     /// <summary>

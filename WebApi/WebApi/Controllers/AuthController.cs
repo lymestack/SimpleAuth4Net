@@ -112,34 +112,77 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var user = await GetUserWithRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
         if (!user.Active) return Unauthorized("The user is inactive.");
+
+        if (user.Locked)
+        {
+            if (_authSettings.AccountLockoutDurationInMinutes > 0 &&
+                user.AppUserCredential.LockoutEndTime <= DateTime.UtcNow)
+            {
+                // Unlock account after lockout duration
+                user.Locked = false;
+                user.AppUserCredential.FailedLoginAttempts = 0;
+                user.AppUserCredential.LockoutEndTime = null;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                // Reset the clock on the lockout end time
+                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
+                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
+                    : null;
+
+                await db.SaveChangesAsync();
+                return Unauthorized("The account is locked.");
+            }
+        }
+
         if (_appConfig.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var match = CheckPassword(model.Password, user);
-        if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
+        if (!match)
+        {
+            user.AppUserCredential.FailedLoginAttempts++;
+            user.AppUserCredential.LastFailedLoginAttempt = DateTime.UtcNow;
+
+            if (user.AppUserCredential.FailedLoginAttempts >= _authSettings.MaxFailedLoginAttempts)
+            {
+                user.Locked = true;
+                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
+                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
+                    : null;
+
+                await db.SaveChangesAsync();
+                return Unauthorized("The account has been locked due to multiple failed login attempts.");
+            }
+
+            await db.SaveChangesAsync();
+            return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
+        }
+
+        // Reset failed login attempts on successful login
+        user.AppUserCredential.FailedLoginAttempts = 0;
+        user.AppUserCredential.LastFailedLoginAttempt = null;
+        await db.SaveChangesAsync();
 
         if (_appConfig.EnableMfaViaEmail)
         {
-            // Generate verification token
             var verifyToken = await SetupVerifyToken(user, true);
-
-            // Send the token via email
-            await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
-
-            var message = "A verification code has been sent to your email.";
+            var message = "A verification code has been sent to your email";
             if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
-            // Indicate to client a redirect to client-side verification page:
+            await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
             return Ok(new
             {
                 mfaRequired = true,
                 redirectUrl = "/account/verify-account",
-                message = message
+                message
             });
         }
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
     }
+
 
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
@@ -151,17 +194,53 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
             Audience = new List<string> { _appConfig.GoogleClientId }
         };
 
-        var payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
+        GoogleJsonWebSignature.Payload payload;
+
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
+        }
+        catch (Exception)
+        {
+            return BadRequest("Invalid Google credentials.");
+        }
+
         var user = await GetUserWithRoles(payload.Email);
-        if (user == null) return BadRequest();
+        if (user == null) return BadRequest("No user associated with the provided email.");
         if (!user.Active) return Unauthorized("The user is inactive.");
 
-        // Assume email is verified by receiving valid credentials from Google.
+        // Handle locked accounts
+        if (user.Locked)
+        {
+            if (_authSettings.AccountLockoutDurationInMinutes > 0 &&
+                user.AppUserCredential.LockoutEndTime <= DateTime.UtcNow)
+            {
+                // Unlock account after lockout duration
+                user.Locked = false;
+                user.AppUserCredential.FailedLoginAttempts = 0;
+                user.AppUserCredential.LockoutEndTime = null;
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
+                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
+                    : null;
+
+                await db.SaveChangesAsync();
+                return Unauthorized("The account is locked.");
+            }
+        }
+
+        // Assume email is verified by receiving valid credentials from Google
         if (!user.Verified) user.Verified = true;
 
+        // Generate JWT
         var jwt = await JwtGenerator(user, model.DeviceId);
+
         return Ok(jwt);
     }
+
 
     #endregion
 
