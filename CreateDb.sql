@@ -109,3 +109,8 @@ GO
 
 ALTER TABLE AppUser ADD Active BIT DEFAULT 1
 GO
+
+-------------------------------------------------------
+
+ALTER TABLE AppUserCredential ADD PendingMfaLogin bit NOT NULL DEFAULT 0
+

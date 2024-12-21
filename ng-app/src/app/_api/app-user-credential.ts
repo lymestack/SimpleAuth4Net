@@ -14,4 +14,5 @@ export class AppUserCredential {
     verifyToken: string;
     verifyTokenExpires: Date;
     verifyTokenUsed: boolean;
+    pendingMfaLogin: boolean;
 }

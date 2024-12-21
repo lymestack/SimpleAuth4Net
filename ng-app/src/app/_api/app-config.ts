@@ -13,4 +13,5 @@ export class AppConfig {
     enableGoogle: boolean;
     allowRegistration: boolean;
     requireUserVerification: boolean;
+    enableMfaViaEmail: boolean;
 }

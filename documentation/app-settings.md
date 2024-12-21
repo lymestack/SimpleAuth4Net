@@ -16,11 +16,11 @@ The `AuthSettings` section of the config file contains configuration variables t
 | ---- | ------- | ---------- |
 | TokenSecret | TBD | Unique key used to encrypt access tokens |
 | AccessTokenExpirationMinutes | `15` | The number of minutes an access token is valid for. |
-| StoreTokensInCookies | `true` | If this value is true, access tokens will be stored in a HTTP only cookie, safe from CQRS attacks. If false, the access token will be in the body of the [Login API Endpoints](api.md#auth-endpoints). The access token is stored in a cookie named `X-Access-Token` and the refresh token in another cookie named `X-Refresh-Token` |
+| StoreTokensInCookies | `true` | If this value is true, access tokens will be stored in a HTTP only cookie, safe from CQRS attacks. If false, the access token will be in the body of the [Login API Endpoints](api.md#auth-endpoints). The access token is stored in a cookie named `X-Access-Token` and the refresh token in another cookie named `X-Refresh-Token`. |
 | UseRefreshTokens | `true` | Indicates whether or not to use refresh tokens. Refresh tokens are stored in the `AppRefresh` token [database table](the-database.md). |
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
-| AllowedOrigins | TBD | An array of strings to be allowed for CORS Security |
+| AllowedOrigins | TBD | An array of strings to be allowed for CORS Security. |
 
 ## EmailSettings Section
 
@@ -49,6 +49,7 @@ The `AppConfig` section of the config file contains data that is shared between 
 |  - Api | `https://localhost:7214/` | The root URL for the API. Trailing slash is required. |
 |  - Description | `This is the local instance` | The description of the environment, |
 | EnableLocalAccounts | `true` | Whether or not local accounts are permitted. If true, user salted/hashed user passwords will reside in the `AppUserCredential` [database table](the-databse.md). |
+| EnableMfaViaEmail | `false` | Enable multi-factor authentication using e-mail verification. |
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
 | EnableGoogle | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |

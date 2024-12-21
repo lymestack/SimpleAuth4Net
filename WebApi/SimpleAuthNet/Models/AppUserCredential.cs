@@ -21,4 +21,6 @@ public class AppUserCredential
     public DateTime VerifyTokenExpires { get; set; }
 
     public bool VerifyTokenUsed { get; set; }
+
+    public bool PendingMfaLogin { get; set; }
 }

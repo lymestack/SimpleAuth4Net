@@ -43,9 +43,12 @@ export class LoginComponent implements OnInit {
 
       this.auth.login(this.model).subscribe(
         (data: any) => {
-          console.log('Logged in');
-          // this.router.navigateByUrl('/');
-          window.location.reload();
+          if (this.config.enableMfaViaEmail) {
+            this.router.navigateByUrl('/account/verify-mfa');
+          } else {
+            console.log('Logged in');
+            setTimeout(() => window.location.reload(), 100);
+          }
         },
         (err: any) => {
           this.logger.warning('Invalid login. Try again.');

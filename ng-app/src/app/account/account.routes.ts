@@ -56,6 +56,11 @@ const routes: Routes = [
     component: VerifyAccountComponent,
     data: { state: 'Verify Your Account' },
   },
+  {
+    path: 'verify-mfa',
+    component: VerifyAccountComponent,
+    data: { state: 'Verify Your Account (MFA)' },
+  },
 
   // otherwise redirect to home
   { path: '**', redirectTo: '' },

@@ -38,9 +38,12 @@ export class AuthService {
         withCredentials: true,
       })
       .pipe(
-        map((response) => {
-          this.storeTokenExpiration(response.expires);
-          this.scheduleTokenRefresh(response.expires);
+        map((response: any) => {
+          if (!this.config.enableMfaViaEmail) {
+            this.storeTokenExpiration(response.expires);
+            this.scheduleTokenRefresh(response.expires);
+          }
+
           return response;
         })
       );
@@ -125,16 +128,30 @@ export class AuthService {
   }
 
   verifyAccount(verifyToken: string): Observable<any> {
+    let mfaLogin = window.location.href.includes('mfa');
+    let verifyEndpoint = 'Verify';
+    if (mfaLogin) verifyEndpoint += mfaLogin ? 'Mfa' : 'Account';
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     let username = localStorage.getItem('verifyUsername');
-    return this.httpClient.post<any>(
-      `${this.apiUrl}Auth/VerifyAccount`,
-      { username, verifyToken },
-      {
-        headers: header,
-        withCredentials: true,
-      }
-    );
+    return this.httpClient
+      .post<any>(
+        `${this.apiUrl}Auth/${verifyEndpoint}`,
+        { username, verifyToken, deviceId: this.deviceId },
+        {
+          headers: header,
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response) => {
+          if (!mfaLogin) return response;
+          this.storeTokenExpiration(response.expires);
+          this.scheduleTokenRefresh(response.expires);
+          // ZOMBIE - Safe to delete after testing login (regular + MFA)
+          // setTimeout(() => window.location.reload(), 100);
+          return response;
+        })
+      );
   }
 
   revokeToken(): Observable<any> {

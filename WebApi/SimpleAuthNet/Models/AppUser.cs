@@ -38,4 +38,5 @@ public class AppUser
     [NotMapped] public IList<string> Roles { get; set; } = [];
 
     [NotMapped] public Guid SessionId { get; set; }
+
 }

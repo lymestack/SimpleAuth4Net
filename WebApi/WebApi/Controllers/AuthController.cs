@@ -102,7 +102,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #endregion
 
-    #region Login
+    #region Login Endpoints
 
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -116,6 +116,26 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
         var match = CheckPassword(model.Password, user);
         if (!match) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
+
+        if (_appConfig.EnableMfaViaEmail)
+        {
+            // Generate verification token
+            var verifyToken = await SetupVerifyToken(user, true);
+
+            // Send the token via email
+            await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
+
+            var message = "A verification code has been sent to your email.";
+            if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+
+            // Indicate to client a redirect to client-side verification page:
+            return Ok(new
+            {
+                mfaRequired = true,
+                redirectUrl = "/account/verify-account",
+                message = message
+            });
+        }
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
@@ -141,17 +161,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
-    }
-
-    private async Task<AppUser?> GetUserWithRoles(string username)
-    {
-        var user = await db.AppUsers
-            .Include(x => x.AppUserCredential)
-            .Include(x => x.AppUserRoles)
-            .ThenInclude(x => x.AppRole)
-            .SingleOrDefaultAsync(x => x.Username == username);
-
-        return user;
     }
 
     #endregion
@@ -245,7 +254,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #endregion
 
-    #region ForgotPassword / ResetPassword / VerifyAccount
+    #region ForgotPassword / ResetPassword / VerifyAccount / VerifyMfa
 
     [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
@@ -285,6 +294,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         user.AppUserCredential.PasswordSalt = hmac.Key;
         user.AppUserCredential.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
         user.AppUserCredential.VerifyTokenUsed = true;
+        user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
 
         await db.SaveChangesAsync();
@@ -292,11 +302,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
     }
 
     [HttpPost("VerifyAccount")]
-    public async Task<IActionResult> VerifyAccount([FromBody] ResetPasswordModel model)
+    public async Task<IActionResult> VerifyAccount([FromBody] VerifyIdentityModel model)
     {
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
-            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
+            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken && !x.AppUserCredential.PendingMfaLogin);
 
         if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
             user.AppUserCredential.VerifyTokenUsed)
@@ -309,9 +319,69 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         return Ok(new { success = true, message = "Account verified successfully..." });
     }
 
+    [HttpPost("VerifyMfa")]
+    public async Task<IActionResult> VerifyMfa([FromBody] VerifyIdentityModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken && x.AppUserCredential.PendingMfaLogin);
+
+        if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
+            user.AppUserCredential.VerifyTokenUsed)
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+
+        // Mark the token as used
+        user.AppUserCredential.VerifyTokenUsed = true;
+        user.AppUserCredential.PendingMfaLogin = false;
+
+        // Generate JWT after successful MFA verification
+        Debug.Assert(model.DeviceId != null, "model.DeviceId != null");
+        var jwt = await JwtGenerator(user, model.DeviceId);
+        await db.SaveChangesAsync();
+
+        return Ok(jwt);
+    }
+
+    #endregion
+
+    #region WhoAmI
+
+    [HttpGet("WhoAmI")]
+    public async Task<IActionResult> WhoAmI()
+    {
+        if (User.Identity == null) return Ok("Nobody");
+        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
+        await Task.CompletedTask;
+        return Ok(User.Identity.Name);
+    }
+
+    #endregion
+
+    #region UserVerified
+
+    [HttpGet("UserVerified")]
+    public async Task<ActionResult<bool>> UserVerified([FromQuery] string username)
+    {
+        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
+        var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
+        if (appUser == null) return BadRequest("User didn't exist.");
+        return Ok(appUser is { Verified: true });
+    }
+
     #endregion
 
     #region Private methods
+
+    private async Task<AppUser?> GetUserWithRoles(string username)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .Include(x => x.AppUserRoles)
+            .ThenInclude(x => x.AppRole)
+            .SingleOrDefaultAsync(x => x.Username == username);
+
+        return user;
+    }
 
     private async Task SendVerificationEmail(string email, string token, string subject)
     {
@@ -329,13 +399,14 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         await Task.CompletedTask;
     }
 
-    private async Task<string> SetupVerifyToken(AppUser user)
+    private async Task<string> SetupVerifyToken(AppUser user, bool mfaToken = false)
     {
         var verifyToken = new Random().Next(100000, 999999).ToString();
         Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
         user.AppUserCredential.VerifyToken = verifyToken;
         user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
         user.AppUserCredential.VerifyTokenUsed = false;
+        user.AppUserCredential.PendingMfaLogin = mfaToken;
         await db.SaveChangesAsync();
         return verifyToken;
     }
@@ -485,32 +556,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
         return result;
-    }
-
-    #endregion
-
-    #region WhoAmI
-
-    [HttpGet("WhoAmI")]
-    public async Task<IActionResult> WhoAmI()
-    {
-        if (User.Identity == null) return Ok("Nobody");
-        if (!User.Identity.IsAuthenticated) return Ok("Not Authenticated");
-        await Task.CompletedTask;
-        return Ok(User.Identity.Name);
-    }
-
-    #endregion
-
-    #region UserVerified
-
-    [HttpGet("UserVerified")]
-    public async Task<ActionResult<bool>> UserVerified([FromQuery] string username)
-    {
-        if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
-        var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
-        if (appUser == null) return BadRequest("User didn't exist.");
-        return Ok(appUser is { Verified: true });
     }
 
     #endregion

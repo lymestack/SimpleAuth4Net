@@ -12,4 +12,6 @@ public class LoginModel
 
     [Required]
     public string DeviceId { get; set; }
+
+    // public string? MfaRedirectUrl { get; set; }
 }
