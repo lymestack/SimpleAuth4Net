@@ -48,8 +48,19 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
     public async Task<ActionResult<AppUser>> Get(int id)
     {
         var appUser = await db.AppUsers
+            .Include(x => x.AppUserRoles)
+            .ThenInclude(x => x.AppRole)
+            .AsNoTracking()
             .SingleOrDefaultAsync(x => x.Id == id);
 
+        if (appUser == null) return Ok(null);
+
+        foreach (var userRole in appUser.AppUserRoles)
+        {
+            appUser.Roles.Add(userRole.AppRole.Name);
+        }
+
+        appUser.AppUserRoles = null;
         return Ok(appUser);
     }
 
