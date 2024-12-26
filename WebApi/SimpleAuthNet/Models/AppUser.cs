@@ -15,6 +15,10 @@ public class AppUser
 
     public string LastName { get; set; }
 
+    public string? PhoneNumber { get; set; }
+
+    public bool? PhoneNumberVerified { get; set; }
+
     public DateTime DateEntered { get; set; }
 
     public DateTime? LastSeen { get; set; }
@@ -24,6 +28,8 @@ public class AppUser
     public bool Active { get; set; } = true;
 
     public bool Locked { get; set; } = false;
+
+    public int? PreferredMfaMethod { get; set; }
 
     public AppUserCredential AppUserCredential { get; set; }
 

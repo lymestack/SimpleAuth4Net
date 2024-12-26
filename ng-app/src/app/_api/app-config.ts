@@ -14,4 +14,5 @@ export class AppConfig {
     allowRegistration: boolean;
     requireUserVerification: boolean;
     enableMfaViaEmail: boolean;
+    enableMfaViaSms: boolean;
 }

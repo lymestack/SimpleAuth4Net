@@ -4,6 +4,8 @@ Tables are prefixed with `App` to help group entities together in SSMS and Model
 
 ![Database Schema](./images/schema.png)
 
+TODO: Update Schema to reflect new MFA settings...
+
 **TODO:** Detail each column of each table
 
 ## AppUser Table

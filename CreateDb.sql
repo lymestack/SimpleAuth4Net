@@ -129,3 +129,12 @@ GO
 
 -------------------------------------------------------
 
+ALTER TABLE AppUser ADD PhoneNumber VARCHAR(50) NULL
+GO
+
+ALTER TABLE AppUser ADD PhoneNumberVerified BIT NULL
+GO
+
+ALTER TABLE AppUser ADD PreferredMfaMethod INT NULL
+GO
+

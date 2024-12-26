@@ -24,6 +24,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | PasswordComplexityOptions | TBD | A series of options defining rules for password complexity requirements. |
 | PasswordResetCodeExpiresInMinutes | 30 | The number of minutes that a password reset code can be redeemed after the request for that code. |
 | AllowedOrigins | TBD | An array of strings to be allowed for CORS Security. |
+| SmsProviderApiKey | TBD | A string value containing the API key for SMS MFA Authentication |
 
 ## EmailSettings Section
 
@@ -40,6 +41,19 @@ The `EmailSettings` section of the config file controls how emails are sent to u
 | Username | `null` | The username to use when authenticating with the SMTP Server. |
 | Password | `null` | The password to use when authenticating with the SMTP Server. |
 
+## SMS Settings Section
+
+The `SmsSettings` section of the config file controls how emails are sent to users from the WebApi.
+
+| Name | Default | Description |
+| ---- | ------- | ---------- |
+| Provider | `Twilio` | The provider used for SMS messaging. |
+| AccountSid | TBD | Your account ID with the SMS provider. |
+| AuthToken | TBD | The secret token used to authenticate with the SMS provider. |
+| SenderNumber | TBD | The phone number that will be used to send SMS messages. |
+| LogDirectory | `.\Logs\Sms` | The folder where time-stamped JSON log files will be stored. |
+| SimulateSend | `true` | If you don't have a Twilio account, you can set this value to `true` to only save messages to the log folder and skip the API call. |
+
 ## AppConfig Section
 
 The `AppConfig` section of the config file contains data that is shared between both the client application and the API. This information is exposed to the client via the [Configuration Endpoint](api.md#configuration-endpoint).
@@ -53,6 +67,7 @@ The `AppConfig` section of the config file contains data that is shared between 
 |  - Description | `This is the local instance` | The description of the environment, |
 | EnableLocalAccounts | `true` | Whether or not local accounts are permitted. If true, user salted/hashed user passwords will reside in the `AppUserCredential` [database table](the-databse.md). |
 | EnableMfaViaEmail | `false` | Enable multi-factor authentication using e-mail verification. |
+| EnableMfaViaSms | `false` | Enable multi-factor authentication using SMS text message. |
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
 | EnableGoogle | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |

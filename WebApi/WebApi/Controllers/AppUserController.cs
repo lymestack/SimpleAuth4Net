@@ -37,13 +37,6 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
         return Ok(appUser);
     }
 
-    //[HttpGet]
-    //public async Task<ActionResult<IList<AppUser>>> Get()
-    //{
-    //    var retVal = await db.AppUsers.OrderBy(x => x.Name).ToListAsync();
-    //    return Ok(retVal);
-    //}
-
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AppUser>> Get(int id)
     {

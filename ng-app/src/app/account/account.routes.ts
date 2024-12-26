@@ -57,7 +57,12 @@ const routes: Routes = [
     data: { state: 'Verify Your Account' },
   },
   {
-    path: 'verify-mfa',
+    path: 'verify-mfa-email',
+    component: VerifyAccountComponent,
+    data: { state: 'Verify Your Account (MFA)' },
+  },
+  {
+    path: 'verify-mfa-sms',
     component: VerifyAccountComponent,
     data: { state: 'Verify Your Account (MFA)' },
   },

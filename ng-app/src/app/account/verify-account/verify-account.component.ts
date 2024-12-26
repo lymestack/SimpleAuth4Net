@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../core/_services/logger.service';
@@ -10,9 +10,10 @@ import { APP_CONFIG } from '../../core/_services/config-injection';
   templateUrl: './verify-account.component.html',
   styleUrl: './verify-account.component.scss',
 })
-export class VerifyAccountComponent {
+export class VerifyAccountComponent implements OnInit {
   verificationCode: string = '';
   errors: string[] = [];
+  deliveryMethod: string;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -20,6 +21,12 @@ export class VerifyAccountComponent {
     private logger: LoggerService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.deliveryMethod = location.href.includes('email')
+      ? 'email inbox'
+      : 'phone';
+  }
 
   canSubmit(): boolean {
     return !!this.verificationCode;

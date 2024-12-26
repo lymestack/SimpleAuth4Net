@@ -19,5 +19,6 @@ public class TypeScriptExports : GenerationSpec
         AddClass<LoginModel>();
         AddClass<LoginWithGoogleModel>();
         AddClass<RegisterModel>();
+        AddEnum<MfaMethod>();
     }
 }

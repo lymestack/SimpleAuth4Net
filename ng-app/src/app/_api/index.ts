@@ -13,3 +13,4 @@ export * from './environment';
 export * from './login-model';
 export * from './login-with-google-model';
 export * from './register-model';
+export * from './mfa-method';

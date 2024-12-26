@@ -7,9 +7,18 @@ import {
   Observable,
   throwError,
   Subscription,
+  EMPTY,
+  switchMap,
 } from 'rxjs';
-import { AppConfig, LoginModel, LoginWithGoogleModel } from '../../_api';
+import {
+  AppConfig,
+  LoginModel,
+  LoginWithGoogleModel,
+  MfaMethod,
+} from '../../_api';
 import { APP_CONFIG } from './config-injection';
+import { SelectMfaMethodDialogComponent } from '../../account/select-mfa-method-dialog/select-mfa-method-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Injectable({
   providedIn: 'root',
@@ -22,6 +31,7 @@ export class AuthService {
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
+    private dialog: MatDialog,
     private httpClient: HttpClient
   ) {
     this.apiUrl = this.config.environment.api;
@@ -29,6 +39,39 @@ export class AuthService {
   }
 
   login(loginModel: LoginModel): Observable<any> {
+    if (this.config.enableMfaViaEmail && this.config.enableMfaViaSms) {
+      let mfaPreference = this.getStoredMfaPreference();
+      if (!!mfaPreference) {
+        loginModel.mfaMethod = mfaPreference;
+        return this.performLogin(loginModel);
+      }
+
+      return this.showMfaChoiceDialog().pipe(
+        switchMap((result) => {
+          if (result) {
+            loginModel.mfaMethod = result.method;
+            if (result.remember) {
+              this.storeMfaPreference(result.method);
+            }
+            return this.performLogin(loginModel);
+          } else {
+            return EMPTY;
+          }
+        })
+      );
+    } else {
+      return this.performLogin(loginModel);
+    }
+  }
+
+  private showMfaChoiceDialog(): Observable<
+    { method: MfaMethod; remember: boolean } | undefined
+  > {
+    const dialogRef = this.dialog.open(SelectMfaMethodDialogComponent);
+    return dialogRef.afterClosed();
+  }
+
+  private performLogin(loginModel: LoginModel): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     loginModel.deviceId = this.getOrGenerateDeviceId();
 
@@ -43,14 +86,22 @@ export class AuthService {
             this.storeTokenExpiration(response.expires);
             this.scheduleTokenRefresh(response.expires);
           }
-
           return response;
         }),
         catchError((error) => {
-          this.handleLoginError(error); // Call the error handler
+          this.handleLoginError(error);
           return throwError(() => error);
         })
       );
+  }
+
+  private storeMfaPreference(method: MfaMethod): void {
+    localStorage.setItem('preferredMfaMethod', method.toString());
+  }
+
+  private getStoredMfaPreference(): MfaMethod | null {
+    const stored = localStorage.getItem('preferredMfaMethod');
+    return stored ? (parseInt(stored) as MfaMethod) : null;
   }
 
   loginWithGoogle(credentials: string): Observable<any> {

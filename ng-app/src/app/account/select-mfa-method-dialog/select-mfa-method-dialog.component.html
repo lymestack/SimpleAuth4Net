@@ -1,0 +1,23 @@
+<h2 mat-dialog-title>Choose MFA Method</h2>
+<mat-dialog-content>
+  <p>How would you like to receive your login verification code?</p>
+
+  <div>
+    <mat-radio-group [(ngModel)]="selectedMethod">
+      <mat-radio-button [value]="MfaMethod.Email">Email</mat-radio-button>
+      <mat-radio-button [value]="MfaMethod.Sms">SMS</mat-radio-button>
+    </mat-radio-group>
+  </div>
+  <div class="padded-top padded-bottom">
+    <mat-checkbox [(ngModel)]="rememberChoice">Remember my choice</mat-checkbox>
+  </div>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button
+    mat-button
+    [mat-dialog-close]="{ method: selectedMethod, remember: rememberChoice }"
+  >
+    Confirm
+  </button>
+</mat-dialog-actions>

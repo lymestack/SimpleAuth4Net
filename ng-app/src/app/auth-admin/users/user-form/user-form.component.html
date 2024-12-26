@@ -73,6 +73,31 @@
                 >
               </mat-form-field>
 
+              <mat-form-field class="full-width">
+                <input
+                  matInput
+                  placeholder="Phone Number"
+                  #nameFiled="ngModel"
+                  name="phoneNumber"
+                  required
+                  [(ngModel)]="model.phoneNumber"
+                />
+                <mat-hint *ngIf="!model.phoneNumberVerified"
+                  ><a href="javascript:alert('Coming soon...');"
+                    >Verify phone number</a
+                  ></mat-hint
+                >
+
+                <mat-hint *ngIf="model.phoneNumberVerified">
+                  The phone number has been verified.
+                  <a
+                    href="javascript:alert('Coming soon...');"
+                    style="display: none"
+                    >Mark as unverified</a
+                  ></mat-hint
+                >
+              </mat-form-field>
+
               <mat-checkbox [(ngModel)]="model.active" name="active">
                 The user is active.
               </mat-checkbox>
@@ -110,13 +135,14 @@
                 effect.
               </div>
 
-              <div
+              <!-- ZOMBIE: May Reimplement -->
+              <!-- <div
                 class="warning padded-top text-center"
                 *ngIf="model.roles.length === 0"
               >
                 <i class="fa fa-exclamation-triangle"></i> At least one role
                 needs to be selected.
-              </div>
+              </div> -->
             </mat-card-content>
           </mat-card>
         </div>
@@ -129,12 +155,10 @@
         (click)="onSave()"
         color="primary"
         [disabled]="
-          saving ||
-          model.roles.length === 0 ||
-          (model.id === 0 && !usernameAvailable) ||
-          !userForm.valid
+          saving || (model.id === 0 && !usernameAvailable) || !userForm.valid
         "
       >
+        <!-- ZOMBIE: May Reimplement: model.roles.length === 0 || -->
         <i class="fa fa-spinner fa-spin padded-right" *ngIf="saving"></i>
         Save
       </button>

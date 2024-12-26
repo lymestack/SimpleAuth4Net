@@ -145,13 +145,15 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         user.AppUserCredential.LastFailedLoginAttempt = null;
         await db.SaveChangesAsync();
 
-        if (_appConfig.EnableMfaViaEmail)
+        if (_appConfig.EnableMfaViaEmail || _appConfig.EnableMfaViaSms)
         {
             var verifyToken = await SetupVerifyToken(user, true);
             var message = "A verification code has been sent to your email";
             if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
-            await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
+            if (model.MfaMethod == MfaMethod.Email) await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
+            if (model.MfaMethod == MfaMethod.Sms) await SendVerificationSms(user.PhoneNumber, verifyToken);
+
             return Ok(new
             {
                 mfaRequired = true,
@@ -460,6 +462,24 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var emailService = new EmailService(configuration);
         emailService.SendEmailMessage(mailMessage);
         await Task.CompletedTask;
+    }
+
+    private async Task SendVerificationSms(string userPhoneNumber, string token)
+    {
+        var message = $"Your verification code is: {token}";
+        await SendSms(userPhoneNumber, message);
+    }
+
+    private async Task SendSms(string phoneNumber, string message)
+    {
+        var smsSettings = configuration.GetSection("SmsSettings").Get<SmsSettings>();
+
+        Debug.Assert(smsSettings != null, nameof(smsSettings) + " != null");
+        ISmsProvider smsProvider = new TwilioSmsProvider(smsSettings);
+
+        var smsService = new SmsService(smsProvider, smsSettings.LogDirectory);
+        await smsService.SendSmsAsync(phoneNumber, message);
+
     }
 
     private async Task<string> SetupVerifyToken(AppUser user, bool mfaToken = false)

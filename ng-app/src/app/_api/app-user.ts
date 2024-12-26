@@ -13,11 +13,14 @@ export class AppUser {
     emailAddress: string;
     firstName: string;
     lastName: string;
+    phoneNumber: string;
+    phoneNumberVerified: boolean;
     dateEntered: Date;
     lastSeen: Date;
     verified: boolean;
     active: boolean = true;
     locked: boolean;
+    preferredMfaMethod: number;
     appUserCredential: AppUserCredential;
     appUserRoles: AppUserRole[] = [];
     appRefreshTokens: AppRefreshToken[] = [];

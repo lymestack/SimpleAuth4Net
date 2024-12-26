@@ -15,6 +15,8 @@ public class AppConfig
     public bool AllowRegistration { get; set; }
 
     public bool RequireUserVerification { get; set; }
+
     public bool EnableMfaViaEmail { get; set; }
 
+    public bool EnableMfaViaSms { get; set; }
 }

@@ -13,6 +13,7 @@ import { RegisterConfirmationComponent } from './register-confirmation/register-
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
 import { VerifyAccountComponent } from './verify-account/verify-account.component';
+import { SelectMfaMethodDialogComponent } from './select-mfa-method-dialog/select-mfa-method-dialog.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { VerifyAccountComponent } from './verify-account/verify-account.componen
     ResetPasswordComponent,
     VerificationPendingComponent,
     VerifyAccountComponent,
+    SelectMfaMethodDialogComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
   exports: [UsernameEmailInputComponent],

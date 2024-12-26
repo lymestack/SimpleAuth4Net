@@ -44,7 +44,11 @@ export class LoginComponent implements OnInit {
       this.auth.login(this.model).subscribe(
         (data: any) => {
           if (this.config.enableMfaViaEmail) {
-            this.router.navigateByUrl('/account/verify-mfa');
+            let verifyRoute =
+              this.model.mfaMethod == 1
+                ? '/account/verify-mfa-email'
+                : '/account/verify-mfa-sms';
+            this.router.navigateByUrl(verifyRoute);
           } else {
             console.log('Logged in');
             setTimeout(() => window.location.reload(), 1000);
