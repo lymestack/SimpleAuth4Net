@@ -109,36 +109,17 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
 
-        var user = await GetUserWithRoles(model.Username);
+        var user = await GetUserWithCredentialsAndRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
         if (!user.Active) return Unauthorized("The user is inactive.");
 
-        if (user.Locked)
-        {
-            if (_authSettings.AccountLockoutDurationInMinutes > 0 &&
-                user.AppUserCredential.LockoutEndTime <= DateTime.UtcNow)
-            {
-                // Unlock account after lockout duration
-                user.Locked = false;
-                user.AppUserCredential.FailedLoginAttempts = 0;
-                user.AppUserCredential.LockoutEndTime = null;
-                await db.SaveChangesAsync();
-            }
-            else
-            {
-                // Reset the clock on the lockout end time
-                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
-                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
-                    : null;
-
-                await db.SaveChangesAsync();
-                return Unauthorized("The account is locked.");
-            }
-        }
+        var isLocked = await HandleLockedAccounts(user);
+        if (isLocked) return Unauthorized("The account is locked.");
 
         if (_appConfig.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var match = CheckPassword(model.Password, user);
+
         if (!match)
         {
             user.AppUserCredential.FailedLoginAttempts++;
@@ -183,7 +164,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         return Ok(jwt);
     }
 
-
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
     {
@@ -205,42 +185,20 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
             return BadRequest("Invalid Google credentials.");
         }
 
-        var user = await GetUserWithRoles(payload.Email);
+        var user = await GetUserWithCredentialsAndRoles(payload.Email);
         if (user == null) return BadRequest("No user associated with the provided email.");
         if (!user.Active) return Unauthorized("The user is inactive.");
 
-        // Handle locked accounts
-        if (user.Locked)
-        {
-            if (_authSettings.AccountLockoutDurationInMinutes > 0 &&
-                user.AppUserCredential.LockoutEndTime <= DateTime.UtcNow)
-            {
-                // Unlock account after lockout duration
-                user.Locked = false;
-                user.AppUserCredential.FailedLoginAttempts = 0;
-                user.AppUserCredential.LockoutEndTime = null;
-                await db.SaveChangesAsync();
-            }
-            else
-            {
-                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
-                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
-                    : null;
-
-                await db.SaveChangesAsync();
-                return Unauthorized("The account is locked.");
-            }
-        }
+        var isLocked = await HandleLockedAccounts(user);
+        if (isLocked) return Unauthorized("The account is locked.");
 
         // Assume email is verified by receiving valid credentials from Google
         if (!user.Verified) user.Verified = true;
 
         // Generate JWT
         var jwt = await JwtGenerator(user, model.DeviceId);
-
         return Ok(jwt);
     }
-
 
     #endregion
 
@@ -451,7 +409,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #region Private methods
 
-    private async Task<AppUser?> GetUserWithRoles(string username)
+    private async Task<AppUser?> GetUserWithCredentialsAndRoles(string username)
     {
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -460,6 +418,32 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
             .SingleOrDefaultAsync(x => x.Username == username);
 
         return user;
+    }
+
+    private async Task<bool> HandleLockedAccounts(AppUser user)
+    {
+        if (!user.Locked) return false;
+
+        if (_authSettings.AccountLockoutDurationInMinutes > 0 &&
+            user.AppUserCredential.LockoutEndTime <= DateTime.UtcNow)
+        {
+            // Unlock account after lockout duration
+            user.Locked = false;
+            user.AppUserCredential.FailedLoginAttempts = 0;
+            user.AppUserCredential.LockoutEndTime = null;
+            await db.SaveChangesAsync();
+        }
+        else
+        {
+            user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
+                ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
+                : null;
+
+            await db.SaveChangesAsync();
+            return true;
+        }
+
+        return false;
     }
 
     private async Task SendVerificationEmail(string email, string token, string subject)
