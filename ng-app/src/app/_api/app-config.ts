@@ -15,4 +15,5 @@ export class AppConfig {
     requireUserVerification: boolean;
     enableMfaViaEmail: boolean;
     enableMfaViaSms: boolean;
+    enableMfaViaOtp: boolean;
 }

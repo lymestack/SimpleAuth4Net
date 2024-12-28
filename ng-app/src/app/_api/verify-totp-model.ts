@@ -3,8 +3,8 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-export enum MfaMethod {
-    Email = 1,
-    Sms = 2,
-    Otp = 3,
+export class VerifyTotpModel {
+    username: string;
+    code: string;
+    deviceId: string;
 }

@@ -21,4 +21,6 @@ public class AuthSettings
     public PasswordComplexityOptions PasswordComplexityOptions { get; set; } = new();
 
     public string[] AllowedOrigins { get; set; } = [];
+
+    public string OtpIssuerName { get; set; }
 }

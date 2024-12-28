@@ -13,12 +13,13 @@ public class TypeScriptExports : GenerationSpec
 {
     public TypeScriptExports()
     {
-        AddClass<AppUser>();
-        AddClass<AppRole>();
         AddClass<AppConfig>();
+        AddClass<AppRole>();
+        AddClass<AppUser>();
         AddClass<LoginModel>();
         AddClass<LoginWithGoogleModel>();
         AddClass<RegisterModel>();
+        AddClass<VerifyTotpModel>();
         AddEnum<MfaMethod>();
     }
 }

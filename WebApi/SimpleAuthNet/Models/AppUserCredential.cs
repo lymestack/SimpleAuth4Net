@@ -29,4 +29,6 @@ public class AppUserCredential
     public DateTime? LastFailedLoginAttempt { get; set; }
 
     public DateTime? LockoutEndTime { get; set; }
+
+    public string? TotpSecret { get; set; }
 }

@@ -9,6 +9,8 @@ import { RegisterConfirmationComponent } from './register-confirmation/register-
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
 import { VerifyAccountComponent } from './verify-account/verify-account.component';
+import { SetupAuthenticatorComponent } from './setup-authenticator/setup-authenticator.component';
+import { UserSettingsComponent } from './user-settings/user-settings.component';
 
 const routes: Routes = [
   {
@@ -59,12 +61,27 @@ const routes: Routes = [
   {
     path: 'verify-mfa-email',
     component: VerifyAccountComponent,
-    data: { state: 'Verify Your Account (MFA)' },
+    data: { state: 'Verify Your Account (MFA via Email)' },
   },
   {
     path: 'verify-mfa-sms',
     component: VerifyAccountComponent,
-    data: { state: 'Verify Your Account (MFA)' },
+    data: { state: 'Verify Your Account (MFA via SMS)' },
+  },
+  {
+    path: 'verify-mfa-otp',
+    component: VerifyAccountComponent,
+    data: { state: 'Verify Your Account (MFA via OTP)' },
+  },
+  {
+    path: 'setup-authenticator',
+    component: SetupAuthenticatorComponent,
+    data: { state: 'Setup Authenticator' },
+  },
+  {
+    path: 'user-settings',
+    component: UserSettingsComponent,
+    data: { state: 'User Settings' },
   },
 
   // otherwise redirect to home

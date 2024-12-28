@@ -76,8 +76,9 @@
       </button>
       <mat-menu #menu="matMenu">
         <ng-container *ngIf="appUser">
-          <button mat-menu-item disabled>Profile</button>
-          <button mat-menu-item disabled>Settings</button>
+          <button mat-menu-item routerLink="/account/user-settings">
+            Account Settings
+          </button>
           <button mat-menu-item routerLink="/account/logout">Logout</button>
         </ng-container>
         <ng-container *ngIf="!appUser">

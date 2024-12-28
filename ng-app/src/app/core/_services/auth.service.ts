@@ -12,9 +12,11 @@ import {
 } from 'rxjs';
 import {
   AppConfig,
+  AppUser,
   LoginModel,
   LoginWithGoogleModel,
   MfaMethod,
+  VerifyTotpModel,
 } from '../../_api';
 import { APP_CONFIG } from './config-injection';
 import { SelectMfaMethodDialogComponent } from '../../account/select-mfa-method-dialog/select-mfa-method-dialog.component';
@@ -202,8 +204,6 @@ export class AuthService {
           if (!mfaLogin) return response;
           this.storeTokenExpiration(response.expires);
           this.scheduleTokenRefresh(response.expires);
-          // ZOMBIE - Safe to delete after testing login (regular + MFA)
-          // setTimeout(() => window.location.reload(), 100);
           return response;
         })
       );
@@ -266,9 +266,53 @@ export class AuthService {
       );
   }
 
-  private handleLoginError(error: any): void {
-    debugger;
+  setupAuthenticator(username: string): Observable<any> {
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/SetupAuthenticator?username=${encodeURIComponent(
+        username
+      )}`,
+      null,
+      { withCredentials: true }
+    );
+  }
 
+  verifyAuthenticator(
+    username: string,
+    verificationCode: string
+  ): Observable<any> {
+    const verifyModel: VerifyTotpModel = {
+      username: username,
+      code: verificationCode,
+      deviceId: this.deviceId,
+    };
+
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/VerifyAuthenticatorCode`,
+      verifyModel,
+      { withCredentials: true }
+    );
+  }
+
+  handleJwtResponse(response: any): void {
+    if (response?.token) {
+      this.storeTokenExpiration(response.expires, response.refreshTokenExpires);
+      this.scheduleTokenRefresh(response.expires);
+    }
+  }
+
+  getUserProfile(): Observable<any> {
+    return this.httpClient.get<any>(`${this.apiUrl}AppUser/Me`, {
+      withCredentials: true,
+    });
+  }
+
+  updateUserProfile(user: any): Observable<any> {
+    return this.httpClient.post<any>(`${this.apiUrl}Auth/AppUser`, user, {
+      withCredentials: true,
+    });
+  }
+
+  private handleLoginError(error: any): void {
     if (
       error?.status === 401 &&
       (error.error.includes('locked') ||

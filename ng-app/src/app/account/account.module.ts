@@ -14,6 +14,8 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { VerificationPendingComponent } from './verification-pending/verification-pending.component';
 import { VerifyAccountComponent } from './verify-account/verify-account.component';
 import { SelectMfaMethodDialogComponent } from './select-mfa-method-dialog/select-mfa-method-dialog.component';
+import { SetupAuthenticatorComponent } from './setup-authenticator/setup-authenticator.component';
+import { UserSettingsComponent } from './user-settings/user-settings.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +31,8 @@ import { SelectMfaMethodDialogComponent } from './select-mfa-method-dialog/selec
     VerificationPendingComponent,
     VerifyAccountComponent,
     SelectMfaMethodDialogComponent,
+    SetupAuthenticatorComponent,
+    UserSettingsComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
   exports: [UsernameEmailInputComponent],

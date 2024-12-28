@@ -6,6 +6,9 @@
     <mat-radio-group [(ngModel)]="selectedMethod">
       <mat-radio-button [value]="MfaMethod.Email">Email</mat-radio-button>
       <mat-radio-button [value]="MfaMethod.Sms">SMS</mat-radio-button>
+      <mat-radio-button [value]="MfaMethod.Otp"
+        >Authenticator App</mat-radio-button
+      >
     </mat-radio-group>
   </div>
   <div class="padded-top padded-bottom">

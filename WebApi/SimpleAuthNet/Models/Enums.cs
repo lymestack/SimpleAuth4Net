@@ -4,5 +4,5 @@ public enum MfaMethod
 {
     Email = 1,
     Sms = 2,
-    AuthenticatorApp = 3
+    Otp = 3
 }

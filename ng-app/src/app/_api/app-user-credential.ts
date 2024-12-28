@@ -18,4 +18,5 @@ export class AppUserCredential {
     failedLoginAttempts: number;
     lastFailedLoginAttempt: Date;
     lockoutEndTime: Date;
+    totpSecret: string;
 }

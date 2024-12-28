@@ -138,3 +138,7 @@ GO
 ALTER TABLE AppUser ADD PreferredMfaMethod INT NULL
 GO
 
+-------------------------------------------------------
+
+ALTER TABLE AppUserCredential ADD TotpSecret NVARCHAR(255) NULL
+GO

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using OtpNet;
+using QRCoder; // Ensure this namespace is included
 using SimpleAuthNet;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
@@ -14,6 +16,8 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+
+
 
 namespace WebApi.Controllers;
 
@@ -383,6 +387,119 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #endregion
 
+    #region Authenticator / OTP Endpoints
+
+    [HttpPost("SetupAuthenticator")]
+    public async Task<IActionResult> SetupAuthenticator([FromQuery] string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return BadRequest("Username must be provided.");
+        }
+
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.Username == username);
+
+        if (user == null) return NotFound("User not found.");
+
+        if (string.IsNullOrEmpty(user.AppUserCredential.TotpSecret))
+        {
+            user.AppUserCredential.TotpSecret = GenerateTotpSecret();
+            await db.SaveChangesAsync();
+        }
+
+        var issuer = _authSettings.OtpIssuerName;
+        var label = $"{issuer}:{user.Username}";
+        var qrCodeUrl = $"otpauth://totp/{label}?secret={user.AppUserCredential.TotpSecret}&issuer={issuer}";
+
+        using var qrGenerator = new QRCodeGenerator();
+        using var qrCodeData = qrGenerator.CreateQrCode(qrCodeUrl, QRCodeGenerator.ECCLevel.Q);
+        using var qrCode = new PngByteQRCode(qrCodeData);
+        var qrCodeImage = qrCode.GetGraphic(20);
+        var qrCodeBase64 = Convert.ToBase64String(qrCodeImage.ToArray());
+
+        var totpSecret = _appConfig.Environment.Name.Contains("Local") ? $"Development ONLY: {user.AppUserCredential.TotpSecret}" : "REDACTED";
+
+        return Ok(new
+        {
+            qrCodeBase64,
+            totpSecret
+        });
+    }
+
+    [HttpPost("VerifyAuthenticatorCode")]
+    public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyTotpModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.Username == model.Username);
+
+        if (user == null || string.IsNullOrEmpty(user.AppUserCredential.TotpSecret))
+            return BadRequest("TOTP setup incomplete.");
+
+        var isValid = VerifyTotpCode(user.AppUserCredential.TotpSecret, model.Code);
+        if (!isValid) return Unauthorized("Invalid TOTP code.");
+
+        // Generate JWT
+        if (string.IsNullOrEmpty(model.DeviceId))
+            return BadRequest(new { success = false, message = "Device ID is required." });
+
+        var jwt = await JwtGenerator(user, model.DeviceId);
+
+        return Ok(new
+        {
+            success = true,
+            message = "MFA verification successful.",
+            token = jwt.token,
+            expires = jwt.expires,
+            refreshTokenExpires = jwt.refreshTokenExpires
+        });
+
+        //return Ok("Authenticator app verified successfully.");
+    }
+
+
+    //[HttpPost("VerifyAuthenticatorCode")]
+    //public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyIdentityModel model)
+    //{
+    //    var user = await db.AppUsers
+    //        .Include(x => x.AppUserCredential)
+    //        .FirstOrDefaultAsync(x => x.Username == model.Username);
+
+    //    if (user == null)
+    //        return BadRequest(new { success = false, message = "Invalid user." });
+
+    //    if (string.IsNullOrEmpty(user.AppUserCredential.TotpSecret))
+    //        return BadRequest(new { success = false, message = "Authenticator app is not configured for this user." });
+
+    //    // Validate the provided OTP
+    //    var totp = new Totp(Base32Encoding.ToBytes(user.AppUserCredential.TotpSecret));
+    //    if (!totp.VerifyTotp(model.VerifyToken, out long _, VerificationWindow.RfcSpecifiedNetworkDelay))
+    //        return BadRequest(new { success = false, message = "Invalid or expired OTP." });
+
+    //    // Clear pending MFA login state
+    //    user.AppUserCredential.PendingMfaLogin = false;
+    //    await db.SaveChangesAsync();
+
+    //    // Generate JWT
+    //    if (string.IsNullOrEmpty(model.DeviceId))
+    //        return BadRequest(new { success = false, message = "Device ID is required." });
+
+    //    var jwt = await JwtGenerator(user, model.DeviceId);
+
+    //    return Ok(new
+    //    {
+    //        success = true,
+    //        message = "MFA verification successful.",
+    //        token = jwt.token,
+    //        expires = jwt.expires,
+    //        refreshTokenExpires = jwt.refreshTokenExpires
+    //    });
+    //}
+
+    #endregion
+
     #region WhoAmI
 
     [HttpGet("WhoAmI")]
@@ -554,7 +671,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         };
     }
 
-
     private void SetJwtAccessTokenCookie(string encryptedToken)
     {
         if (!_authSettings.StoreTokensInCookies) return;
@@ -639,6 +755,20 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
         return result;
+    }
+
+    private string GenerateTotpSecret()
+    {
+        var random = new byte[10];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(random);
+        return Base32Encoding.ToString(random); // Use a Base32 encoding library
+    }
+
+    private bool VerifyTotpCode(string secret, string code)
+    {
+        var totp = new OtpNet.Totp(Base32Encoding.ToBytes(secret));
+        return totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
     }
 
     #endregion

@@ -1,0 +1,69 @@
+<div class="user-settings-container mat-elevation-z8">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>User Settings</mat-card-title>
+      <mat-card-subtitle>Edit your profile information</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="onSubmit()" #settingsForm="ngForm">
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>First Name</mat-label>
+          <input
+            matInput
+            [(ngModel)]="user.firstName"
+            name="firstName"
+            required
+          />
+          <mat-error *ngIf="!settingsForm.form.controls['firstName']?.valid">
+            First name is required.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Last Name</mat-label>
+          <input
+            matInput
+            [(ngModel)]="user.lastName"
+            name="lastName"
+            required
+          />
+          <mat-error *ngIf="!settingsForm.form.controls['lastName']?.valid">
+            Last name is required.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Email Address</mat-label>
+          <input
+            matInput
+            [(ngModel)]="user.emailAddress"
+            name="emailAddress"
+            required
+            type="email"
+          />
+          <mat-error *ngIf="!settingsForm.form.controls['emailAddress']?.valid">
+            Please enter a valid email address.
+          </mat-error>
+        </mat-form-field>
+
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="!settingsForm.valid"
+        >
+          Save Changes
+        </button>
+      </form>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-button
+        color="accent"
+        routerLink="/account/setup-authenticator"
+      >
+        Set Up Authenticator App
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

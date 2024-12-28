@@ -19,4 +19,6 @@ public class AppConfig
     public bool EnableMfaViaEmail { get; set; }
 
     public bool EnableMfaViaSms { get; set; }
+
+    public bool EnableMfaViaOtp { get; set; }
 }

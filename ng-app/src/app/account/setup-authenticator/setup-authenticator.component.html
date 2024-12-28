@@ -1,0 +1,40 @@
+<div class="authenticator-setup-container mat-elevation-z8">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Set Up Authenticator App</mat-card-title>
+      <mat-card-subtitle>
+        Scan the QR code below with your authenticator app.
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="qrCodeBase64; else loadingTemplate">
+        <img
+          class="qr-code"
+          [src]="'data:image/png;base64,' + qrCodeBase64"
+          alt="QR Code"
+        />
+        <p class="secret-note">
+          If you cannot scan the QR code, manually enter this secret in your
+          app:
+        </p>
+        <p class="totp-secret">{{ totpSecret }}</p>
+        <p class="warning-note">
+          Keep this secret safe. Do not share it with anyone.
+        </p>
+      </div>
+      <ng-template #loadingTemplate>
+        <p>Loading QR code...</p>
+      </ng-template>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onCompleteSetup()"
+        [disabled]="!qrCodeBase64"
+      >
+        Done
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

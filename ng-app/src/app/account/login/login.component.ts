@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { AppConfig, LoginModel } from '../../_api';
+import { AppConfig, LoginModel, MfaMethod } from '../../_api';
 import { AuthService } from '../../core/_services/auth.service';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 import { LoggerService } from '../../core/_services/logger.service';
@@ -43,11 +43,22 @@ export class LoginComponent implements OnInit {
 
       this.auth.login(this.model).subscribe(
         (data: any) => {
-          if (this.config.enableMfaViaEmail) {
-            let verifyRoute =
-              this.model.mfaMethod == 1
-                ? '/account/verify-mfa-email'
-                : '/account/verify-mfa-sms';
+          if (
+            this.config.enableMfaViaEmail ||
+            this.config.enableMfaViaSms ||
+            this.config.enableMfaViaOtp
+          ) {
+            let verifyRoute: string;
+            if (this.model.mfaMethod === MfaMethod.Email) {
+              verifyRoute = '/account/verify-mfa-email';
+            } else if (this.model.mfaMethod === MfaMethod.Sms) {
+              verifyRoute = '/account/verify-mfa-sms';
+            } else if (this.model.mfaMethod === MfaMethod.Otp) {
+              verifyRoute = '/account/verify-mfa-otp';
+            } else {
+              this.logger.error('Invalid MFA method selected.');
+              return;
+            }
             this.router.navigateByUrl(verifyRoute);
           } else {
             console.log('Logged in');
