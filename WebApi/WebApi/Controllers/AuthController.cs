@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using OtpNet;
-using QRCoder; // Ensure this namespace is included
+using QRCoder;
 using SimpleAuthNet;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
@@ -16,8 +16,6 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-
-
 
 namespace WebApi.Controllers;
 
@@ -441,7 +439,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var isValid = VerifyTotpCode(user.AppUserCredential.TotpSecret, model.Code);
         if (!isValid) return Unauthorized("Invalid TOTP code.");
 
-        // Generate JWT
         if (string.IsNullOrEmpty(model.DeviceId))
             return BadRequest(new { success = false, message = "Device ID is required." });
 
@@ -455,48 +452,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
             expires = jwt.expires,
             refreshTokenExpires = jwt.refreshTokenExpires
         });
-
-        //return Ok("Authenticator app verified successfully.");
     }
-
-
-    //[HttpPost("VerifyAuthenticatorCode")]
-    //public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyIdentityModel model)
-    //{
-    //    var user = await db.AppUsers
-    //        .Include(x => x.AppUserCredential)
-    //        .FirstOrDefaultAsync(x => x.Username == model.Username);
-
-    //    if (user == null)
-    //        return BadRequest(new { success = false, message = "Invalid user." });
-
-    //    if (string.IsNullOrEmpty(user.AppUserCredential.TotpSecret))
-    //        return BadRequest(new { success = false, message = "Authenticator app is not configured for this user." });
-
-    //    // Validate the provided OTP
-    //    var totp = new Totp(Base32Encoding.ToBytes(user.AppUserCredential.TotpSecret));
-    //    if (!totp.VerifyTotp(model.VerifyToken, out long _, VerificationWindow.RfcSpecifiedNetworkDelay))
-    //        return BadRequest(new { success = false, message = "Invalid or expired OTP." });
-
-    //    // Clear pending MFA login state
-    //    user.AppUserCredential.PendingMfaLogin = false;
-    //    await db.SaveChangesAsync();
-
-    //    // Generate JWT
-    //    if (string.IsNullOrEmpty(model.DeviceId))
-    //        return BadRequest(new { success = false, message = "Device ID is required." });
-
-    //    var jwt = await JwtGenerator(user, model.DeviceId);
-
-    //    return Ok(new
-    //    {
-    //        success = true,
-    //        message = "MFA verification successful.",
-    //        token = jwt.token,
-    //        expires = jwt.expires,
-    //        refreshTokenExpires = jwt.refreshTokenExpires
-    //    });
-    //}
 
     #endregion
 
