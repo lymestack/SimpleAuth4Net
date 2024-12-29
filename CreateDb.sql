@@ -159,3 +159,7 @@ CREATE TABLE AppUserPasswordHistory (
 )
 GO
 
+ALTER TABLE AppUserPasswordHistory ADD Salt VARBINARY(128) NOT NULL
+GO
+
+-------------------------------------------------------

@@ -25,4 +25,5 @@ public class AuthSettings
     public string OtpIssuerName { get; set; }
 
     public bool PreventReuseOfPreviousPasswords { get; set; }
+
 }

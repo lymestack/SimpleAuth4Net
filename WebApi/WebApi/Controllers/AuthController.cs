@@ -322,6 +322,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
     {
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
+            .Include(x => x.AppUserPasswordHistories)
             .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
 
         if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
@@ -333,27 +334,46 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var result = validator.Validate(model.NewPassword);
         if (!result.Succeeded) return BadRequest(new { success = false, errors = result.Errors });
 
-        // Hash the new password
-        using var hmac = new HMACSHA512();
-        var newHashedPassword = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-
-        // Check against previously used passwords if enabled
+        // Check if reusing the current password is allowed
         if (_authSettings.PreventReuseOfPreviousPasswords)
         {
-            var previouslyUsedPasswords = await db.AppUserPasswordHistories
-                .Where(x => x.AppUserId == user.Id)
-                .Select(x => x.HashedPassword)
-                .ToListAsync();
-
-            if (previouslyUsedPasswords.Any(p => p.SequenceEqual(newHashedPassword)))
+            using (var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt))
             {
-                return BadRequest(new { success = false, errors = new List<string> { "You cannot use a previously used password." } });
+                var currentPasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+                if (currentPasswordHash.SequenceEqual(user.AppUserCredential.PasswordHash))
+                {
+                    return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as the current password." } });
+                }
+            }
+
+            // Check password history
+            foreach (var history in user.AppUserPasswordHistories)
+            {
+                using var hmac = new HMACSHA512(history.Salt); // Use historical salt
+                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+                if (computedHash.SequenceEqual(history.HashedPassword))
+                {
+                    return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as a previously used password." } });
+                }
             }
         }
 
+        // Save current password to history
+        var passwordHistory = new AppUserPasswordHistory
+        {
+            AppUserId = user.Id,
+            HashedPassword = user.AppUserCredential.PasswordHash,
+            Salt = user.AppUserCredential.PasswordSalt,
+            DateCreated = DateTime.UtcNow
+        };
+
+        db.AppUserPasswordHistories.Add(passwordHistory);
+        await db.SaveChangesAsync();
+
         // Hash and save the new password
-        user.AppUserCredential.PasswordSalt = hmac.Key;
-        user.AppUserCredential.PasswordHash = newHashedPassword;
+        using var newHmac = new HMACSHA512();
+        user.AppUserCredential.PasswordSalt = newHmac.Key;
+        user.AppUserCredential.PasswordHash = newHmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
         user.AppUserCredential.VerifyTokenUsed = true;
         user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
@@ -362,16 +382,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
         await db.SaveChangesAsync();
 
-        // Store the new password in history
-        var passwordHistory = new AppUserPasswordHistory
-        {
-            AppUserId = user.Id,
-            HashedPassword = newHashedPassword,
-            DateCreated = DateTime.UtcNow
-        };
 
-        db.AppUserPasswordHistories.Add(passwordHistory);
-        await db.SaveChangesAsync();
+
 
         return Ok(new { success = true, message = "Password reset successfully." });
     }

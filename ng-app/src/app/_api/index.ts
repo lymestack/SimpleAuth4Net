@@ -10,6 +10,7 @@ export * from './app-user-role';
 export * from './app-user';
 export * from './app-user-credential';
 export * from './app-refresh-token';
+export * from './app-user-password-history';
 export * from './login-model';
 export * from './login-with-google-model';
 export * from './register-model';

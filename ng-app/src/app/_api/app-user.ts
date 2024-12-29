@@ -6,6 +6,7 @@
 import { AppUserCredential } from "./app-user-credential";
 import { AppUserRole } from "./app-user-role";
 import { AppRefreshToken } from "./app-refresh-token";
+import { AppUserPasswordHistory } from "./app-user-password-history";
 
 export class AppUser {
     id: number;
@@ -24,6 +25,7 @@ export class AppUser {
     appUserCredential: AppUserCredential;
     appUserRoles: AppUserRole[] = [];
     appRefreshTokens: AppRefreshToken[] = [];
+    appUserPasswordHistories: AppUserPasswordHistory[] = [];
     roles: string[] = [];
     sessionId: string;
 }
