@@ -17,7 +17,7 @@
         </ul>
       </div>
 
-      <form (ngSubmit)="onSubmit()">
+      <form (ngSubmit)="onSubmit()" class="padded-top">
         <mat-form-field appearance="fill" class="quarter-width">
           <mat-label>Verification Code</mat-label>
           <input
@@ -44,6 +44,21 @@
           </button>
         </div>
       </form>
+
+      <div class="resend-container padded-top">
+        <button
+          mat-button
+          color="accent"
+          [disabled]="resendDisabled"
+          (click)="onSendNewCode()"
+        >
+          Send New Code
+          <span *ngIf="resendDisabled"
+            >in {{ countdown }}
+            {{ countdown == 1 ? "second" : "seconds" }}</span
+          >
+        </button>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

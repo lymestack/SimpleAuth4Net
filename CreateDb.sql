@@ -142,3 +142,9 @@ GO
 
 ALTER TABLE AppUserCredential ADD TotpSecret NVARCHAR(255) NULL
 GO
+
+-------------------------------------------------------
+
+ALTER TABLE AppUserCredential ADD VerificationCooldownExpires DATETIME NULL
+GO
+

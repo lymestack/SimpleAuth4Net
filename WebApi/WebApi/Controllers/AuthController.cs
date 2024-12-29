@@ -156,6 +156,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
             if (model.MfaMethod == MfaMethod.Email) await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
             if (model.MfaMethod == MfaMethod.Sms) await SendVerificationSms(user.PhoneNumber, verifyToken);
 
+            user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
+            await db.SaveChangesAsync();
+
             return Ok(new
             {
                 mfaRequired = true,
@@ -295,7 +298,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #endregion
 
-    #region ForgotPassword / ResetPassword / VerifyAccount / VerifyMfa
+    #region ForgotPassword / ResetPassword / VerifyAccount / VerifyMfa / SendNewCode
 
     [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
@@ -337,6 +340,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         user.AppUserCredential.VerifyTokenUsed = true;
         user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
+
+        // Indicate cooldown period:
+        user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
 
         await db.SaveChangesAsync();
         return Ok(new { success = true, message = "Password reset successfully." });
@@ -381,6 +387,57 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         await db.SaveChangesAsync();
 
         return Ok(jwt);
+    }
+
+    [HttpPost("SendNewCode")]
+    public async Task<IActionResult> SendNewCode([FromBody] SendNewCodeModel model)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .FirstOrDefaultAsync(x => x.Username == model.Username);
+
+        if (user == null) return NotFound("User not found.");
+
+        var now = DateTime.UtcNow;
+
+        // Enforce cooldown
+        if (user.AppUserCredential.VerificationCooldownExpires.HasValue &&
+            user.AppUserCredential.VerificationCooldownExpires > now)
+        {
+            var remainingTime = (user.AppUserCredential.VerificationCooldownExpires.Value - now).TotalSeconds;
+            return BadRequest(new
+            {
+                success = false,
+                message = "You must wait before requesting another verification code.",
+                remainingSeconds = (int)Math.Ceiling(remainingTime)
+            });
+        }
+
+        // Generate a new verification code
+        var verifyToken = await SetupVerifyToken(user, true);
+
+        // Send the verification code based on the method
+        if (model.MfaMethod == MfaMethod.Email)
+        {
+            await SendVerificationEmail(user.EmailAddress, verifyToken, "New MFA Verification Code");
+        }
+        else if (model.MfaMethod == MfaMethod.Sms)
+        {
+            await SendVerificationSms(user.PhoneNumber, verifyToken);
+        }
+        else
+        {
+            return BadRequest("Unsupported MFA method.");
+        }
+
+        user.AppUserCredential.VerificationCooldownExpires = now.AddSeconds(_appConfig.ResendCodeDelaySeconds);
+
+        await db.SaveChangesAsync();
+
+        var message = "A new verification code has been sent.";
+        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+
+        return Ok(new { success = true, message });
     }
 
     #endregion

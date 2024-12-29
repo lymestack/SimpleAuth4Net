@@ -312,6 +312,17 @@ export class AuthService {
     });
   }
 
+  sendNewVerificationCode(
+    username: string,
+    mfaMethod: MfaMethod
+  ): Observable<any> {
+    return this.httpClient.post<any>(
+      `${this.apiUrl}Auth/SendNewCode`,
+      { username, mfaMethod },
+      { withCredentials: true }
+    );
+  }
+
   private handleLoginError(error: any): void {
     if (
       error?.status === 401 &&

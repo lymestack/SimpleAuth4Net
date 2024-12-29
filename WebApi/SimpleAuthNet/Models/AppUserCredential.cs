@@ -31,4 +31,6 @@ public class AppUserCredential
     public DateTime? LockoutEndTime { get; set; }
 
     public string? TotpSecret { get; set; }
+
+    public DateTime? VerificationCooldownExpires { get; set; }
 }

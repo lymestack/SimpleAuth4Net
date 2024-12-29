@@ -16,4 +16,5 @@ export class AppConfig {
     enableMfaViaEmail: boolean;
     enableMfaViaSms: boolean;
     enableMfaViaOtp: boolean;
+    resendCodeDelaySeconds: number;
 }

@@ -2,7 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../core/_services/logger.service';
-import { AppConfig, VerifyTotpModel } from '../../_api';
+import { AppConfig, MfaMethod, VerifyTotpModel } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
@@ -14,6 +14,9 @@ export class VerifyAccountComponent implements OnInit {
   verificationCode: string = '';
   errors: string[] = [];
   introMessage: string;
+  resendDisabled: boolean = false;
+  countdown: number = 0;
+  resendCooldownSeconds: number;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -23,6 +26,9 @@ export class VerifyAccountComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.resendCooldownSeconds = this.config.resendCodeDelaySeconds;
+    this.startResendCooldown(this.config.resendCodeDelaySeconds);
+
     this.introMessage = location.href.includes('email')
       ? 'Enter the verification code that was sent to your email inbox'
       : 'Enter the verification code that was sent to your phone';
@@ -60,6 +66,45 @@ export class VerifyAccountComponent implements OnInit {
     });
   }
 
+  onSendNewCode(): void {
+    const username = localStorage.getItem('verifyUsername');
+    const mfaMethod = location.href.includes('email')
+      ? MfaMethod.Email
+      : MfaMethod.Sms;
+
+    if (!username) {
+      this.errors = ['Unable to determine username. Please try again.'];
+      return;
+    }
+
+    this.authService.sendNewVerificationCode(username, mfaMethod).subscribe({
+      next: () => {
+        this.logger.success('New verification code sent.');
+        this.startResendCooldown();
+      },
+      error: (error) => {
+        if (error.error.remainingSeconds) {
+          this.startResendCooldown(error.error.remainingSeconds);
+        } else {
+          this.errors = [error.error.message || 'Error sending new code.'];
+        }
+      },
+    });
+  }
+
+  private startResendCooldown(seconds?: number): void {
+    this.resendDisabled = true;
+    this.countdown = seconds || this.resendCooldownSeconds;
+
+    const interval = setInterval(() => {
+      this.countdown--;
+      if (this.countdown <= 0) {
+        this.resendDisabled = false;
+        clearInterval(interval);
+      }
+    }, 1000);
+  }
+
   private processOtp() {
     const username = localStorage.getItem('verifyUsername');
     if (username != null) {
@@ -67,7 +112,6 @@ export class VerifyAccountComponent implements OnInit {
         .verifyAuthenticator(username, this.verificationCode)
         .subscribe({
           next: (data: any) => {
-            debugger;
             this.logger.success('MFA verification successful.');
             this.authService.handleJwtResponse(data);
             setTimeout(

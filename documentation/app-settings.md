@@ -27,6 +27,7 @@ The `AppConfig` section of the config file contains data that is shared between 
 | EnableGoogle | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
 | GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
 | RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
+| ResendCodeDelaySeconds | `60` | The number of seconds that must pass before allowing the user to send themselves a new MFA code (email and SMS MFA methods) |
 
 ## AuthSettings Section
 

@@ -21,4 +21,6 @@ public class AppConfig
     public bool EnableMfaViaSms { get; set; }
 
     public bool EnableMfaViaOtp { get; set; }
+
+    public int ResendCodeDelaySeconds { get; set; }
 }
