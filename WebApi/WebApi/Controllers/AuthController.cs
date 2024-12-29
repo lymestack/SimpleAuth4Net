@@ -333,18 +333,46 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         var result = validator.Validate(model.NewPassword);
         if (!result.Succeeded) return BadRequest(new { success = false, errors = result.Errors });
 
-        // Hash and save the new password
+        // Hash the new password
         using var hmac = new HMACSHA512();
+        var newHashedPassword = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+
+        // Check against previously used passwords if enabled
+        if (_authSettings.PreventReuseOfPreviousPasswords)
+        {
+            var previouslyUsedPasswords = await db.AppUserPasswordHistories
+                .Where(x => x.AppUserId == user.Id)
+                .Select(x => x.HashedPassword)
+                .ToListAsync();
+
+            if (previouslyUsedPasswords.Any(p => p.SequenceEqual(newHashedPassword)))
+            {
+                return BadRequest(new { success = false, errors = new List<string> { "You cannot use a previously used password." } });
+            }
+        }
+
+        // Hash and save the new password
         user.AppUserCredential.PasswordSalt = hmac.Key;
-        user.AppUserCredential.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+        user.AppUserCredential.PasswordHash = newHashedPassword;
         user.AppUserCredential.VerifyTokenUsed = true;
         user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
 
         // Indicate cooldown period:
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
-
         await db.SaveChangesAsync();
+
+        // Store the new password in history
+        var passwordHistory = new AppUserPasswordHistory
+        {
+            AppUserId = user.Id,
+            HashedPassword = newHashedPassword,
+            DateCreated = DateTime.UtcNow
+        };
+
+        db.AppUserPasswordHistories.Add(passwordHistory);
+        await db.SaveChangesAsync();
+
         return Ok(new { success = true, message = "Password reset successfully." });
     }
 

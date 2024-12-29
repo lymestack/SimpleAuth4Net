@@ -23,4 +23,6 @@ public class AuthSettings
     public string[] AllowedOrigins { get; set; } = [];
 
     public string OtpIssuerName { get; set; }
+
+    public bool PreventReuseOfPreviousPasswords { get; set; }
 }

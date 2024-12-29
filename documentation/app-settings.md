@@ -47,6 +47,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | AllowedOrigins | TBD | An array of strings to be allowed for CORS Security. |
 | SmsProviderApiKey | TBD | A string value containing the API key for SMS MFA Authentication. |
 | OtpIssuerName | `MyAppName` | Replace this value with the name of your application. |
+| PreventReuseOfPreviousPasswords | `true` | Enable or disable the allowance for the reuse of previously used passwords when changing a password. |
 
 ## EmailSettings Section
 

@@ -26,4 +26,6 @@ public class SimpleAuthContext(IConfiguration configuration) : DbContext
     public DbSet<AppRole> AppRoles { get; set; }
 
     public DbSet<AppRefreshToken> AppRefreshTokens { get; set; }
+
+    public DbSet<AppUserPasswordHistory> AppUserPasswordHistories { get; set; }
 }

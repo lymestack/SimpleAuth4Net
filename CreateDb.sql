@@ -148,3 +148,14 @@ GO
 ALTER TABLE AppUserCredential ADD VerificationCooldownExpires DATETIME NULL
 GO
 
+-------------------------------------------------------
+
+CREATE TABLE AppUserPasswordHistory (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    AppUserId INT NOT NULL,
+    HashedPassword VARBINARY(MAX) NOT NULL,
+    DateCreated DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (AppUserId) REFERENCES AppUser(Id)
+)
+GO
+
