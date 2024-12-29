@@ -14,3 +14,14 @@
     Git repo <i class="fa fa-external-link"></i> </a
   >.
 </p>
+
+<div class="padded-top">
+  <button
+    mat-raised-button
+    color="warn"
+    *ngIf="preferredMfaMethodExists"
+    (click)="clearMfaPreference()"
+  >
+    Clear MFA Preference
+  </button>
+</div>
