@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using OtpNet;
 using QRCoder;
 using SimpleAuthNet;
@@ -22,7 +23,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthContext db) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly AppConfig _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>()!;
@@ -104,7 +105,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
 
     #endregion
 
-    #region Login Endpoints
+    #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook
 
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -174,7 +175,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
     [HttpPost("LoginWithGoogle")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
     {
-        if (!_appConfig.EnableGoogle) return BadRequest("Sign in with Google is not enabled.");
+        if (!_appConfig.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
@@ -205,6 +206,44 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         // Generate JWT
         var jwt = await JwtGenerator(user, model.DeviceId);
         return Ok(jwt);
+    }
+
+    [HttpPost("LoginWithFacebook")]
+    public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithFacebookModel model)
+    {
+        if (!_appConfig.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
+
+        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromFacebook}&access_token={_appConfig.FacebookAppId}|{_authSettings.FacebookAppSecret}");
+        var stringResponse = await tokenResponse.Content.ReadAsStringAsync();
+        var facebookUser = JsonConvert.DeserializeObject<FacebookUser>(stringResponse);
+        if (facebookUser == null) return Unauthorized(GetErrorResponse("User not found."));
+        if (!facebookUser.FacebookUserData.IsValid) return Unauthorized(GetErrorResponse("Invalid Facebook credentials"));
+
+        var meResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=first_name,last_name,email,id&access_token={model.CredentialsFromFacebook}");
+        var userStringResponse = await meResponse.Content.ReadAsStringAsync();
+        var facebookUserInfo = JsonConvert.DeserializeObject<FacebookUserInfo>(userStringResponse);
+
+        if (facebookUserInfo == null) return BadRequest(GetErrorResponse("No matching user info was available for the user."));
+
+        var user = await GetUserWithCredentialsAndRoles(facebookUserInfo.Email);
+        if (user == null) return BadRequest(GetErrorResponse("No user associated with the provided email."));
+        if (!user.Active) return Unauthorized(GetErrorResponse("The user is inactive."));
+
+        var isLocked = await HandleLockedAccounts(user);
+        if (isLocked) return Unauthorized(GetErrorResponse("The account is locked."));
+
+        // Assume email is verified by receiving valid credentials from Facebook
+        if (!user.Verified) user.Verified = true;
+
+        // Generate JWT
+        var jwt = await JwtGenerator(user, model.DeviceId);
+        return Ok(jwt);
+    }
+
+    private dynamic GetErrorResponse(string message)
+    {
+        // return new { success = false, errors = new List<string> { message } };
+        return new { message };
     }
 
     #endregion
@@ -381,9 +420,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db) 
         // Indicate cooldown period:
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
         await db.SaveChangesAsync();
-
-
-
 
         return Ok(new { success = true, message = "Password reset successfully." });
     }

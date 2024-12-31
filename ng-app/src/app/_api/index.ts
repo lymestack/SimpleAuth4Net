@@ -13,6 +13,7 @@ export * from './app-refresh-token';
 export * from './app-user-password-history';
 export * from './login-model';
 export * from './login-with-google-model';
+export * from './login-with-facebook-model';
 export * from './register-model';
 export * from './verify-totp-model';
 export * from './mfa-method';

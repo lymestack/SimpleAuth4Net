@@ -79,14 +79,23 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
     public async Task<ActionResult<AppUser>> Post([FromBody] AppUser value)
     {
         var dbItem = await db.AppUsers.SingleOrDefaultAsync(x => x.Id == value.Id);
+        var inserting = false;
 
         if (dbItem == null)
         {
             dbItem = new AppUser();
             db.AppUsers.Add(dbItem);
+            inserting = true;
         }
 
         PropertyCopy.Copy(value, dbItem);
+
+        if (inserting)
+        {
+            dbItem.AppUserCredential = new AppUserCredential { DateCreated = DateTime.UtcNow };
+            dbItem.DateEntered = DateTime.UtcNow;
+        }
+
         await db.SaveChangesAsync();
         return Ok(dbItem);
     }

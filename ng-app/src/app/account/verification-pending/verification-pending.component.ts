@@ -9,8 +9,10 @@ import { APP_CONFIG } from '../../core/_services/config-injection';
 })
 export class VerificationPendingComponent {
   googleEnabled = false;
+  facebookEnabled = false;
 
   constructor(@Inject(APP_CONFIG) public config: AppConfig) {
-    this.googleEnabled = config.enableGoogle;
+    this.googleEnabled = config.enableGoogleSso;
+    this.facebookEnabled = config.enableFacebookSso;
   }
 }

@@ -10,7 +10,11 @@ public class AppConfig
 
     public bool EnableLocalAccounts { get; set; }
 
-    public bool EnableGoogle { get; set; }
+    public bool EnableGoogleSso { get; set; }
+
+    public bool EnableFacebookSso { get; set; }
+
+    public string FacebookAppId { get; set; }
 
     public bool AllowRegistration { get; set; }
 

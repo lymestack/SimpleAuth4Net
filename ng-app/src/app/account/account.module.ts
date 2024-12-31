@@ -16,6 +16,7 @@ import { VerifyAccountComponent } from './verify-account/verify-account.componen
 import { SelectMfaMethodDialogComponent } from './select-mfa-method-dialog/select-mfa-method-dialog.component';
 import { SetupAuthenticatorComponent } from './setup-authenticator/setup-authenticator.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { FacebookLoginButtonComponent } from './facebook-login-button/facebook-login-button.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
     SelectMfaMethodDialogComponent,
     SetupAuthenticatorComponent,
     UserSettingsComponent,
+    FacebookLoginButtonComponent,
   ],
   imports: [CommonModule, SharedModule, AccountRoutingModule],
   exports: [UsernameEmailInputComponent],

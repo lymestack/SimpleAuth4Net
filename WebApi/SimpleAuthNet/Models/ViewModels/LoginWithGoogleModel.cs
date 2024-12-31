@@ -6,3 +6,10 @@ public class LoginWithGoogleModel
 
     public string DeviceId { get; set; }
 }
+
+public class LoginWithFacebookModel
+{
+    public string CredentialsFromFacebook { get; set; }
+
+    public string DeviceId { get; set; }
+}

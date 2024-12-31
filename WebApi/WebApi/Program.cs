@@ -22,6 +22,8 @@ builder.Services.AddDbContext<SimpleAuthContext>();
 builder.Services.AddControllers().AddJsonOptions(x =>
     x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+builder.Services.AddHttpClient();
+
 var authSettings = builder.Configuration.GetSection("AuthSettings").Get<AuthSettings>();
 
 // Define CORS Policy:

@@ -18,6 +18,7 @@ public class TypeScriptExports : GenerationSpec
         AddClass<AppUser>();
         AddClass<LoginModel>();
         AddClass<LoginWithGoogleModel>();
+        AddClass<LoginWithFacebookModel>();
         AddClass<RegisterModel>();
         AddClass<VerifyTotpModel>();
         AddEnum<MfaMethod>();

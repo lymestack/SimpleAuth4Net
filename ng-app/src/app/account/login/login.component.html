@@ -70,6 +70,14 @@
           <app-google-login-button></app-google-login-button>
         </div>
       </div>
+
+      <div class="padded-top" *ngIf="enableFacebook">
+        <hr />
+
+        <div class="text-center" style="margin-top: 30px">
+          <app-facebook-login-button></app-facebook-login-button>
+        </div>
+      </div>
     </mat-card>
   </div>
 </div>

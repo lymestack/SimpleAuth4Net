@@ -75,10 +75,10 @@ export class UserFormComponent implements OnInit {
 
     this.checkingUsername = true;
     let url = 'Auth/UserExists?username=' + newEmailAddress;
-    this.rest.getResource(url).subscribe((userExists) => {
+    this.rest.getResource(url).subscribe((data: any) => {
       this.checkedUsername = true;
       this.checkingUsername = false;
-      this.usernameAvailable = !userExists;
+      this.usernameAvailable = !data.exists;
     });
 
     function validateEmail(email: string) {

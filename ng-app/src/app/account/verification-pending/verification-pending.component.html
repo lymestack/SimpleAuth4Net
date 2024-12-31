@@ -5,11 +5,9 @@
   </mat-card-header>
   <mat-card-content>
     You can not yet login because your account hasn't been verified. You can
-    invoke the verification process by simply resetting your password<span
-      *ngIf="googleEnabled"
-    >
-      or by signing in with Google</span
-    >.
+    invoke the verification process by simply resetting your password
+    <span *ngIf="googleEnabled"> or by signing in with Google</span
+    ><span *ngIf="facebookEnabled"> or by signing in with Facebook</span>.
   </mat-card-content>
   <mat-card-actions>
     <button mat-raised-button routerLink="/account/forgot-password">

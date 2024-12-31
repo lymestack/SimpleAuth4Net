@@ -15,6 +15,7 @@ export class LoginComponent implements OnInit {
   useBootstrap = false;
   enableLocalAccounts: boolean;
   enableGoogle: boolean;
+  enableFacebook: boolean;
   allowRegistration: boolean;
 
   constructor(
@@ -25,7 +26,8 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.enableGoogle = this.config.enableGoogle;
+    this.enableGoogle = this.config.enableGoogleSso;
+    this.enableFacebook = this.config.enableFacebookSso;
     this.allowRegistration = this.config.allowRegistration;
     this.enableLocalAccounts = this.config.enableLocalAccounts;
 

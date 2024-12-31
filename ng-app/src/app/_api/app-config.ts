@@ -10,7 +10,9 @@ export class AppConfig {
     googleClientId: string;
     sessionId: string;
     enableLocalAccounts: boolean;
-    enableGoogle: boolean;
+    enableGoogleSso: boolean;
+    enableFacebookSso: boolean;
+    facebookAppId: string;
     allowRegistration: boolean;
     requireUserVerification: boolean;
     enableMfaViaEmail: boolean;

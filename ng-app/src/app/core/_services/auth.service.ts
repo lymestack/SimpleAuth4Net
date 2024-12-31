@@ -14,6 +14,7 @@ import {
   AppConfig,
   AppUser,
   LoginModel,
+  LoginWithFacebookModel,
   LoginWithGoogleModel,
   MfaMethod,
   VerifyTotpModel,
@@ -41,7 +42,8 @@ export class AuthService {
   }
 
   login(loginModel: LoginModel): Observable<any> {
-    if (this.config.enableMfaViaEmail && this.config.enableMfaViaSms) {
+    localStorage.setItem('verifyUsername', loginModel.username.trim());
+    if (this.config.enableMfaViaEmail || this.config.enableMfaViaSms) {
       let mfaPreference = this.getStoredMfaPreference();
       if (!!mfaPreference) {
         loginModel.mfaMethod = mfaPreference;
@@ -119,6 +121,34 @@ export class AuthService {
         headers: header,
         withCredentials: true,
       })
+      .pipe(
+        map((response) => {
+          this.storeTokenExpiration(response.expires);
+          this.scheduleTokenRefresh(response.expires);
+          setTimeout(() => window.location.reload(), 100);
+          return response;
+        })
+      );
+  }
+
+  // FUTURE: Consolidate loginWithFacebook and loginWithGoogle to loginWithSso after seeing if other providers match the same pattern of implementation.
+  loginWithFacebook(credentials: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+
+    const loginWithFacebookModel: LoginWithFacebookModel = {
+      credentialsFromFacebook: credentials,
+      deviceId: this.deviceId,
+    };
+
+    return this.httpClient
+      .post<any>(
+        `${this.apiUrl}Auth/LoginWithFacebook`,
+        loginWithFacebookModel,
+        {
+          headers: header,
+          withCredentials: true,
+        }
+      )
       .pipe(
         map((response) => {
           this.storeTokenExpiration(response.expires);
