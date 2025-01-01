@@ -17,6 +17,7 @@ export class LoginComponent implements OnInit {
   enableGoogle: boolean;
   enableFacebook: boolean;
   allowRegistration: boolean;
+  enableMicrosoft: boolean;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.enableGoogle = this.config.enableGoogleSso;
     this.enableFacebook = this.config.enableFacebookSso;
+    this.enableMicrosoft = this.config.enableMicrosoftSso;
     this.allowRegistration = this.config.allowRegistration;
     this.enableLocalAccounts = this.config.enableLocalAccounts;
 

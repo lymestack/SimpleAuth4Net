@@ -16,6 +16,7 @@ import {
   LoginModel,
   LoginWithFacebookModel,
   LoginWithGoogleModel,
+  LoginWithMicrosoftModel,
   MfaMethod,
   VerifyTotpModel,
 } from '../../_api';
@@ -144,6 +145,33 @@ export class AuthService {
       .post<any>(
         `${this.apiUrl}Auth/LoginWithFacebook`,
         loginWithFacebookModel,
+        {
+          headers: header,
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response) => {
+          this.storeTokenExpiration(response.expires);
+          this.scheduleTokenRefresh(response.expires);
+          setTimeout(() => window.location.reload(), 100);
+          return response;
+        })
+      );
+  }
+
+  loginWithMicrosoft(credentials: string): Observable<any> {
+    const header = new HttpHeaders().set('Content-Type', 'application/json');
+
+    const loginWithMicrosoftModel: LoginWithMicrosoftModel = {
+      authorizationCode: credentials,
+      deviceId: this.deviceId,
+    };
+
+    return this.httpClient
+      .post<any>(
+        `${this.apiUrl}Auth/LoginWithMicrosoft`,
+        loginWithMicrosoftModel,
         {
           headers: header,
           withCredentials: true,

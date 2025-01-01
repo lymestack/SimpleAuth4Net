@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace SimpleAuthNet.Models.ViewModels;
+namespace SimpleAuthNet.Models.SsoResponse;
 
 public class FacebookUserInfo
 {

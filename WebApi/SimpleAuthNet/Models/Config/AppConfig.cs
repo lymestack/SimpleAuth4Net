@@ -27,4 +27,12 @@ public class AppConfig
     public bool EnableMfaViaOtp { get; set; }
 
     public int ResendCodeDelaySeconds { get; set; }
+
+    public bool EnableMicrosoftSso { get; set; }
+
+    public string MicrosoftTenantId { get; set; }
+
+    public string MicrosoftClientId { get; set; }
+
+    public string MicrosoftRedirectUri { get; set; }
 }

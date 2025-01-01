@@ -27,4 +27,6 @@ public class AuthSettings
     public bool PreventReuseOfPreviousPasswords { get; set; }
 
     public string FacebookAppSecret { get; set; }
+
+    public string MicrosoftClientSecret { get; set; }
 }

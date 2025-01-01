@@ -19,4 +19,8 @@ export class AppConfig {
     enableMfaViaSms: boolean;
     enableMfaViaOtp: boolean;
     resendCodeDelaySeconds: number;
+    enableMicrosoftSso: boolean;
+    microsoftTenantId: string;
+    microsoftClientId: string;
+    microsoftRedirectUri: string;
 }

@@ -6,7 +6,7 @@ You can use Facebook (FB) SSO to authenticate your apps instead of or in additio
 
 **Prerequisite:** You must already have a Facebook account to do this.
 
-Here's a pretty nice walkthrough on setting up an app using the FB developer console: https://youtu.be/Wp24OmNrr_M?si=hUuZ-dvApWjO0SMn&t=101. However, in the year since this video was created, things have changed (of course), so below is what we see when creating an app for this example.
+Here's a pretty nice walkthrough on setting up an app using the FB developer console: https://youtu.be/Wp24OmNrr_M?si=hUuZ-dvApWjO0SMn&t=101. However, in the year since this video was created, things have changed (of course), so below is what we see when registering an app in the Facebook Developers area.
 
 1. Log into to https://developers.facebook.com/. Click the "My Apps" link.
 ![FB Developers Page](./images/fb-sso/facebook-developers-page.png)

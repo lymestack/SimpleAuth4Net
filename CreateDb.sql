@@ -163,3 +163,10 @@ ALTER TABLE AppUserPasswordHistory ADD Salt VARBINARY(128) NOT NULL
 GO
 
 -------------------------------------------------------
+
+ALTER TABLE AppUserCredential ALTER COLUMN PasswordSalt VARBINARY(128) NULL
+ALTER TABLE AppUserCredential ALTER COLUMN PasswordHash VARBINARY(128) NULL
+
+-------------------------------------------------------
+
+

@@ -10,9 +10,11 @@ using SimpleAuthNet;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
+using SimpleAuthNet.Models.SsoResponse;
 using SimpleAuthNet.Models.ViewModels;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -105,7 +107,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
     #endregion
 
-    #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook
+    #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook / LoginWithMicrosoft
 
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -244,6 +246,51 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     {
         // return new { success = false, errors = new List<string> { message } };
         return new { message };
+    }
+
+    [HttpPost("LoginWithMicrosoft")]
+    public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithMicrosoftModel model)
+    {
+        if (!_appConfig.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
+        var tokenEndpoint = $"https://login.microsoftonline.com/{_appConfig.MicrosoftTenantId}/oauth2/v2.0/token";
+
+        var requestContent = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("client_id", _appConfig.MicrosoftClientId),
+            new KeyValuePair<string, string>("client_secret", _authSettings.MicrosoftClientSecret),
+            new KeyValuePair<string, string>("code", model.AuthorizationCode),
+            new KeyValuePair<string, string>("grant_type", "authorization_code"),
+            new KeyValuePair<string, string>("redirect_uri", _appConfig.MicrosoftRedirectUri),
+        });
+
+        var response = await httpClient.PostAsync(tokenEndpoint, requestContent);
+        var responseString = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+            return BadRequest(GetErrorResponse("Failed to authenticate with Microsoft."));
+
+        var tokenResponse = JsonConvert.DeserializeObject<MicrosoftTokenResponse>(responseString);
+
+        // Use the access token to fetch user profile info
+        var userInfo = await FetchMicrosoftUserInfo(tokenResponse.AccessToken);
+        var user = await GetUserWithCredentialsAndRoles(userInfo.UserPrincipalName);
+        if (user == null) return BadRequest(GetErrorResponse("No user associated with the provided email."));
+
+        // Generate JWT
+        var jwt = await JwtGenerator(user, model.DeviceId);
+        return Ok(jwt);
+    }
+
+    private async Task<MicrosoftUserInfo> FetchMicrosoftUserInfo(string accessToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var userInfoString = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<MicrosoftUserInfo>(userInfoString);
     }
 
     #endregion

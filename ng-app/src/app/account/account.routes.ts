@@ -11,6 +11,7 @@ import { VerificationPendingComponent } from './verification-pending/verificatio
 import { VerifyAccountComponent } from './verify-account/verify-account.component';
 import { SetupAuthenticatorComponent } from './setup-authenticator/setup-authenticator.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { MicrosoftLoginCallbackComponent } from './microsoft-login-callback/microsoft-login-callback.component';
 
 const routes: Routes = [
   {
@@ -82,6 +83,11 @@ const routes: Routes = [
     path: 'user-settings',
     component: UserSettingsComponent,
     data: { state: 'User Settings' },
+  },
+  {
+    path: 'microsoft-login-callback',
+    component: MicrosoftLoginCallbackComponent,
+    data: { state: 'Microsoft Login Callback' },
   },
 
   // otherwise redirect to home
