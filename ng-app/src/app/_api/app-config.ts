@@ -23,4 +23,6 @@ export class AppConfig {
     microsoftTenantId: string;
     microsoftClientId: string;
     microsoftRedirectUri: string;
+    enableAppleSso: boolean;
+    appleClientId: string;
 }

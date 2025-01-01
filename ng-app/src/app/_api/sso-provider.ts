@@ -3,7 +3,9 @@
  * Any changes made to this file can be lost when this file is regenerated.
  */
 
-export class LoginWithFacebookModel {
-    credentialsFromFacebook: string;
-    deviceId: string;
+export enum SsoProvider {
+    Google = 1,
+    Microsoft = 2,
+    Facebook = 3,
+    Apple = 4,
 }

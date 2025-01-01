@@ -12,12 +12,10 @@ import {
 } from 'rxjs';
 import {
   AppConfig,
-  AppUser,
   LoginModel,
-  LoginWithFacebookModel,
-  LoginWithGoogleModel,
-  LoginWithMicrosoftModel,
+  LoginWithSsoModel,
   MfaMethod,
+  SsoProvider,
   VerifyTotpModel,
 } from '../../_api';
 import { APP_CONFIG } from './config-injection';
@@ -112,13 +110,14 @@ export class AuthService {
   loginWithGoogle(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
 
-    const loginWithGoogleModel: LoginWithGoogleModel = {
-      credentialsFromGoogle: credentials,
+    const loginWithSsoModel: LoginWithSsoModel = {
+      ssoProvider: SsoProvider.Google,
+      credentialsFromProvider: credentials,
       deviceId: this.deviceId,
     };
 
     return this.httpClient
-      .post<any>(`${this.apiUrl}Auth/LoginWithGoogle`, loginWithGoogleModel, {
+      .post<any>(`${this.apiUrl}Auth/LoginWithGoogle`, loginWithSsoModel, {
         headers: header,
         withCredentials: true,
       })
@@ -136,20 +135,17 @@ export class AuthService {
   loginWithFacebook(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
 
-    const loginWithFacebookModel: LoginWithFacebookModel = {
-      credentialsFromFacebook: credentials,
+    const loginWithSsoModel: LoginWithSsoModel = {
+      ssoProvider: SsoProvider.Facebook,
+      credentialsFromProvider: credentials,
       deviceId: this.deviceId,
     };
 
     return this.httpClient
-      .post<any>(
-        `${this.apiUrl}Auth/LoginWithFacebook`,
-        loginWithFacebookModel,
-        {
-          headers: header,
-          withCredentials: true,
-        }
-      )
+      .post<any>(`${this.apiUrl}Auth/LoginWithFacebook`, loginWithSsoModel, {
+        headers: header,
+        withCredentials: true,
+      })
       .pipe(
         map((response) => {
           this.storeTokenExpiration(response.expires);
@@ -163,20 +159,17 @@ export class AuthService {
   loginWithMicrosoft(credentials: string): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
 
-    const loginWithMicrosoftModel: LoginWithMicrosoftModel = {
-      authorizationCode: credentials,
+    const loginWithSsoModel: LoginWithSsoModel = {
+      ssoProvider: SsoProvider.Microsoft,
+      credentialsFromProvider: credentials,
       deviceId: this.deviceId,
     };
 
     return this.httpClient
-      .post<any>(
-        `${this.apiUrl}Auth/LoginWithMicrosoft`,
-        loginWithMicrosoftModel,
-        {
-          headers: header,
-          withCredentials: true,
-        }
-      )
+      .post<any>(`${this.apiUrl}Auth/LoginWithMicrosoft`, loginWithSsoModel, {
+        headers: header,
+        withCredentials: true,
+      })
       .pipe(
         map((response) => {
           this.storeTokenExpiration(response.expires);

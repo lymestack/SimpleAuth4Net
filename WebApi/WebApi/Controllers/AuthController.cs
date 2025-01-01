@@ -175,7 +175,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("LoginWithGoogle")]
-    public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithGoogleModel model)
+    public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
 
@@ -188,68 +188,46 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         try
         {
-            payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromGoogle, settings);
+            payload = await GoogleJsonWebSignature.ValidateAsync(model.CredentialsFromProvider, settings);
         }
         catch (Exception)
         {
             return BadRequest("Invalid Google credentials.");
         }
 
-        var user = await GetUserWithCredentialsAndRoles(payload.Email);
-        if (user == null) return BadRequest("No user associated with the provided email.");
-        if (!user.Active) return Unauthorized("The user is inactive.");
+        var processSsoLoginResult = await ProcessSsoUserLogin(payload.Email, model.DeviceId);
 
-        var isLocked = await HandleLockedAccounts(user);
-        if (isLocked) return Unauthorized("The account is locked.");
-
-        // Assume email is verified by receiving valid credentials from Google
-        if (!user.Verified) user.Verified = true;
-
-        // Generate JWT
-        var jwt = await JwtGenerator(user, model.DeviceId);
-        return Ok(jwt);
+        return !string.IsNullOrEmpty(processSsoLoginResult.Error)
+            ? Unauthorized(GetErrorResponse(processSsoLoginResult.Error))
+            : Ok(processSsoLoginResult.Jwt);
     }
 
     [HttpPost("LoginWithFacebook")]
-    public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithFacebookModel model)
+    public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
 
-        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromFacebook}&access_token={_appConfig.FacebookAppId}|{_authSettings.FacebookAppSecret}");
+        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromProvider}&access_token={_appConfig.FacebookAppId}|{_authSettings.FacebookAppSecret}");
         var stringResponse = await tokenResponse.Content.ReadAsStringAsync();
         var facebookUser = JsonConvert.DeserializeObject<FacebookUser>(stringResponse);
         if (facebookUser == null) return Unauthorized(GetErrorResponse("User not found."));
         if (!facebookUser.FacebookUserData.IsValid) return Unauthorized(GetErrorResponse("Invalid Facebook credentials"));
 
-        var meResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=first_name,last_name,email,id&access_token={model.CredentialsFromFacebook}");
+        var meResponse = await httpClient.GetAsync($"https://graph.facebook.com/me?fields=first_name,last_name,email,id&access_token={model.CredentialsFromProvider}");
         var userStringResponse = await meResponse.Content.ReadAsStringAsync();
         var facebookUserInfo = JsonConvert.DeserializeObject<FacebookUserInfo>(userStringResponse);
 
         if (facebookUserInfo == null) return BadRequest(GetErrorResponse("No matching user info was available for the user."));
 
-        var user = await GetUserWithCredentialsAndRoles(facebookUserInfo.Email);
-        if (user == null) return BadRequest(GetErrorResponse("No user associated with the provided email."));
-        if (!user.Active) return Unauthorized(GetErrorResponse("The user is inactive."));
+        var processSsoLoginResult = await ProcessSsoUserLogin(facebookUserInfo.Email, model.DeviceId);
 
-        var isLocked = await HandleLockedAccounts(user);
-        if (isLocked) return Unauthorized(GetErrorResponse("The account is locked."));
-
-        // Assume email is verified by receiving valid credentials from Facebook
-        if (!user.Verified) user.Verified = true;
-
-        // Generate JWT
-        var jwt = await JwtGenerator(user, model.DeviceId);
-        return Ok(jwt);
-    }
-
-    private dynamic GetErrorResponse(string message)
-    {
-        // return new { success = false, errors = new List<string> { message } };
-        return new { message };
+        return !string.IsNullOrEmpty(processSsoLoginResult.Error)
+            ? Unauthorized(GetErrorResponse(processSsoLoginResult.Error))
+            : Ok(processSsoLoginResult.Jwt);
     }
 
     [HttpPost("LoginWithMicrosoft")]
-    public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithMicrosoftModel model)
+    public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
         var tokenEndpoint = $"https://login.microsoftonline.com/{_appConfig.MicrosoftTenantId}/oauth2/v2.0/token";
@@ -258,7 +236,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         {
             new KeyValuePair<string, string>("client_id", _appConfig.MicrosoftClientId),
             new KeyValuePair<string, string>("client_secret", _authSettings.MicrosoftClientSecret),
-            new KeyValuePair<string, string>("code", model.AuthorizationCode),
+            new KeyValuePair<string, string>("code", model.CredentialsFromProvider),
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
             new KeyValuePair<string, string>("redirect_uri", _appConfig.MicrosoftRedirectUri),
         });
@@ -272,25 +250,76 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var tokenResponse = JsonConvert.DeserializeObject<MicrosoftTokenResponse>(responseString);
 
         // Use the access token to fetch user profile info
-        var userInfo = await FetchMicrosoftUserInfo(tokenResponse.AccessToken);
-        var user = await GetUserWithCredentialsAndRoles(userInfo.UserPrincipalName);
-        if (user == null) return BadRequest(GetErrorResponse("No user associated with the provided email."));
+        var microsoftUserInfo = await FetchMicrosoftUserInfo(tokenResponse.AccessToken);
 
-        // Generate JWT
-        var jwt = await JwtGenerator(user, model.DeviceId);
-        return Ok(jwt);
+        var processSsoLoginResult = await ProcessSsoUserLogin(microsoftUserInfo.UserPrincipalName, model.DeviceId);
+
+        return !string.IsNullOrEmpty(processSsoLoginResult.Error)
+            ? Unauthorized(GetErrorResponse(processSsoLoginResult.Error))
+            : Ok(processSsoLoginResult.Jwt);
     }
 
-    private async Task<MicrosoftUserInfo> FetchMicrosoftUserInfo(string accessToken)
+    [HttpPost("LoginWithApple")]
+    public async Task<IActionResult> LoginWithApple([FromBody] LoginWithSsoModel model)
     {
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        if (!_appConfig.EnableAppleSso) return BadRequest("Sign in with Apple is not enabled.");
 
-        var response = await httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        var appleKeysUrl = "https://appleid.apple.com/auth/keys";
+        var httpClient = new HttpClient();
+        var keysResponse = await httpClient.GetStringAsync(appleKeysUrl);
+        var keys = JsonConvert.DeserializeObject<AppleKeysResponse>(keysResponse);
 
-        var userInfoString = await response.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<MicrosoftUserInfo>(userInfoString);
+        var handler = new JwtSecurityTokenHandler();
+        var token = handler.ReadJwtToken(model.CredentialsFromProvider);
+
+        // Extract token header
+        var kid = token.Header.Kid;
+        var appleKey = keys.Keys.FirstOrDefault(k => k.Kid == kid);
+
+        if (appleKey == null)
+            return Unauthorized("Invalid Apple credentials: Key not found.");
+
+        // Create security key
+        var keyParameters = new RSAParameters
+        {
+            Modulus = Base64UrlDecode(appleKey.N),
+            Exponent = Base64UrlDecode(appleKey.E),
+        };
+
+        var securityKey = new RsaSecurityKey(keyParameters);
+
+        var validationParameters = new TokenValidationParameters
+        {
+            IssuerSigningKey = securityKey,
+            ValidIssuer = "https://appleid.apple.com",
+            ValidAudience = _appConfig.AppleClientId,
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+        };
+
+        var email = "";
+
+        try
+        {
+            var principal = handler.ValidateToken(model.CredentialsFromProvider, validationParameters, out _);
+            email = principal.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+            var userId = principal.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+            if (string.IsNullOrEmpty(userId)) return Unauthorized(GetErrorResponse("Invalid Apple credentials: User ID missing."));
+        }
+        catch (SecurityTokenException)
+        {
+            return Unauthorized(GetErrorResponse("Invalid Apple credentials."));
+        }
+
+
+        var processSsoLoginResult = await ProcessSsoUserLogin(email, model.DeviceId);
+
+        return !string.IsNullOrEmpty(processSsoLoginResult.Error)
+            ? Unauthorized(GetErrorResponse(processSsoLoginResult.Error))
+            : Ok(processSsoLoginResult.Jwt);
     }
 
     #endregion
@@ -664,6 +693,80 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
     #region Private methods
 
+    private async Task<ProcessSsoUserLoginResult> ProcessSsoUserLogin(string username, string deviceId)
+    {
+        var retVal = new ProcessSsoUserLoginResult { Username = username };
+
+        var user = await GetUserWithCredentialsAndRoles(username);
+
+        // ZOMBIE - May implement this in a future version:
+        //if (user == null)
+        //{
+        //    // Optionally create a new account if not found
+        //    user = new AppUser
+        //    {
+        //        Username = email,
+        //        EmailAddress = email,
+        //        Active = true,
+        //        Verified = true
+        //    };
+        //    await db.AppUsers.AddAsync(user);
+        //    await db.SaveChangesAsync();
+        //}
+
+        if (user == null)
+        {
+            retVal.Error = "No user associated with the provided email.";
+            return retVal;
+        }
+
+        if (!user.Active)
+        {
+            retVal.Error = "No user is inactive.";
+            return retVal;
+        }
+
+        var isLocked = await HandleLockedAccounts(user);
+        if (isLocked)
+        {
+            retVal.Error = "The account is locked.";
+            return retVal;
+        }
+
+        // Assume email is verified by receiving valid credentials from SSO
+        if (!user.Verified) user.Verified = true;
+        await db.SaveChangesAsync();
+
+        // Generate JWT
+        retVal.Jwt = await JwtGenerator(user, deviceId);
+        return retVal;
+    }
+
+    private class ProcessSsoUserLoginResult
+    {
+        public string Username { get; set; }
+        public string Error { get; set; }
+        public dynamic Jwt { get; set; }
+    }
+
+    private dynamic GetErrorResponse(string message)
+    {
+        // return new { success = false, errors = new List<string> { message } };
+        return new { message };
+    }
+
+    private async Task<MicrosoftUserInfo> FetchMicrosoftUserInfo(string accessToken)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://graph.microsoft.com/v1.0/me");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var response = await httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var userInfoString = await response.Content.ReadAsStringAsync();
+        return JsonConvert.DeserializeObject<MicrosoftUserInfo>(userInfoString);
+    }
+
     private async Task<AppUser?> GetUserWithCredentialsAndRoles(string username)
     {
         var user = await db.AppUsers
@@ -906,6 +1009,31 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var totp = new OtpNet.Totp(Base32Encoding.ToBytes(secret));
         return totp.VerifyTotp(code, out _, VerificationWindow.RfcSpecifiedNetworkDelay);
     }
+
+    public class AppleKeysResponse
+    {
+        public List<AppleKey> Keys { get; set; }
+    }
+
+    public class AppleKey
+    {
+        public string Kty { get; set; }
+        public string Kid { get; set; }
+        public string Use { get; set; }
+        public string Alg { get; set; }
+        public string N { get; set; }
+        public string E { get; set; }
+    }
+
+    private static byte[] Base64UrlDecode(string input)
+    {
+        var paddedInput = input.Length % 4 == 0
+            ? input
+            : input + new string('=', 4 - input.Length % 4);
+
+        return Convert.FromBase64String(paddedInput.Replace('-', '+').Replace('_', '/'));
+    }
+
 
     #endregion
 
