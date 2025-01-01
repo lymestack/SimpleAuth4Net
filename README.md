@@ -28,7 +28,7 @@ SimpleAuth is built to be simple and functional while supporting core identity m
    - User Registration
    - Password Recovery with email verification codes
 3. **User and Role Management:** Manage users and roles without the need to build extensive UI components from scratch.
-4. **SSO Support:** Single Sign-On support for Google, with plans to expand to other providers.
+4. **SSO Support:** Single Sign-On support for [Google](./documentation/google-sso.md), [Microsoft Entra ID](./documentation/microsoft-sso.md) and [Facebook](./documentation/facebook-sso.md) OAuth providers with plans to add more providers in the future.
 
 ---
 
