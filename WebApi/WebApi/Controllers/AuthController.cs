@@ -259,69 +259,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             : Ok(processSsoLoginResult.Jwt);
     }
 
-    [HttpPost("LoginWithApple")]
-    public async Task<IActionResult> LoginWithApple([FromBody] LoginWithSsoModel model)
-    {
-        if (!_appConfig.EnableAppleSso) return BadRequest("Sign in with Apple is not enabled.");
-
-        var appleKeysUrl = "https://appleid.apple.com/auth/keys";
-        var httpClient = new HttpClient();
-        var keysResponse = await httpClient.GetStringAsync(appleKeysUrl);
-        var keys = JsonConvert.DeserializeObject<AppleKeysResponse>(keysResponse);
-
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(model.CredentialsFromProvider);
-
-        // Extract token header
-        var kid = token.Header.Kid;
-        var appleKey = keys.Keys.FirstOrDefault(k => k.Kid == kid);
-
-        if (appleKey == null)
-            return Unauthorized("Invalid Apple credentials: Key not found.");
-
-        // Create security key
-        var keyParameters = new RSAParameters
-        {
-            Modulus = Base64UrlDecode(appleKey.N),
-            Exponent = Base64UrlDecode(appleKey.E),
-        };
-
-        var securityKey = new RsaSecurityKey(keyParameters);
-
-        var validationParameters = new TokenValidationParameters
-        {
-            IssuerSigningKey = securityKey,
-            ValidIssuer = "https://appleid.apple.com",
-            ValidAudience = _appConfig.AppleClientId,
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-        };
-
-        var email = "";
-
-        try
-        {
-            var principal = handler.ValidateToken(model.CredentialsFromProvider, validationParameters, out _);
-            email = principal.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
-            var userId = principal.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
-
-            if (string.IsNullOrEmpty(userId)) return Unauthorized(GetErrorResponse("Invalid Apple credentials: User ID missing."));
-        }
-        catch (SecurityTokenException)
-        {
-            return Unauthorized(GetErrorResponse("Invalid Apple credentials."));
-        }
-
-
-        var processSsoLoginResult = await ProcessSsoUserLogin(email, model.DeviceId);
-
-        return !string.IsNullOrEmpty(processSsoLoginResult.Error)
-            ? Unauthorized(GetErrorResponse(processSsoLoginResult.Error))
-            : Ok(processSsoLoginResult.Jwt);
-    }
-
     #endregion
 
     #region Logout

@@ -37,6 +37,4 @@ public class AppConfig
     public string MicrosoftRedirectUri { get; set; }
 
     public bool EnableAppleSso { get; set; }
-
-    public string AppleClientId { get; set; }
 }
