@@ -355,11 +355,13 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("ForgotPassword")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.EmailAddress == model.Email);
 
-        if (user == null) return BadRequest("No user found with that email.");
+        if (user == null) return BadRequest(GetErrorResponse("No user found with that email."));
 
         var verifyToken = await SetupVerifyToken(user);
         await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
@@ -372,6 +374,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("ResetPassword")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .Include(x => x.AppUserPasswordHistories)
@@ -458,6 +462,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("VerifyMfa")]
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyIdentityModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken && x.AppUserCredential.PendingMfaLogin);
@@ -481,6 +487,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("SendNewCode")]
     public async Task<IActionResult> SendNewCode([FromBody] SendNewCodeModel model)
     {
+        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.Username == model.Username);
@@ -536,6 +544,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("SetupAuthenticator")]
     public async Task<IActionResult> SetupAuthenticator([FromQuery] string username)
     {
+        if (!_appConfig.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
+
         if (string.IsNullOrWhiteSpace(username))
         {
             return BadRequest("Username must be provided.");
@@ -575,6 +585,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("VerifyAuthenticatorCode")]
     public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyTotpModel model)
     {
+        if (!_appConfig.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.Username == model.Username);
