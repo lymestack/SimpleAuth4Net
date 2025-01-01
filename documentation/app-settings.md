@@ -24,12 +24,16 @@ The `AppConfig` section of the config file contains data that is shared between 
 | EnableMfaViaSms | `false` | Enable multi-factor authentication using SMS text message. |
 | EnableMfaViaOtp | `false` | Enable multi-factor authentication using OTP Authenticator apps. |
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
-| EnableGoogleSso | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
-| EnableFacebookSso | `false` | Whether or not to allow users to sign into their account using [Facebook SSO](./facebook-sso.md) credentials. |
-| GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
-| FacebookAppId | TBD | Unique app ID associated with the application created in the [Facebook Developers](https://developers.facebook.com/) page. |
 | RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
 | ResendCodeDelaySeconds | `60` | The number of seconds that must pass before allowing the user to send themselves a new MFA code (email and SMS MFA methods) |
+| EnableGoogleSso | `false` | Whether or not to allow users to sign into their account using [Google SSO](./google-sso.md) credentials. |
+| GoogleClientId | TBD | Unique client ID associated with the application created in the [Google Cloud Console](https://console.cloud.google.com/). |
+| EnableFacebookSso | `false` | Whether or not to allow users to sign into their account using [Facebook SSO](./facebook-sso.md) credentials. |
+| FacebookAppId | TBD | Unique app ID associated with the application created in the [Facebook Developers](https://developers.facebook.com/) page. |
+| EnableMicrosoftSso | `false` | Whether or not to allow users to sign into their account using [Microsoft Entra ID SSO](./microsoft-sso.md) credentials. |
+| MicrosoftTenantId | TBD | The Microsoft Tenant ID associated with the registered application in Azure. |
+| MicrosoftClientId | TBD | The Client ID associated with the registered application in Azure. |
+| MicrosoftRedirectUri | `http://localhost:4200/account/microsoft-login-callback` | The redirect URL that will be used after a successful sign using valid Entra ID credentials. |
 
 ## AuthSettings Section
 
@@ -51,6 +55,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | OtpIssuerName | `MyAppName` | Replace this value with the name of your application. |
 | PreventReuseOfPreviousPasswords | `true` | Enable or disable the allowance for the reuse of previously used passwords when changing a password. |
 | FacebookAppSecret | TBD | The app secret for your Facebook integration. |
+| MicrosoftClientSecret | TBD | The app secret for your Microsoft Entra ID integration. |
 
 ## EmailSettings Section
 
