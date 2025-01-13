@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
-var configuration = builder.Configuration;
 
 // Swagger/OpenAPI - Included in WebApi project by default. More info: https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -40,7 +39,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-var secret = configuration["AuthSettings:TokenSecret"];
+var secret = builder.Configuration["AuthSettings:TokenSecret"];
 
 // Define Authentication
 builder.Services.AddAuthentication(x =>
