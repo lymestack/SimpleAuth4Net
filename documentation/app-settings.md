@@ -20,9 +20,9 @@ The `AppConfig` section of the config file contains data that is shared between 
 |  - Api | `https://localhost:7214/` | The root URL for the API. Trailing slash is required. |
 |  - Description | `This is the local instance` | The description of the environment, |
 | EnableLocalAccounts | `true` | Whether or not local accounts are permitted. If true, user salted/hashed user passwords will reside in the `AppUserCredential` [database table](the-databse.md). |
-| EnableMfaViaEmail | `false` | Enable multi-factor authentication using e-mail verification. |
-| EnableMfaViaSms | `false` | Enable multi-factor authentication using SMS text message. |
-| EnableMfaViaOtp | `false` | Enable multi-factor authentication using OTP Authenticator apps. |
+| EnableMfaViaEmail | `false` | Enable [multi-factor authentication](./mfa-support.md#instructions-to-enable-mfa-via-email) using e-mail verification. |
+| EnableMfaViaSms | `false` | Enable  [multi-factor authentication](./mfa-support.md#instructions-to-enable-mva-via-sms--text) using SMS text message. |
+| EnableMfaViaOtp | `false` | Enable  [multi-factor authentication](./mfa-support.md#instructions-to-enable-mfa-via-a-one-time-password-otp-authenticator-app) using OTP Authenticator apps. |
 | AllowRegistration | `true` | Whether or not to allow users to register themselves using the Register button on the login page. |
 | RequireUserVerification | `false` | Indicates whether or not email verification is required for a user to be able to login. |
 | ResendCodeDelaySeconds | `60` | The number of seconds that must pass before allowing the user to send themselves a new MFA code (email and SMS MFA methods) |

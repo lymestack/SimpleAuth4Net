@@ -33,8 +33,7 @@ Here's an example of the response given from the API:
     "enableMicrosoftSso": false,
     "microsoftTenantId": "REDACTED",
     "microsoftClientId": "REDACTED",
-    "microsoftRedirectUri": "http://localhost:4200/account/microsoft-login-callback",
-    "enableAppleSso": false
+    "microsoftRedirectUri": "http://localhost:4200/account/microsoft-login-callback"
 }
 ```
 
