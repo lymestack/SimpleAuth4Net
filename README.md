@@ -8,7 +8,7 @@ SimpleAuth for .NET is a **free and open-source** solution designed to simplify 
 
 The goal of this project is to provide small to medium-sized businesses and organizations with a straightforward, self-hosted, and cost-effective infrastructure for identity management. Built for a .NET 9 WebAPI backend, SimpleAuth serves as an alternative to expensive commercial products and Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework, which can be complex.
 
-To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](#screenshots) or check out the [app settings](./documentation/app-settings.md) to see a full list of configuration options.
+To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](#screenshots) or check out the [the documentation](./documentation/README.md) to read more.
 
 ---
 
