@@ -17,7 +17,7 @@ The goal of this project is to provide small to medium-sized businesses and orga
   - [General Features](#general-features) - Features applicable to both local account and SSO authentication methods.
   - ["Local Accounts" Security Features](#local-accounts-security-features) - Security features built into local accounts.
 - [Screenshots](#screenshots) - Look at some screenshots from one of the client apps.
-- [Frontend Support](#frontend-support) - Support for Angular, React and VueJS
+- [Frontend Support](#frontend-support) - Sample apps provided for Angular, React and VueJS
 
 
 To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](./documentation/angular-app.md) or check out the [the documentation](./documentation/README.md) to read more.
@@ -36,7 +36,7 @@ To get a sample app with authentication / authorization up and running on your l
 
 ## Using SimpleAuth
 
-Once you have SimpleAuth set up and your users / roles input, using authorization for your endpoints is easy. Simply use the control decorators that you normally use. To require a user be logged in to access an endpoint, use the `[Authorize]` decorator on your controllers. For example, the built in test endpoint looks like this:
+Once you have SimpleAuth set up and your users / roles input, using authorization for your endpoints is easy. Simply use the control decorators that you've likely been using for years. To require a user be logged in to access an endpoint, simply use the `[Authorize]` decorator on your controllers. For example, the built in test endpoint looks like this:
 
 ```csharp
 using Microsoft.AspNetCore.Authorization;
@@ -261,4 +261,3 @@ If you’re using SimpleAuth and find it helpful, we’d also love to hear your 
 **SimpleAuth for .NET** – Simplifying identity management for .NET developers.
 
 > **Future Vision:** SimpleAuth is intended to be a core part of [LymeStack](https://www.lymestack.com), a full-stack web application template that simplifies application development. Once fully integrated, SimpleAuth will provide seamless authentication and authorization out-of-the-box within LymeStack.
-
