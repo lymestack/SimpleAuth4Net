@@ -36,7 +36,7 @@ To get a sample app with authentication / authorization up and running on your l
 
 ## Using SimpleAuth
 
-Once you have SimpleAuth set up and your users / roles input, using authorization for your endpoints is easy. Simply use the control decorators that you've likely been using for years. To require a user be logged in to access an endpoint, simply use the `[Authorize]` decorator on your controllers. For example, the built in test endpoint looks like this:
+Once you have SimpleAuth set up and your users / roles input, using authorization for your endpoints is easy. Simply use the controller decorators that you've likely been using for years. To require a user be logged in to access an endpoint, simply use the `[Authorize]` decorator on your controllers. For example, the built in test endpoint looks like this:
 
 ```csharp
 using Microsoft.AspNetCore.Authorization;
