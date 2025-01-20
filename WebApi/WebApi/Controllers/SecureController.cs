@@ -1,28 +1,28 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WebApi.Controllers
+namespace WebApi.Controllers;
+
+/// <summary>
+/// This is a test secure endpoint.
+/// </summary>
+[Authorize]
+[Route("[controller]")]
+[ApiController]
+public class SecureController : ControllerBase
 {
-    /// <summary>
-    /// This is a test secure endpoint.
-    /// </summary>
-    [Authorize]
-    [Route("[controller]")]
-    [ApiController]
-    public class SecureController : ControllerBase
+    [HttpGet("GetColorList")]
+    public List<string> GetColorList()
     {
-        [HttpGet("GetColorList")]
-        public List<string> GetColorList()
+        try
         {
-            try
-            {
-                return ["Red", "Green", "Blue"];
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            return ["Red", "Green", "Blue"];
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }
+

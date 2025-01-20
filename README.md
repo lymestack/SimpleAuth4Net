@@ -2,11 +2,23 @@
 
 Making auth suck less since 2024.
 
+## Introduction
+
 **Note:** This project is currently in early stages and has not yet been widely tested in production environments. Documentation is evolving, and contributions and feedback are highly encouraged to help improve stability and functionality. [Version 1 Sucks, But Ship It Anyway](https://blog.codinghorror.com/version-1-sucks-but-ship-it-anyway/)
 
-SimpleAuth for .NET is a **free and open-source** solution designed to simplify the implementation of user and role-based authentication and authorization in .NET WebAPI and a client applications.
+SimpleAuth for .NET is a **free and open-source** solution designed to **simplify** the implementation of user and role-based authentication and authorization in .NET WebApi and client applications.
 
 The goal of this project is to provide small to medium-sized businesses and organizations with a straightforward, self-hosted, and cost-effective infrastructure for identity management. Built for a .NET 9 WebAPI backend, SimpleAuth serves as an alternative to expensive commercial products and Microsoft's [ASP.NET Core Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity) framework, which can be complex.
+
+- [Get Started](./documentation/getting-started.md) - Setup Auth on your local computer in 10 minutes!
+- [Why Choose SimpleAuth](#why-choose-simpleauth) - Hear us out...
+- [Using SimpleAuth](#using-simpleauth) - Common programming use-cases in the API.
+- SimpleAuth Features
+  - [General Features](#general-features) - Features applicable to both local account and SSO authentication methods.
+  - ["Local Accounts" Security Features](#local-accounts-security-features) - Security features built into local accounts.
+- [Screenshots](#screenshots) - Look at some screenshots from one of the client apps.
+- [Frontend Support](#frontend-support) - Support for Angular, React and VueJS
+
 
 To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](./documentation/angular-app.md) or check out the [the documentation](./documentation/README.md) to read more.
 
@@ -19,6 +31,152 @@ To get a sample app with authentication / authorization up and running on your l
 - **Lightweight and Flexible:** Designed to integrate quickly without the steep learning curve of ASP.NET Core Identity.
 - **SSO Support:** Use Google, Microsoft Entra ID or Facebook account credentials alongside or instead of local accounts.
 - **Local Accounts:** Allows you to enable or disable local accounts and rely solely on external providers.
+
+---
+
+## Using SimpleAuth
+
+Once you have SimpleAuth set up and your users / roles input, using authorization for your endpoints is easy. Simply use the control decorators that you normally use. To require a user be logged in to access an endpoint, use the `[Authorize]` decorator on your controllers. For example, the built in test endpoint looks like this:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers;
+
+/// <summary>
+/// This is a test secure endpoint.
+/// </summary>
+[Authorize]
+[Route("[controller]")]
+[ApiController]
+public class SecureController : ControllerBase
+{
+    [HttpGet("GetColorList")]
+    public ActionResult<List<string>> GetColorList()
+    {
+        try
+        {
+            List<string> retVal = ["Red", "Green", "Blue"];
+            return Ok(retVal);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+}
+```
+
+You can also restrict an endpoint to an entire role:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers;
+
+/// <summary>
+/// This is a test secure endpoint restricted to users assigned to the Admin role.
+/// </summary>
+[Authorize(Role = "Admin")]
+[Route("[controller]")]
+[ApiController]
+public class AdminController : ControllerBase
+{
+    [HttpGet("GetRoleList")]
+    public ActionResult<List<string>> GetRoleList()
+    {
+        try
+        {
+            List<string> retVal = ["Admin", "Manager", "Staff"];
+            return Ok(retVal);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+}
+```
+
+You can also use the built in `User` object which is an [`IPrincipal` interface](https://learn.microsoft.com/en-us/dotnet/standard/security/principal-and-identity-objects) built into ASP.NET WebApi Controllers.
+
+For example, to output the current username to the console, you can use:
+
+```csharp
+Console.WriteLine(User.Identity.Name)
+```
+
+To test to see if the user is logged in on an anonymous endpoint:
+
+```csharp
+if (User.Identity.IsAuthenticated)
+{
+    Console.WriteLine("Logged in!");
+}
+else
+{
+    Console.WriteLine("NOT logged in!");
+}
+```
+
+Or to test to see if a user is in a particular role (in this case the `Admin` role):
+
+```csharp
+if (User.IsInRole("Admin"))
+{
+    Console.WriteLine("Logged in!");
+}
+else
+{
+    Console.WriteLine("NOT logged in!");
+}
+```
+
+### Alternate Use: Security-First Approach
+
+We recommend that you put this into your `Program.cs` file:
+
+```csharp
+// Enable [Authorize] attribute by default on all controllers:
+builder.Services.AddMvc(o =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    o.Filters.Add(new AuthorizeFilter(policy));
+});
+```
+
+This code will enable the "Authorize" decorator on all WebApi controllers **by default**. This security-first approach requires any endpoint that is anonymously accessible is explicitly set to do so by using the `[AllowAnonymous]` decorator on your WebApi controller instead of using the `[Authorize] decorator to restrict access. For example:
+
+```csharp
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers;
+
+/// <summary>
+/// This is an anonymous non-secure endpoint.
+/// </summary>
+[AllowAnonymous]
+[Route("[controller]")]
+[ApiController]
+public class NotSecureController : ControllerBase
+{
+    [HttpGet("IsUserAuthenticated")]
+    public ActionResult<bool> IsUserAuthenticated()
+    {
+        if (User.Identity == null) return NotFound();
+        return Ok(User.Identity.IsAuthenticated);
+    }
+}
+```
+
+---
 
 ## SimpleAuth Features
 
@@ -37,7 +195,7 @@ SimpleAuth is built to be simple and functional while supporting core identity m
 
 ### Local Accounts Security Features
 
-SimpleAuth's Local Accounts support several features to make them more secure. Passwords are stored as salted / hashed values in a separate [database table](./documentation/the-database.md) apart from general user information.
+SimpleAuth's "Local Accounts" support several features to make them more secure. Passwords are stored as salted / hashed values in a separate [database table](./documentation/the-database.md) apart from general user information.
 
 | Feature | Description |
 | --- | --- |
@@ -83,7 +241,7 @@ The screenshots below are screenshots from the [Angular client app](./documentat
 
 ## Getting Started
 
-To begin using SimpleAuth for .NET on your local machine, follow the [Getting Started Guide](./documentation/getting-started.md). The guide provides a step-by-step walkthrough to help you set up SimpleAuth and start building secure applications.
+To begin using SimpleAuth for .NET on your local machine, follow the [Getting Started Guide](./documentation/getting-started.md).
 
 ---
 
