@@ -14,5 +14,5 @@ public class AppRole
     /// <summary>
     /// EF Navigation Property
     /// </summary>
-    public IList<AppUserRole> AppUserRoles { get; set; }
+    public IList<AppUserRole>? AppUserRoles { get; set; }
 }

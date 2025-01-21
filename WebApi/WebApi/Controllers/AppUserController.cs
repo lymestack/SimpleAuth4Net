@@ -88,7 +88,12 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
             inserting = true;
         }
 
-        PropertyCopy.Copy(value, dbItem);
+        dbItem.Username = value.Username;
+        dbItem.FirstName = value.FirstName;
+        dbItem.LastName = value.LastName;
+        dbItem.EmailAddress = value.EmailAddress;
+        dbItem.PhoneNumber = value.PhoneNumber;
+        dbItem.Active = value.Active;
 
         if (inserting)
         {
@@ -97,7 +102,19 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
         }
 
         await db.SaveChangesAsync();
+
+        SaveRoles(value, dbItem);
         return Ok(dbItem);
+    }
+
+    private void SaveRoles(AppUser value, AppUser? dbItem)
+    {
+        db.DeleteRolesForUser(dbItem.Id);
+
+        foreach (var role in value.Roles)
+        {
+            db.AddRoleForUser(dbItem.Id, role);
+        }
     }
 
     #endregion

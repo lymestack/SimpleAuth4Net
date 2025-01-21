@@ -23,13 +23,7 @@ export class AppUser {
     locked: boolean;
     preferredMfaMethod: number;
     appUserCredential: AppUserCredential;
-    /**
-     * EF Navigation Property
-     */
     appUserRoles: AppUserRole[] = [];
-    /**
-     * EF Navigation Property
-     */
     appRefreshTokens: AppRefreshToken[] = [];
     appUserPasswordHistories: AppUserPasswordHistory[] = [];
     roles: string[] = [];

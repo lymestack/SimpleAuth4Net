@@ -9,8 +9,5 @@ export class AppRole {
     id: number;
     name: string;
     description: string;
-    /**
-     * EF Navigation Property
-     */
     appUserRoles: AppUserRole[];
 }

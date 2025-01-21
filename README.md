@@ -80,7 +80,7 @@ namespace WebApi.Controllers;
 /// <summary>
 /// This is a test secure endpoint restricted to users assigned to the Admin role.
 /// </summary>
-[Authorize(Role = "Admin")]
+[Authorize(Roles = "Admin")]
 [Route("[controller]")]
 [ApiController]
 public class AdminController : ControllerBase
