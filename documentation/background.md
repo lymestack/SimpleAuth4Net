@@ -31,4 +31,4 @@ For small projects, managing identity shouldn't cost anything. Also, while you c
 
 ## Disable Local Accounts for added security
 
-For much of the time, local accounts, even those that use SSO to authenticate, are enough security for 90% of the secured apps out there. Non-mission critical, non-sensitive product or service providers. However, if you're nervous about storing passwords in your database, you can disable local accounts while still storing your user's data. This allows credentials to be managed by SSO providers, but still relate to user records in your database.
+For much of the time, local accounts are enough security for a high percentage of the secured apps out there. Non-mission critical, non-sensitive product or service providers. However, if you're nervous about storing passwords in your database, you can disable local accounts authentication and use SSO providers for authentication instead, while still storing your user's data. This allows credentials and MFA workflows to be managed by SSO providers, but still allowing you to authorize with your controllers and relate to user records in your database.
