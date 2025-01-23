@@ -27,6 +27,9 @@ To generate a random secret, you can use the provided Powershell or Python scrip
 
 In Powershell:
 
+Note: In Powershell, per [this article](https:/go.microsoft.com/fwlink/?LinkID=135170), you will need to run this Powershell command on your computer prior to running the next command:
+`Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser`
+
 ``` powershell
 .\generate-token-secret.ps1
 ```

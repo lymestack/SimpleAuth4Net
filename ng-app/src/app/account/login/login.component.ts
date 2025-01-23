@@ -39,40 +39,48 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    this.auth.userVerified(this.model.username).subscribe((data) => {
-      if (!data) {
-        this.router.navigateByUrl('/account/verification-pending');
-        return;
-      }
-
-      this.auth.login(this.model).subscribe(
-        (data: any) => {
-          if (
-            this.config.enableMfaViaEmail ||
-            this.config.enableMfaViaSms ||
-            this.config.enableMfaViaOtp
-          ) {
-            let verifyRoute: string;
-            if (this.model.mfaMethod === MfaMethod.Email) {
-              verifyRoute = '/account/verify-mfa-email';
-            } else if (this.model.mfaMethod === MfaMethod.Sms) {
-              verifyRoute = '/account/verify-mfa-sms';
-            } else if (this.model.mfaMethod === MfaMethod.Otp) {
-              verifyRoute = '/account/verify-mfa-otp';
-            } else {
-              this.logger.error('Invalid MFA method selected.');
-              return;
-            }
-            this.router.navigateByUrl(verifyRoute);
-          } else {
-            console.log('Logged in');
-            setTimeout(() => window.location.reload(), 1000);
-          }
-        },
-        (err: any) => {
-          this.logger.warning('Invalid login. Try again.');
+    if (this.config.requireUserVerification) {
+      this.auth.userVerified(this.model.username).subscribe((data) => {
+        if (!data) {
+          this.router.navigateByUrl('/account/verification-pending');
+          return;
         }
-      );
-    });
+
+        this.performLogin();
+      });
+    } else {
+      this.performLogin();
+    }
+  }
+
+  private performLogin() {
+    this.auth.login(this.model).subscribe(
+      (data: any) => {
+        if (
+          this.config.enableMfaViaEmail ||
+          this.config.enableMfaViaSms ||
+          this.config.enableMfaViaOtp
+        ) {
+          let verifyRoute: string;
+          if (this.model.mfaMethod === MfaMethod.Email) {
+            verifyRoute = '/account/verify-mfa-email';
+          } else if (this.model.mfaMethod === MfaMethod.Sms) {
+            verifyRoute = '/account/verify-mfa-sms';
+          } else if (this.model.mfaMethod === MfaMethod.Otp) {
+            verifyRoute = '/account/verify-mfa-otp';
+          } else {
+            this.logger.error('Invalid MFA method selected.');
+            return;
+          }
+          this.router.navigateByUrl(verifyRoute);
+        } else {
+          console.log('Logged in');
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      },
+      (err: any) => {
+        this.logger.warning('Invalid login. Try again.');
+      }
+    );
   }
 }

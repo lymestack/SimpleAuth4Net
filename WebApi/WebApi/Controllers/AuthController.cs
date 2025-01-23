@@ -542,13 +542,24 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region Authenticator / OTP Endpoints
 
     [HttpPost("SetupAuthenticator")]
+    [Authorize]
     public async Task<IActionResult> SetupAuthenticator([FromQuery] string username)
     {
         if (!_appConfig.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
 
+        if (User.Identity == null)
+        {
+            return Unauthorized();
+        }
+
         if (string.IsNullOrWhiteSpace(username))
         {
             return BadRequest("Username must be provided.");
+        }
+
+        if (!User.IsInRole("Admin") && User.Identity.Name != username)
+        {
+            return Forbid("You do not have access to this OTP QR Code.");
         }
 
         var user = await db.AppUsers

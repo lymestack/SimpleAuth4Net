@@ -58,7 +58,9 @@ public class AppRoleController(SimpleAuthContext db) : ControllerBase
             await db.AppRoles.AddAsync(dbItem);
         }
 
-        PropertyCopy.Copy(value, dbItem);
+        dbItem.Name = value.Name;
+        dbItem.Description = value.Description;
+
         await db.SaveChangesAsync();
         return Ok(dbItem);
     }

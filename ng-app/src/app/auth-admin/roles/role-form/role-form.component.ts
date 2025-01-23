@@ -31,7 +31,7 @@ export class RoleFormComponent implements OnInit {
 
   onSave() {
     this.saving = true;
-    this.rest.postResource('Role', this.model).subscribe((data) => {
+    this.rest.postResource('AppRole', this.model).subscribe((data) => {
       this.logger.success('Role saved.');
       this.router.navigateByUrl('/auth-admin/roles');
     });

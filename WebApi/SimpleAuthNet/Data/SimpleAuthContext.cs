@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SimpleAuthNet.Models;
 
@@ -28,4 +29,21 @@ public class SimpleAuthContext(IConfiguration configuration) : DbContext
     public DbSet<AppRefreshToken> AppRefreshTokens { get; set; }
 
     public DbSet<AppUserPasswordHistory> AppUserPasswordHistories { get; set; }
+
+    #region Adhoc Sql Queries
+
+    public void DeleteRolesForUser(int userId)
+    {
+        var idParam = new SqlParameter("@userId", userId);
+        Database.ExecuteSqlRaw("DELETE FROM AppUserRole WHERE AppUserId = @userId", @idParam);
+    }
+
+    public void AddRoleForUser(int userId, string role)
+    {
+        var idParam = new SqlParameter("@userId", userId);
+        var roleParam = new SqlParameter("@role", role);
+        Database.ExecuteSqlRaw("INSERT INTO AppUserRole (AppUserId, AppRoleId) VALUES (@userId, (SELECT Id FROM AppRole WHERE Name = @role))", @idParam, roleParam);
+    }
+
+    #endregion
 }
