@@ -8,7 +8,7 @@ The API is built using ASP.NET 9 WebApi technology and resides in the `WebApi/We
 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
-| AppConfig | POST | `api/AppConfig` | The configuration endpoint is an anonymously accessible endpoint that deliver settings that describe API features to the client application. |
+| AppConfig | GET | `api/AppConfig` | The configuration endpoint is an anonymously accessible endpoint that deliver settings that describe API features to the client application. |
 
 Here's an example of the response given from the API:
 
