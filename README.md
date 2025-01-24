@@ -19,8 +19,9 @@ The goal of this project is to provide small to medium-sized businesses and orga
 - [Screenshots](#screenshots) - Look at some screenshots from one of the client apps.
 - [Frontend Support](#frontend-support) - Sample apps provided for Angular, React and VueJS
 
-
 To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](./documentation/angular-app.md) or check out the [the documentation](./documentation/README.md) to read more.
+
+Do you have any questions or feedback? [Contact Us Here!](https://www.lymestack.com/#contact)
 
 ---
 
