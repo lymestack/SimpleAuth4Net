@@ -7,7 +7,7 @@ Note from the Developer: This is a very early release and this process will impr
 The following software packages are required to follow along with this documentation:
 
 - [Microsoft .NET Framework 9](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (any edition) - For this documentation we will be using the free Express Edition in this documentation
+- [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) (any edition) - For this documentation we will be using the free Express Edition.
 - [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms) - Used for creating the database.
 - [NodeJS](https://www.nodejs.org)
 - Create a `c:\SmtpPickup` directory on your computer. Simulated registration and password recovery emails will be caught in this folder.
