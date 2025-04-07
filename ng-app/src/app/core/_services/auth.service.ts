@@ -182,12 +182,13 @@ export class AuthService {
 
   logout(): Observable<any> {
     this.clearRefreshToken();
+	localStorage.removeItem('tokenExpiration');
+	localStorage.removeItem('AppUser');
+	localStorage.removeItem('refreshTokenExpiration');
+
     return this.destroyCookieValues().pipe(
       map((response) => {
         this.log('User logged out.');
-        localStorage.removeItem('tokenExpiration');
-        localStorage.removeItem('AppUser');
-        localStorage.removeItem('refreshTokenExpiration');
       }),
       catchError((error) => {
         return throwError(() => error);
@@ -280,6 +281,9 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
+	const expiration = localStorage.getItem('tokenExpiration');
+    if (!expiration) return false;
+	
     const accessTokenExpires = this.getStoredTokenExpiration();
     const refreshTokenExpires = this.getStoredRefreshTokenExpiration();
     const now = new Date().getTime();
