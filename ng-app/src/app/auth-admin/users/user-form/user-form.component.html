@@ -1,15 +1,11 @@
 <form #userForm="ngForm" *ngIf="model">
   <mat-card>
-    <mat-card-header>
+    <mat-card-header class="nice-header">
       <mat-card-title
         >{{ model.id ? "Editing" : "Adding" }} a User</mat-card-title
       >
     </mat-card-header>
     <mat-card-content>
-      <div class="alert padded-top padded-bottom">
-        Developer Note: This feature is buggy. It's on the short list to fix /
-        QA it.
-      </div>
       <div class="row">
         <div class="col-md-6">
           <mat-card>
@@ -39,9 +35,9 @@
               ></app-username-email-input>
 
               <mat-form-field class="full-width">
+                <mat-label>First Name</mat-label>
                 <input
                   matInput
-                  placeholder="First Name"
                   #nameFiled="ngModel"
                   name="firstName"
                   required
@@ -49,48 +45,75 @@
                 />
               </mat-form-field>
               <mat-form-field class="full-width">
+                <mat-label>Last Name</mat-label>
                 <input
                   matInput
-                  placeholder="Last Name"
                   #nameFiled="ngModel"
                   name="lastName"
                   required
                   [(ngModel)]="model.lastName"
+                  (change)="onNamePartChanged()"
                 />
               </mat-form-field>
 
-              <mat-form-field class="full-width">
+              <mat-form-field class="full-width" *ngIf="!model.id">
+                <mat-label>New Password</mat-label>
                 <input
                   matInput
-                  placeholder="Email Address"
+                  name="newPassword"
+                  [(ngModel)]="model.newPassword"
+                  [required]="true"
+                  type="text"
+                  min="12"
+                />
+                <mat-hint>
+                  <a href="javascript:;" (click)="onGenerateNewPassword()"
+                    >Generate New</a
+                  >
+                  //
+                  <a href="javascript:;" (click)="onCopyToClipboard()"
+                    >Copy To Clipboard</a
+                  >
+                  (Minimum 12 chars)
+                </mat-hint>
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Email Address</mat-label>
+                <input
+                  matInput
                   #nameFiled="ngModel"
                   name="emailAddress"
                   required
+                  type="email"
                   [(ngModel)]="model.emailAddress"
                 />
-                <mat-hint
+                <!-- Future - Enable if SMTP is enabled via the API Config -->
+                <!-- <mat-hint
                   ><a
                     href="javascript:;"
                     (click)="model.emailAddress = model.username"
                     >Same as username</a
                   ></mat-hint
-                >
+                > -->
               </mat-form-field>
 
               <mat-form-field class="full-width">
+                <mat-label>Phone Number</mat-label>
                 <input
                   matInput
-                  placeholder="Phone Number"
                   #nameFiled="ngModel"
                   name="phoneNumber"
                   required
+                  mask="(000) 000-0000"
                   [(ngModel)]="model.phoneNumber"
                 />
-                <mat-hint *ngIf="!model.phoneNumberVerified"
+                <!-- Future - Enable if SMS is enabled via the API Config -->
+                <!-- <mat-hint *ngIf="!model.phoneNumberVerified"
                   ><a href="javascript:alert('Coming soon...');"
                     >Verify phone number</a
                   ></mat-hint
-                >
+                > -->
 
                 <mat-hint *ngIf="model.phoneNumberVerified">
                   The phone number has been verified.
@@ -114,21 +137,19 @@
               <mat-card-title>Role Assignment</mat-card-title>
             </mat-card-header>
             <mat-card-content>
-              <mat-selection-list
-                #rolesList
-                (selectionChange)="onRoleChanged($event)"
-              >
-                <mat-list-option
-                  [selected]="this.model.roles.indexOf(role.name) !== -1"
-                  [value]="role.name"
-                  *ngFor="let role of roles"
-                >
-                  <h3 matLine>{{ role.name }}</h3>
-                  <p matLine class="smaller">
-                    <span> {{ role.description }} </span>
-                  </p>
-                </mat-list-option>
-              </mat-selection-list>
+              <div class="role-list">
+                <div class="role-item" *ngFor="let role of roles">
+                  <mat-checkbox
+                    [checked]="model.roles.includes(role.name)"
+                    (change)="onRoleToggle(role.name, $event.checked)"
+                  >
+                    <div class="role-content">
+                      <div class="role-name">{{ role.name }}</div>
+                      <div class="role-description">{{ role.description }}</div>
+                    </div>
+                  </mat-checkbox>
+                </div>
+              </div>
 
               <div
                 class="warning padded-top text-center"
@@ -159,7 +180,10 @@
         (click)="onSave()"
         color="primary"
         [disabled]="
-          saving || (model.id === 0 && !usernameAvailable) || !userForm.valid
+          saving ||
+          (model.id === 0 && !usernameAvailable) ||
+          !userForm.valid ||
+          !rolesSelected()
         "
       >
         <!-- ZOMBIE: May Reimplement: model.roles.length === 0 || -->

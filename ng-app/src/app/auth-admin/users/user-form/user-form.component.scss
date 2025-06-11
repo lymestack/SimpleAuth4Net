@@ -2,3 +2,36 @@ h3 {
   margin-top: 20px;
   font-size: 1rem;
 }
+
+.role-list {
+  max-width: 600px;
+}
+
+.role-item {
+  margin-bottom: 12px;
+}
+
+mat-checkbox {
+  width: 100%;
+  align-items: flex-start;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.role-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.role-name {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.role-description {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+}

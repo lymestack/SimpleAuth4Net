@@ -38,7 +38,7 @@ export class AuthService {
     private dialog: MatDialog,
     private httpClient: HttpClient
   ) {
-    this.apiUrl = this.simpleAuthSettings.environment.api;
+    this.apiUrl = this.config.environment.api;
     this.simpleAuthSettings = this.config.simpleAuth;
     this.deviceId = this.getOrGenerateDeviceId();
   }

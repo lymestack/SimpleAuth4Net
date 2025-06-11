@@ -15,11 +15,25 @@
       <input
         matInput
         type="text"
-        placeholder="Filter by Last Name"
+        placeholder="First, Last or Full Name"
         name="lastName"
         [(ngModel)]="searchOptions.lastName"
         maxlength="100"
       />
+    </mat-form-field>
+  </div>
+
+  <div class="col-md-6">
+    <mat-form-field class="full-width">
+      <mat-select
+        placeholder="Active"
+        [(ngModel)]="searchOptions.active"
+        name="activeBoolean"
+      >
+        <mat-option [value]="null">Any</mat-option>
+        <mat-option [value]="true">Yes</mat-option>
+        <mat-option [value]="false">No</mat-option>
+      </mat-select>
     </mat-form-field>
 
     <mat-form-field class="full-width">

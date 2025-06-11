@@ -29,7 +29,7 @@ namespace WebApi.Controllers;
 public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
-    private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("SimpleAuthSettings").Get<SimpleAuthSettings>()!;
+    private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("AppConfig:SimpleAuth").Get<SimpleAuthSettings>()!;
 
     #region Register
 

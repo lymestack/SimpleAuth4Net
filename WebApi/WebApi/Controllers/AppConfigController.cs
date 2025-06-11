@@ -13,7 +13,7 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
     [AllowAnonymous]
     public ActionResult<SimpleAuthSettings> Get()
     {
-        var appConfig = configuration.GetSection("SimpleAuthSettings").Get<SimpleAuthSettings>();
+        var appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
         Debug.Assert(appConfig != null, nameof(appConfig) + " != null");
         appConfig.SessionId = Guid.NewGuid();
         return Ok(appConfig);

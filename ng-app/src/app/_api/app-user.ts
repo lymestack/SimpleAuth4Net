@@ -28,4 +28,5 @@ export class AppUser {
     appUserPasswordHistories: AppUserPasswordHistory[] = [];
     roles: string[] = [];
     sessionId: string;
+    newPassword: string;
 }

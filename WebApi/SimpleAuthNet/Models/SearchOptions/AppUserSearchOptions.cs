@@ -17,7 +17,16 @@ public class AppUserSearchOptions : ISearchOptions
     public DateTime? LastSeenLower { get; set; }
 
     public DateTime? LastSeenUpper { get; set; }
+
     public string? SortField { get; set; }
 
     public string? SortDirection { get; set; }
+
+    public string? EmailAddress { get; set; }
+
+    public bool? Verified { get; set; }
+
+    public bool? Active { get; set; }
+
+    public bool? Locked { get; set; }
 }

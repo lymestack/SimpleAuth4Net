@@ -9,6 +9,7 @@ import { AuthService } from '../../core/_services/auth.service';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 import { LoggerService } from '../../core/_services/logger.service';
 import { Router } from '@angular/router';
+import { CurrentUserService } from '../../core/_services/current-user.service';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +29,7 @@ export class LoginComponent implements OnInit {
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
     private auth: AuthService,
+    private currentUser: CurrentUserService,
     private logger: LoggerService,
     private router: Router
   ) {}
@@ -81,8 +83,12 @@ export class LoginComponent implements OnInit {
           }
           this.router.navigateByUrl(verifyRoute);
         } else {
-          console.log('Logged in');
-          setTimeout(() => window.location.reload(), 1000);
+          this.currentUser.getAppUser(true).subscribe((data) => {
+            console.log('Logged in');
+            setTimeout(() => {
+              window.location.reload();
+            }, 250);
+          });
         }
       },
       (err: any) => {

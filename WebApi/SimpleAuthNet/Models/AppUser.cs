@@ -49,4 +49,5 @@ public class AppUser
 
     [NotMapped] public Guid SessionId { get; set; }
 
+    [NotMapped] public string? NewPassword { get; set; }
 }

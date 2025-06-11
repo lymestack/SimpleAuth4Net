@@ -1,38 +1,29 @@
-<mat-card>
-  <mat-card-header>
-    <mat-card-title>Welcome to the SimpleAuthNet</mat-card-title>
-    <mat-card-subtitle
-      >Making Auth Suck Less in .NET 9 WebApi and Angular</mat-card-subtitle
-    >
-  </mat-card-header>
-  <mat-card-content>
-    <div
-      *ngIf="loggedIn == false"
-      class="alert alert-warning padded-top padded-bottom"
-    >
-      You are NOT logged in.
-      <a routerLink="/account/login">Log in</a>
-    </div>
+<div
+  *ngIf="loggedIn == false"
+  class="alert alert-warning padded-top padded-bottom"
+>
+  You are NOT logged in.
+  <a routerLink="/account/login">Log in</a>
+</div>
 
-    <div
-      *ngIf="loggedIn == true && appUser"
-      class="alert alert-success padded-top padded-bottom"
-    >
-      You are logged in as {{ appUser.username }}.
-      <a routerLink="/account/logout">Log out</a>
-    </div>
+<div *ngIf="loggedIn">
+  <div class="alert alert-success padded-top padded-bottom" *ngIf="appUser">
+    You are logged in as {{ appUser.username }}.
+    <a routerLink="/account/logout">Log out</a>
+  </div>
 
-    <div class="padded-top">
+  <mat-card>
+    <mat-card-content>
       <app-card-menu [menuItems]="menuItems"></app-card-menu>
-    </div>
-  </mat-card-content>
-</mat-card>
+    </mat-card-content>
+  </mat-card>
+</div>
 
 <mat-card class="padded-top">
   <mat-card-header>
     <mat-card-title>Test Area</mat-card-title>
     <mat-card-subtitle
-      >Use the buton below to test the secured endpoint.</mat-card-subtitle
+      >Use the button below to test the secured endpoint.</mat-card-subtitle
     >
   </mat-card-header>
   <mat-card-content> </mat-card-content>
