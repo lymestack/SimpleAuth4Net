@@ -65,7 +65,7 @@ The `AuthSettings` section of the config file contains configuration variables t
 | FacebookAppSecret | TBD | The app secret for your Facebook integration. |
 | MicrosoftClientSecret | TBD | The app secret for your Microsoft Entra ID integration. |
 
-## RateLimit Section
+## AuthSettings:RateLimit Section
 
 The `RateLimit` section of the config file defines how rate limiting is applied to protected WebApi endpoints. This helps guard against brute-force attacks and abusive clients by throttling requests based on a fixed window policy.
 
@@ -80,6 +80,24 @@ The `RateLimit` section of the config file defines how rate limiting is applied 
 If `PermitLimit` is set to `5`, `WindowInSeconds` is `60`, and `QueueLimit` is `2`, a client can make up to 5 requests per minute. Two additional requests may be queued, after which further requests are rejected.
 
 To enable rate limiting on specific endpoints, use the `[EnableRateLimiting("fixed")]` attribute.
+
+## The AuthSettings:AuditLogging Section
+
+The AuditLogging section allows you to optionally record security-critical events for diagnostic and compliance purposes. When enabled, it logs authentication-related events such as logins, MFA verifications, password resets, account verification, and more using the application’s logging provider (e.g., console, file, centralized log system).
+
+This is especially useful in regulated or enterprise environments that require an audit trail of authentication activity.
+
+| Key                      | Type   | Description                                                                                               |
+| ------------------------ | ------ | --------------------------------------------------------------------------------------------------------- |
+| `Enabled`                | `bool` | Master switch to enable or disable audit logging globally.                                                |
+| `LogLoginSuccess`        | `bool` | Logs successful login events, including SSO logins.                                                       |
+| `LogLoginFailure`        | `bool` | Logs failed login attempts (e.g., wrong password, locked account).                                        |
+| `LogPasswordReset`       | `bool` | Logs when a user successfully resets their password.                                                      |
+| `LogTokenRefresh`        | `bool` | Logs when a refresh token is used to obtain a new access token. Useful for tracking session continuation. |
+| `LogMfaVerification`     | `bool` | Logs when MFA verification is completed (email, SMS, or OTP).                                             |
+| `LogAccountVerification` | `bool` | Logs when a user verifies their account via a verification code.                                          |
+| `LogUserRegistration`    | `bool` | Logs when a new user registers through the public registration endpoint.                                  |
+| `LogSessionRevocation`   | `bool` | Logs when a session is revoked via the `RevokeSession` or `RevokeAllSessions` endpoints.                  |
 
 ## EmailSettings Section
 
