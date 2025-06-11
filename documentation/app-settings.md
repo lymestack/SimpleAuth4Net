@@ -25,6 +25,8 @@ The `AppConfig` section of the config file contains data that is shared between 
 
 These settings are publicly accessible by client applications and provide data needed to enable/disable certain UI as well as how to behave with SSO redirects.
 
+| Name | Default | Description |
+| ---- | ------- | ---------- |
 | EnableLocalAccounts | `true` | Whether or not local accounts are permitted. If true, user salted/hashed user passwords will reside in the `AppUserCredential` [database table](the-databse.md). |
 | EnableMfaViaEmail | `false` | Enable [multi-factor authentication](./mfa-support.md#instructions-to-enable-mfa-via-email) using e-mail verification. |
 | EnableMfaViaSms | `false` | Enable  [multi-factor authentication](./mfa-support.md#instructions-to-enable-mva-via-sms--text) using SMS text message. |
