@@ -229,9 +229,12 @@ export class AuthService {
     );
   }
 
-  resetPassword(verifyToken: string, newPassword: string): Observable<any> {
+  resetPassword(
+    username: string,
+    newPassword: string,
+    verifyToken: string = ''
+  ): Observable<any> {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
-    let username = localStorage.getItem('verifyUsername');
     return this.httpClient.post<any>(
       `${this.apiUrl}Auth/ResetPassword`,
       { username, verifyToken, newPassword },

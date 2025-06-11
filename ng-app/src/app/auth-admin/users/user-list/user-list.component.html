@@ -1,38 +1,118 @@
 <table class="table table-striped">
-  <thead class="table-dark">
+  <thead>
     <tr>
-      <th>&nbsp;</th>
-      <th>Name</th>
-      <th>Username</th>
-      <th>Date Entered</th>
-      <th>Last Seen</th>
+      <th class="no-print">&nbsp;</th>
+      <th>
+        <app-sortable-column-label
+          fieldName="username"
+          [sortDirection]="sortDirection"
+          [sortField]="sortField"
+          (sort)="sort.emit($event)"
+        >
+          Username
+        </app-sortable-column-label>
+      </th>
+      <th>
+        <app-sortable-column-label
+          fieldName="name"
+          [sortDirection]="sortDirection"
+          [sortField]="sortField"
+          (sort)="sort.emit($event)"
+        >
+          Name
+        </app-sortable-column-label>
+      </th>
+
+      <th>Roles</th>
+
+      <th>
+        <app-sortable-column-label
+          fieldName="emailAddress"
+          [sortDirection]="sortDirection"
+          [sortField]="sortField"
+          (sort)="sort.emit($event)"
+        >
+          Email
+        </app-sortable-column-label>
+      </th>
+      <th>
+        <app-sortable-column-label
+          fieldName="phoneNumber"
+          [sortDirection]="sortDirection"
+          [sortField]="sortField"
+          (sort)="sort.emit($event)"
+        >
+          Phone
+        </app-sortable-column-label>
+      </th>
+      <th>
+        <app-sortable-column-label
+          fieldName="dateEntered"
+          [sortDirection]="sortDirection"
+          [sortField]="sortField"
+          (sort)="sort.emit($event)"
+        >
+          Date Entered
+        </app-sortable-column-label>
+      </th>
+      <!--<th>
+        <app-sortable-column-label fieldName="lastSeen"
+                                   [sortDirection]="sortDirection"
+                                   [sortField]="sortField"
+                                   (sort)="sort.emit($event)">
+          Last Seen
+        </app-sortable-column-label>
+      </th>-->
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let user of users">
       <td>
-        <button mat-raised-button (click)="edit.emit(user)">
-          <i class="fa fa-pencil padded-right"></i>
-          <span>Edit</span>
+        <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Menu">
+          <mat-icon>more_vert</mat-icon>
         </button>
-        <button mat-raised-button (click)="remove.emit(user)">
-          <i class="fa fa-trash padded-right"></i>
-          <span>Delete</span>
-        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="edit.emit(user)">
+            <i class="fa fa-pencil padded-right"></i>
+            <span>Edit</span>
+          </button>
+          <button mat-menu-item (click)="remove.emit(user)">
+            <i class="fa fa-trash padded-right"></i>
+            <span>Deactivate</span>
+          </button>
+          <mat-divider> </mat-divider>
+
+          <button mat-menu-item (click)="resetPassword.emit(user)">
+            <i class="fa fa-undo padded-right"></i>
+            <span>Reset Password</span>
+          </button>
+        </mat-menu>
+      </td>
+      <td>
+        {{ user.username }}
+        <div *ngIf="!user.active" class="badge bg-danger">INACTIVE</div>
       </td>
       <td>
         {{ user.firstName }}
         {{ user.lastName }}
       </td>
+
       <td>
-        {{ user.username }}
+        {{ user.roles.join(", ") }}
+      </td>
+
+      <td>
+        {{ user.emailAddress }}
+      </td>
+      <td>
+        {{ user.phoneNumber }}
       </td>
       <td>
         {{ user.dateEntered | date : "M/d/yyyy" }}
       </td>
-      <td>
+      <!--<td>
         {{ user.lastSeen | date : "M/d/yyyy" }}
-      </td>
+      </td>-->
     </tr>
   </tbody>
 </table>

@@ -7,6 +7,7 @@ import { UserFormComponent } from './user-form/user-form.component';
 import { UserSearchOptionsComponent } from './user-search-options/user-search-options.component';
 import { AccountModule } from '../../account/account.module';
 import { UsersRoutingModule } from './users.routes';
+import { ResetPasswordModalComponent } from './reset-password-modal/reset-password-modal.component';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import { UsersRoutingModule } from './users.routes';
     UserListComponent,
     UserFormComponent,
     UserSearchOptionsComponent,
+    ResetPasswordModalComponent,
   ],
   imports: [CommonModule, SharedModule, UsersRoutingModule, AccountModule],
 })

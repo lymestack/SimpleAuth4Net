@@ -1,0 +1,16 @@
+i {
+  margin-left: 5px;
+}
+
+/* Ensure text and icon stay on the same line */
+.sort-link {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 4px; /* Space between text and icon */
+}
+
+.sort-link i {
+  // color: rgba(0, 0, 0, 0.87); /* Ensure icon color consistency */
+  color: white;
+}

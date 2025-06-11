@@ -5,9 +5,10 @@ import { MaterialModule } from './material/material.module';
 import { CardMenuComponent } from './card-menu/card-menu.component';
 import { RouterModule } from '@angular/router';
 import { HttpClientModule } from '@angular/common/http';
+import { SortableColumnLabelComponent } from './sortable-column-label/sortable-column-label.component';
 
 @NgModule({
-  declarations: [CardMenuComponent],
+  declarations: [CardMenuComponent, SortableColumnLabelComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -21,6 +22,7 @@ import { HttpClientModule } from '@angular/common/http';
     MaterialModule,
     RouterModule,
     CardMenuComponent,
+    SortableColumnLabelComponent,
   ],
 })
 export class SharedModule {}

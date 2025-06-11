@@ -13,6 +13,7 @@ export class UserListComponent implements OnInit {
   @Output() edit = new EventEmitter<AppUser>();
   @Output() remove = new EventEmitter<AppUser>();
   @Output() sort = new EventEmitter<string>();
+  @Output() resetPassword = new EventEmitter<AppUser>();
 
   constructor() {}
 

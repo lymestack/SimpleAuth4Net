@@ -4,6 +4,8 @@ import { AppUser } from '../../_api';
 import { LoggerService } from '../../core/_services/logger.service';
 import { RestService } from '../../core/_services/rest.service';
 import { ApiSearchResults } from '../../core/api-search-results.class';
+import { ResetPasswordModalComponent } from './reset-password-modal/reset-password-modal.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-users',
@@ -12,19 +14,20 @@ import { ApiSearchResults } from '../../core/api-search-results.class';
 })
 export class UsersComponent {
   results: ApiSearchResults<AppUser>;
-  searchOptions: any = { sortField: 'Username', sortDirection: 'ASC' };
   loading = false;
   pageSize = 10;
   pageIndex = 0;
+  searchOptions: any;
 
   constructor(
+    private dialog: MatDialog,
     private logger: LoggerService,
     private rest: RestService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.refresh();
+    this.onReset();
   }
 
   private refresh() {
@@ -54,7 +57,7 @@ export class UsersComponent {
   onRemove(user: AppUser) {
     let confirm = window.confirm('Are you sure you want to delete this user?');
     if (confirm) {
-      this.rest.deleteResource('User', user.id).subscribe(() => {
+      this.rest.deleteResource('AppUser', user.id).subscribe(() => {
         this.logger.info('The item was deleted.');
         this.refresh();
       });
@@ -67,7 +70,13 @@ export class UsersComponent {
 
   onReset() {
     this.pageIndex = 0;
-    this.searchOptions = {};
+
+    this.searchOptions = {
+      active: true,
+      sortField: 'Username',
+      sortDirection: 'ASC',
+    };
+
     this.refresh();
   }
 
@@ -76,5 +85,12 @@ export class UsersComponent {
     this.searchOptions.sortDirection =
       this.searchOptions.sortDirection === 'DESC' ? 'ASC' : 'DESC';
     this.refresh();
+  }
+
+  onResetPassword(user: AppUser) {
+    this.dialog.open(ResetPasswordModalComponent, {
+      width: '500px',
+      data: { username: user.username },
+    });
   }
 }

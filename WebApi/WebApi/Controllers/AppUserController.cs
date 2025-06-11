@@ -124,7 +124,6 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
 
     #endregion
 
-
     #region SEARCH
 
     [HttpPost("Search")]
@@ -152,8 +151,6 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
 
             result.AppUserRoles = null;
         }
-
-
 
         return Ok(retVal);
     }

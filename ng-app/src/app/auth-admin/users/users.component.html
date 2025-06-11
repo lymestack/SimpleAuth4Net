@@ -1,7 +1,7 @@
 <div class="users">
   <form #searchForm="ngForm">
     <mat-card>
-      <mat-card-header>
+      <mat-card-header class="nice-header">
         <mat-card-title>Users</mat-card-title>
         <mat-card-subtitle>
           <i class="fa fa-filter"></i>
@@ -13,18 +13,36 @@
           [searchOptions]="searchOptions"
         ></app-user-search-options>
       </mat-card-content>
-      <mat-card-actions>
+      <mat-card-actions
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>
+          <button
+            type="submit"
+            mat-raised-button
+            color="primary"
+            (click)="onSearch()"
+          >
+            <i class="fa fa-search"></i>
+            Search
+          </button>
+          <button mat-raised-button type="button" (click)="onReset()">
+            Reset
+          </button>
+        </div>
         <button
-          type="submit"
           mat-raised-button
-          color="primary"
-          (click)="onSearch()"
+          type="button"
+          (click)="onAdd()"
+          class="btn-add"
+          style="position: relative; top: -10px; right: 0"
         >
-          <i class="fa fa-search"></i>
-          Search
-        </button>
-        <button mat-raised-button type="button" (click)="onReset()">
-          Reset
+          <i class="fa fa-plus-circle"></i>
+          Add User
         </button>
       </mat-card-actions>
     </mat-card>
@@ -35,12 +53,6 @@
       <mat-card-title class="secondary">Search Results</mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <div class="float-right padded-bottom">
-        <button mat-raised-button type="button" (click)="onAdd()">
-          <i class="fa fa-plus-circle"></i>
-          Add User
-        </button>
-      </div>
       <mat-spinner *ngIf="loading"></mat-spinner>
       <div *ngIf="results" [hidden]="loading">
         <div *ngIf="results.totalCount > 0">
@@ -51,6 +63,7 @@
             (edit)="onEdit($event)"
             (remove)="onRemove($event)"
             (sort)="onSort($event)"
+            (resetPassword)="onResetPassword($event)"
           ></app-user-list>
 
           <mat-paginator

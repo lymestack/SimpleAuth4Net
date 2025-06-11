@@ -1,0 +1,11 @@
+<a href="javascript:;" class="sort-link" (click)="sort.emit(fieldName)">
+  <ng-content></ng-content>
+  <i
+    class="fa fa-caret-up"
+    *ngIf="sortField === fieldName && sortDirection.toLowerCase() === 'asc'"
+  ></i>
+  <i
+    class="fa fa-caret-down"
+    *ngIf="sortField === fieldName && sortDirection.toLowerCase() !== 'asc'"
+  ></i>
+</a>
