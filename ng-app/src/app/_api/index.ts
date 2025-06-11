@@ -16,5 +16,5 @@ export * from './login-model';
 export * from './login-with-sso-model';
 export * from './sso-provider';
 export * from './register-model';
-export * from './verify-totp-model';
+export * from './verify-otp-model';
 export * from './mfa-method';

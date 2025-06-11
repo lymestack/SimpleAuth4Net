@@ -64,6 +64,7 @@
             (remove)="onRemove($event)"
             (sort)="onSort($event)"
             (resetPassword)="onResetPassword($event)"
+            (revokeSessions)="onRevokeSessions($event)"
           ></app-user-list>
 
           <mat-paginator
@@ -84,4 +85,14 @@
 <button class="padded-top" mat-raised-button routerLink="/auth-admin">
   <i class="fa fa-shield"></i>
   Return to Admin Home
+</button>
+
+<button
+  class="padded-top"
+  color="warn"
+  mat-raised-button
+  (click)="onLogOutAll()"
+>
+  <i class="fa fa-sign-out"></i>
+  Log Out ALL Users
 </button>

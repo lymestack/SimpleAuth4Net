@@ -86,6 +86,11 @@
             <i class="fa fa-undo padded-right"></i>
             <span>Reset Password</span>
           </button>
+
+          <button mat-menu-item (click)="revokeSessions.emit(user)">
+            <i class="fa fa-sign-out padded-right"></i>
+            <span>Log User Out from ALL Sessions</span>
+          </button>
         </mat-menu>
       </td>
       <td>

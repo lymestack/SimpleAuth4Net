@@ -17,7 +17,7 @@ import {
   MfaMethod,
   SimpleAuthSettings,
   SsoProvider,
-  VerifyTotpModel,
+  VerifyOtpModel,
 } from '../../_api';
 import { APP_CONFIG } from './config-injection';
 import { SelectMfaMethodDialogComponent } from '../../account/select-mfa-method-dialog/select-mfa-method-dialog.component';
@@ -344,7 +344,7 @@ export class AuthService {
     username: string,
     verificationCode: string
   ): Observable<any> {
-    const verifyModel: VerifyTotpModel = {
+    const verifyModel: VerifyOtpModel = {
       username: username,
       code: verificationCode,
       deviceId: this.deviceId,

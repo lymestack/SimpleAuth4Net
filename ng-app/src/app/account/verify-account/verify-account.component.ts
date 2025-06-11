@@ -2,12 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../core/_services/logger.service';
-import {
-  AppConfig,
-  MfaMethod,
-  SimpleAuthSettings,
-  VerifyTotpModel,
-} from '../../_api';
+import { AppConfig, MfaMethod, SimpleAuthSettings } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({

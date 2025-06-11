@@ -14,6 +14,7 @@ export class UserListComponent implements OnInit {
   @Output() remove = new EventEmitter<AppUser>();
   @Output() sort = new EventEmitter<string>();
   @Output() resetPassword = new EventEmitter<AppUser>();
+  @Output() revokeSessions = new EventEmitter<AppUser>();
 
   constructor() {}
 

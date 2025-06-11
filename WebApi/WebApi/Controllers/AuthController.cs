@@ -1025,35 +1025,34 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
     #endregion
 
-    #region ZOMBIE - DELETE / RevokeToken - FUTURE: Reimplement as an Admin endpoints
+    #region Admin endpoints
 
-    //[HttpGet("ActiveSessions")]
-    //public async Task<IActionResult> ActiveSessions(int userId)
-    //{
-    //    var sessions = await db.AppRefreshTokens
-    //        .Where(x => x.AppUserId == userId)
-    //        .Select(x => new { x.DeviceId, x.Created, x.Expires })
-    //        .ToListAsync();
+    [HttpPost("RevokeAllSessionsForUser")]
+    [Authorize(Roles = "Admin")]
+    [EnableRateLimiting("fixed")]
+    public async Task<IActionResult> RevokeAllSessionsForUser([FromQuery] string username)
+    {
+        var user = await db.AppUsers.SingleOrDefaultAsync(u => u.Username == username);
+        if (user == null) return NotFound("User not found.");
 
-    //    return Ok(sessions);
-    //}
+        var tokens = db.AppRefreshTokens.Where(rt => rt.AppUserId == user.Id);
+        db.AppRefreshTokens.RemoveRange(tokens);
+        await db.SaveChangesAsync();
 
-    //[HttpDelete("RevokeSession")]
-    //public async Task<IActionResult> RevokeSession(int userId, string deviceId)
-    //{
-    //    var session = await db.AppRefreshTokens
-    //        .FirstOrDefaultAsync(x => x.AppUserId == userId && x.DeviceId == deviceId);
+        return Ok($"All sessions revoked for user {username}.");
+    }
 
-    //    if (session == null)
-    //    {
-    //        return NotFound("Session not found.");
-    //    }
+    [HttpPost("RevokeAllSessions")]
+    [Authorize(Roles = "Admin")]
+    [EnableRateLimiting("fixed")]
+    public async Task<IActionResult> RevokeAllSessions()
+    {
+        var allTokens = db.AppRefreshTokens;
+        db.AppRefreshTokens.RemoveRange(allTokens);
+        await db.SaveChangesAsync();
 
-    //    db.AppRefreshTokens.Remove(session);
-    //    await db.SaveChangesAsync();
-
-    //    return Ok("Session revoked.");
-    //}
+        return Ok("All sessions have been revoked.");
+    }
 
     #endregion
 }

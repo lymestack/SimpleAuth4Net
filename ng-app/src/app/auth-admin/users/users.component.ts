@@ -93,4 +93,34 @@ export class UsersComponent {
       data: { username: user.username },
     });
   }
+
+  onLogOutAll() {
+    let confirm = window.confirm('Are you sure you want to log out all users?');
+
+    if (confirm) {
+      this.rest.postResource('Auth/RevokeAllSessions', {}).subscribe(() => {
+        this.logger.info('All users have been logged out.');
+      });
+    }
+  }
+
+  onRevokeSessions(user: AppUser) {
+    let confirm = window.confirm(
+      `Are you sure you want to revoke all sessions for ${user.username}?`
+    );
+
+    if (confirm) {
+      this.rest
+        .postResource(
+          'Auth/RevokeAllSessionsForUser?username=' +
+            encodeURIComponent(user.username),
+          {}
+        )
+        .subscribe(() => {
+          this.logger.info(
+            `All sessions for ${user.username} have been revoked.`
+          );
+        });
+    }
+  }
 }
