@@ -83,10 +83,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         // If this is the first user in the system, grant admin access:
         if (userCount != 0) return Ok(new { success = true, message });
+        var adminRole = await db.AppRoles.FirstAsync(r => r.Name == "Admin");
+
         var appUserRole = new AppUserRole
         {
             AppUserId = user.Id,
-            AppRoleId = 1
+            AppRoleId = adminRole.Id
         };
 
         user.AppUserRoles.Add(appUserRole);
@@ -381,6 +383,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("ResetPassword")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
@@ -813,7 +816,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
     private async Task<string> SetupVerifyToken(AppUser user, bool mfaToken = false)
     {
-        var verifyToken = new Random().Next(100000, 999999).ToString();
+        var rng = RandomNumberGenerator.Create();
+        var tokenBytes = new byte[4];
+        rng.GetBytes(tokenBytes);
+        var verifyToken = (BitConverter.ToUInt32(tokenBytes, 0) % 1_000_000).ToString();
+
         Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
         user.AppUserCredential.VerifyToken = verifyToken;
         user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
