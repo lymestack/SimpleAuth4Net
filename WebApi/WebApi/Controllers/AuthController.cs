@@ -1,5 +1,4 @@
 ﻿using Google.Apis.Auth;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -27,7 +26,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient, IAntiforgery _antiforgery) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient, ILogger<AuthController> logger) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("AppConfig:SimpleAuth").Get<SimpleAuthSettings>()!;
@@ -94,6 +93,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         user.AppUserRoles.Add(appUserRole);
         await db.SaveChangesAsync();
+
+        if (_authSettings.AuditLogging.Enabled)
+        {
+            logger.LogInformation("New user registered: {Username}", user.Username);
+        }
+
         return Ok(new { success = true, message });
     }
 
@@ -137,6 +142,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             user.AppUserCredential.FailedLoginAttempts++;
             user.AppUserCredential.LastFailedLoginAttempt = DateTime.UtcNow;
 
+            if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogLoginFailure)
+            {
+                logger.LogWarning("Failed login attempt for user {Username}", model.Username);
+            }
+
             if (user.AppUserCredential.FailedLoginAttempts >= _authSettings.MaxFailedLoginAttempts)
             {
                 user.Locked = true;
@@ -175,6 +185,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
                 redirectUrl = "/account/verify-account",
                 message
             });
+        }
+
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogLoginSuccess)
+        {
+            logger.LogInformation("User {Username} successfully logged in.", user.Username);
         }
 
         var jwt = await JwtGenerator(user, model.DeviceId);
@@ -332,6 +347,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         // Set the new refresh token in a secure cookie
         SetJwtRefreshTokenCookie(newRefreshToken.Token, newRefreshToken.Expires);
 
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogTokenRefresh)
+        {
+            logger.LogInformation("Refresh token used for user {Username}, device {DeviceId}", refreshToken.AppUser.Username, deviceId);
+        }
+
         return Ok(jwt);
     }
 
@@ -388,8 +408,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
-
-
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -458,6 +476,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
         await db.SaveChangesAsync();
 
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogPasswordReset)
+        {
+            logger.LogInformation("Password reset for user {Username}", user.Username);
+        }
+
         return Ok(new { success = true, message = "Password reset successfully." });
     }
 
@@ -475,8 +498,13 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         if (user.Verified) return Ok(new { success = true, message = "Account already verified..." });
         user.Verified = true;
-
         await db.SaveChangesAsync();
+
+        if (_authSettings.AuditLogging.Enabled)
+        {
+            logger.LogInformation("Account verified for user {Username}", user.Username);
+        }
+
         return Ok(new { success = true, message = "Account verified successfully..." });
     }
 
@@ -502,6 +530,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         Debug.Assert(model.DeviceId != null, "model.DeviceId != null");
         var jwt = await JwtGenerator(user, model.DeviceId);
         await db.SaveChangesAsync();
+
+        if (_authSettings.AuditLogging.Enabled)
+        {
+            logger.LogInformation("MFA verified for user {Username} via {Method}", user.Username, model is VerifyOtpModel ? "OTP" : "Email/SMS");
+        }
 
         return Ok(jwt);
     }
@@ -720,6 +753,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         // Assume email is verified by receiving valid credentials from SSO
         if (!user.Verified) user.Verified = true;
         await db.SaveChangesAsync();
+
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogLoginSuccess)
+        {
+            logger.LogInformation("User {Username} successfully logged in.", user.Username);
+        }
 
         // Generate JWT
         retVal.Jwt = await JwtGenerator(user, deviceId);
@@ -1039,6 +1077,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         db.AppRefreshTokens.RemoveRange(tokens);
         await db.SaveChangesAsync();
 
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogSessionRevocations)
+        {
+            logger.LogInformation("Admin revoked all sessions for user {Username}.", username);
+        }
+
         return Ok($"All sessions revoked for user {username}.");
     }
 
@@ -1050,6 +1093,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var allTokens = db.AppRefreshTokens;
         db.AppRefreshTokens.RemoveRange(allTokens);
         await db.SaveChangesAsync();
+
+        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogSessionRevocations)
+        {
+            logger.LogInformation("Admin revoked all sessions for all users.");
+        }
 
         return Ok("All sessions have been revoked.");
     }
