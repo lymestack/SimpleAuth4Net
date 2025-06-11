@@ -65,6 +65,8 @@ Here's a breakdown on the meaning of the information in this response can be fou
 | SetupAuthenticator | POST | `/Auth/SetupAuthenticator?username=user@domain.com` | This endpoint generates a OTP secret for a user and returns a Base-64 encoded QR code graphic to use when registering it with a OTP Authenticator app. Note: A user must be authorized as the user being passed in as a querystring parameter of must be authorized as a user in the "Admin" role to use this endpoint. |
 | VerifyAuthenticatorCode | POST | `/Auth/VerifyMfa` | The endpoint to use when entering a verification code for multi-factor authentication using OTP. |
 | WhoAmI | GET | `/Auth/WhoAmI` | This endpoint returns the name of the authenticated user. |
+| RevokeAllSessionsForUser | DELETE | `/Auth/RevokeAllSessionsForUser?username=user@domain.com` | **[Admin Only]** Revokes all refresh tokens associated with the specified user, effectively logging them out from all devices. |
+| RevokeAllSessions | DELETE | `/Auth/RevokeAllSessions` | **[Admin Only]** Revokes all refresh tokens for all users in the system, logging everyone out of all active sessions. |
 
 ## Administrative Endpoints
 

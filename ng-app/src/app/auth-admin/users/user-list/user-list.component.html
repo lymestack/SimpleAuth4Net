@@ -81,12 +81,10 @@
             <span>Deactivate</span>
           </button>
           <mat-divider> </mat-divider>
-
           <button mat-menu-item (click)="resetPassword.emit(user)">
             <i class="fa fa-undo padded-right"></i>
             <span>Reset Password</span>
           </button>
-
           <button mat-menu-item (click)="revokeSessions.emit(user)">
             <i class="fa fa-sign-out padded-right"></i>
             <span>Log User Out from ALL Sessions</span>
@@ -101,11 +99,9 @@
         {{ user.firstName }}
         {{ user.lastName }}
       </td>
-
       <td>
         {{ user.roles.join(", ") }}
       </td>
-
       <td>
         {{ user.emailAddress }}
       </td>
