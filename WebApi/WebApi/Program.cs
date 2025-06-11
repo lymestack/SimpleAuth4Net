@@ -56,6 +56,18 @@ builder.Services.AddRateLimiter(options =>
             }));
 
     options.RejectionStatusCode = 429;
+
+    if (rateLimitOptions.EnableRateLimitRejectionLogging)
+    {
+        options.OnRejected = async (context, token) =>
+        {
+            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("Rate limit hit for {IP} on {Path}",
+                context.HttpContext.Connection.RemoteIpAddress,
+                context.HttpContext.Request.Path);
+            await Task.CompletedTask;
+        };
+    }
 });
 
 
