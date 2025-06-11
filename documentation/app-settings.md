@@ -66,6 +66,7 @@ The `RateLimit` section of the config file defines how rate limiting is applied 
 | PermitLimit | `5` | The maximum number of requests allowed during each time window. If this limit is exceeded, further requests will be rejected or queued. |
 | WindowInSeconds | `60` | The length of the time window (in seconds) used for rate limiting. The permit count resets after this window expires. |
 | QueueLimit | `2` | The number of additional requests that may be queued after the limit is reached. If the queue is full, requests will be rejected with an HTTP 429 (Too Many Requests) status. |
+| EnableRateLimitRejectionLogging | `false` | If set to true, a warning will be logged each time a client exceeds the rate limit. This can help with early detection of abuse patterns or misconfigured clients. |
 
 **Example Usage**:
 If `PermitLimit` is set to `5`, `WindowInSeconds` is `60`, and `QueueLimit` is `2`, a client can make up to 5 requests per minute. Two additional requests may be queued, after which further requests are rejected.
