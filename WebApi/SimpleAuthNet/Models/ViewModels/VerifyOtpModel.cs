@@ -1,6 +1,6 @@
 ﻿namespace SimpleAuthNet.Models.ViewModels;
 
-public class VerifyTotpModel
+public class VerifyOtpModel
 {
     public string Username { get; set; }
     public string Code { get; set; }

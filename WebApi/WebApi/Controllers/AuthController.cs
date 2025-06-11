@@ -1,4 +1,5 @@
 ﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -26,7 +27,7 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient) : ControllerBase
+public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient, IAntiforgery _antiforgery) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("AppConfig:SimpleAuth").Get<SimpleAuthSettings>()!;
@@ -388,6 +389,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
+
+
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
             .Include(x => x.AppUserPasswordHistories)
@@ -436,6 +439,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         };
 
         db.AppUserPasswordHistories.Add(passwordHistory);
+        await db.SaveChangesAsync();
+
+        // Invalidate all existing refresh tokens for this user
+        var existingTokens = db.AppRefreshTokens.Where(rt => rt.AppUserId == user.Id);
+        db.AppRefreshTokens.RemoveRange(existingTokens);
         await db.SaveChangesAsync();
 
         // Hash and save the new password
@@ -609,7 +617,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("VerifyAuthenticatorCode")]
-    public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyTotpModel model)
+    public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyOtpModel model)
     {
         if (!_simpleAuthSettings.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
 

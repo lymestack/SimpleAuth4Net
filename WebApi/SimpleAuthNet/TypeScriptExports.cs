@@ -19,7 +19,7 @@ public class TypeScriptExports : GenerationSpec
         AddClass<LoginModel>();
         AddClass<LoginWithSsoModel>();
         AddClass<RegisterModel>();
-        AddClass<VerifyTotpModel>();
+        AddClass<VerifyOtpModel>();
         AddEnum<MfaMethod>();
     }
 }
