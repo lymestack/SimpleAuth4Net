@@ -74,7 +74,7 @@ export class RegisterComponent {
     this.rest.postResource(url, this.model).subscribe(
       (data: any) => {
         let route = '/account/register-confirmation';
-        if (this.config.requireUserVerification) {
+        if (this.config.simpleAuth.requireUserVerification) {
           localStorage.setItem('verifyUsername', this.model.username);
           route = '/account/verify';
         }

@@ -15,6 +15,7 @@ import {
   LoginModel,
   LoginWithSsoModel,
   MfaMethod,
+  SimpleAuthSettings,
   SsoProvider,
   VerifyTotpModel,
 } from '../../_api';
@@ -30,19 +31,24 @@ export class AuthService {
   private refreshTokenInterval: Subscription | undefined;
   private deviceId: string;
   private debug = false;
+  private simpleAuthSettings: SimpleAuthSettings;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
     private dialog: MatDialog,
     private httpClient: HttpClient
   ) {
-    this.apiUrl = this.config.environment.api;
+    this.apiUrl = this.simpleAuthSettings.environment.api;
+    this.simpleAuthSettings = this.config.simpleAuth;
     this.deviceId = this.getOrGenerateDeviceId();
   }
 
   login(loginModel: LoginModel): Observable<any> {
     localStorage.setItem('verifyUsername', loginModel.username.trim());
-    if (this.config.enableMfaViaEmail || this.config.enableMfaViaSms) {
+    if (
+      this.simpleAuthSettings.enableMfaViaEmail ||
+      this.simpleAuthSettings.enableMfaViaSms
+    ) {
       let mfaPreference = this.getStoredMfaPreference();
       if (!!mfaPreference) {
         loginModel.mfaMethod = mfaPreference;
@@ -85,7 +91,7 @@ export class AuthService {
       })
       .pipe(
         map((response: any) => {
-          if (!this.config.enableMfaViaEmail) {
+          if (!this.simpleAuthSettings.enableMfaViaEmail) {
             this.storeTokenExpiration(response.expires);
             this.scheduleTokenRefresh(response.expires);
           }
@@ -182,9 +188,9 @@ export class AuthService {
 
   logout(): Observable<any> {
     this.clearRefreshToken();
-	localStorage.removeItem('tokenExpiration');
-	localStorage.removeItem('AppUser');
-	localStorage.removeItem('refreshTokenExpiration');
+    localStorage.removeItem('tokenExpiration');
+    localStorage.removeItem('AppUser');
+    localStorage.removeItem('refreshTokenExpiration');
 
     return this.destroyCookieValues().pipe(
       map((response) => {
@@ -281,9 +287,9 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-	const expiration = localStorage.getItem('tokenExpiration');
+    const expiration = localStorage.getItem('tokenExpiration');
     if (!expiration) return false;
-	
+
     const accessTokenExpires = this.getStoredTokenExpiration();
     const refreshTokenExpires = this.getStoredRefreshTokenExpiration();
     const now = new Date().getTime();

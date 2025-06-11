@@ -11,9 +11,9 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
 {
     [HttpGet]
     [AllowAnonymous]
-    public ActionResult<AppConfig> Get()
+    public ActionResult<SimpleAuthSettings> Get()
     {
-        var appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
+        var appConfig = configuration.GetSection("SimpleAuthSettings").Get<SimpleAuthSettings>();
         Debug.Assert(appConfig != null, nameof(appConfig) + " != null");
         appConfig.SessionId = Guid.NewGuid();
         return Ok(appConfig);

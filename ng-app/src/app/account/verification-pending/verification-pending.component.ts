@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { AppConfig } from '../../_api';
+import { AppConfig, SimpleAuthSettings } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
@@ -12,7 +12,7 @@ export class VerificationPendingComponent {
   facebookEnabled = false;
 
   constructor(@Inject(APP_CONFIG) public config: AppConfig) {
-    this.googleEnabled = config.enableGoogleSso;
-    this.facebookEnabled = config.enableFacebookSso;
+    this.googleEnabled = this.config.simpleAuth.enableGoogleSso;
+    this.facebookEnabled = this.config.simpleAuth.enableFacebookSso;
   }
 }

@@ -2,7 +2,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { Router } from '@angular/router';
 import { LoggerService } from '../../core/_services/logger.service';
-import { AppConfig, MfaMethod, VerifyTotpModel } from '../../_api';
+import {
+  AppConfig,
+  MfaMethod,
+  SimpleAuthSettings,
+  VerifyTotpModel,
+} from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
@@ -17,17 +22,18 @@ export class VerifyAccountComponent implements OnInit {
   resendDisabled: boolean = false;
   countdown: number = 0;
   resendCooldownSeconds: number;
+  simpleAuthSettings: SimpleAuthSettings;
 
   constructor(
-    @Inject(APP_CONFIG) public config: AppConfig,
+    @Inject(APP_CONFIG) public appConfig: AppConfig,
     private authService: AuthService,
     private logger: LoggerService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    this.resendCooldownSeconds = this.config.resendCodeDelaySeconds;
-    this.startResendCooldown(this.config.resendCodeDelaySeconds);
+    this.resendCooldownSeconds = this.simpleAuthSettings.resendCodeDelaySeconds;
+    this.startResendCooldown(this.simpleAuthSettings.resendCodeDelaySeconds);
 
     this.introMessage = location.href.includes('email')
       ? 'Enter the verification code that was sent to your email inbox'
@@ -52,7 +58,8 @@ export class VerifyAccountComponent implements OnInit {
       next: (data) => {
         if (location.href.includes('mfa')) {
           setTimeout(
-            () => (window.location.href = this.config.environment.url),
+            () =>
+              (window.location.href = this.simpleAuthSettings.environment.url),
             1000
           );
         } else {
@@ -115,7 +122,9 @@ export class VerifyAccountComponent implements OnInit {
             this.logger.success('MFA verification successful.');
             this.authService.handleJwtResponse(data);
             setTimeout(
-              () => (window.location.href = this.config.environment.url),
+              () =>
+                (window.location.href =
+                  this.simpleAuthSettings.environment.url),
               1000
             );
           },

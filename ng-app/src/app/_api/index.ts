@@ -5,6 +5,7 @@
 
 export * from './app-config';
 export * from './environment';
+export * from './simple-auth-settings';
 export * from './app-role';
 export * from './app-user-role';
 export * from './app-user';

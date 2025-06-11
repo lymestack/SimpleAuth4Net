@@ -34,7 +34,7 @@ export class GoogleLoginButtonComponent implements OnInit {
   initializeGoogleSignIn(): void {
     // @ts-ignore
     google.accounts.id.initialize({
-      client_id: this.config.googleClientId,
+      client_id: this.config.simpleAuth.googleClientId,
       callback: this.handleCredentialResponse.bind(this),
       auto_select: false,
       cancel_on_tap_outside: true,

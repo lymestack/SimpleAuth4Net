@@ -12,10 +12,12 @@ export class MicrosoftLoginButtonComponent {
 
   loginWithMicrosoft() {
     const authUrl =
-      `https://login.microsoftonline.com/${this.config.microsoftTenantId}/oauth2/v2.0/authorize?` +
-      `client_id=${this.config.microsoftClientId}` +
+      `https://login.microsoftonline.com/${this.config.simpleAuth.microsoftTenantId}/oauth2/v2.0/authorize?` +
+      `client_id=${this.config.simpleAuth.microsoftClientId}` +
       `&response_type=code` +
-      `&redirect_uri=${encodeURIComponent(this.config.microsoftRedirectUri)}` +
+      `&redirect_uri=${encodeURIComponent(
+        this.config.simpleAuth.microsoftRedirectUri
+      )}` +
       `&scope=${encodeURIComponent('openid profile email offline_access')}`;
 
     window.location.href = authUrl;

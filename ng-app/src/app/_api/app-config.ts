@@ -4,24 +4,10 @@
  */
 
 import { Environment } from "./environment";
+import { SimpleAuthSettings } from "./simple-auth-settings";
 
 export class AppConfig {
     environment: Environment;
-    googleClientId: string;
     sessionId: string;
-    enableLocalAccounts: boolean;
-    enableGoogleSso: boolean;
-    enableFacebookSso: boolean;
-    facebookAppId: string;
-    allowRegistration: boolean;
-    requireUserVerification: boolean;
-    enableMfaViaEmail: boolean;
-    enableMfaViaSms: boolean;
-    enableMfaViaOtp: boolean;
-    resendCodeDelaySeconds: number;
-    enableMicrosoftSso: boolean;
-    microsoftTenantId: string;
-    microsoftClientId: string;
-    microsoftRedirectUri: string;
-    enableAppleSso: boolean;
+    simpleAuth: SimpleAuthSettings;
 }

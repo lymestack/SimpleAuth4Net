@@ -19,6 +19,12 @@ The `AppConfig` section of the config file contains data that is shared between 
 |  - Url | `http://localhost:4200/` | The root URL for the client application. Trailing slash is required. |
 |  - Api | `https://localhost:7214/` | The root URL for the API. Trailing slash is required. |
 |  - Description | `This is the local instance` | The description of the environment, |
+| SimpleAuth | See Below | Contains SimpleAuth data that is shared between both the client application and the API. |
+
+## AppConfig:SimpleAuth Section
+
+These settings are publicly accessible by client applications and provide data needed to enable/disable certain UI as well as how to behave with SSO redirects.
+
 | EnableLocalAccounts | `true` | Whether or not local accounts are permitted. If true, user salted/hashed user passwords will reside in the `AppUserCredential` [database table](the-databse.md). |
 | EnableMfaViaEmail | `false` | Enable [multi-factor authentication](./mfa-support.md#instructions-to-enable-mfa-via-email) using e-mail verification. |
 | EnableMfaViaSms | `false` | Enable  [multi-factor authentication](./mfa-support.md#instructions-to-enable-mva-via-sms--text) using SMS text message. |

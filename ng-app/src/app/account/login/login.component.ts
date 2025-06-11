@@ -1,5 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { AppConfig, LoginModel, MfaMethod } from '../../_api';
+import {
+  AppConfig,
+  LoginModel,
+  MfaMethod,
+  SimpleAuthSettings,
+} from '../../_api';
 import { AuthService } from '../../core/_services/auth.service';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 import { LoggerService } from '../../core/_services/logger.service';
@@ -18,6 +23,7 @@ export class LoginComponent implements OnInit {
   enableFacebook: boolean;
   allowRegistration: boolean;
   enableMicrosoft: boolean;
+  simpleAuthSettings: SimpleAuthSettings;
 
   constructor(
     @Inject(APP_CONFIG) public config: AppConfig,
@@ -27,11 +33,12 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.enableGoogle = this.config.enableGoogleSso;
-    this.enableFacebook = this.config.enableFacebookSso;
-    this.enableMicrosoft = this.config.enableMicrosoftSso;
-    this.allowRegistration = this.config.allowRegistration;
-    this.enableLocalAccounts = this.config.enableLocalAccounts;
+    this.simpleAuthSettings = this.config.simpleAuth;
+    this.enableGoogle = this.simpleAuthSettings.enableGoogleSso;
+    this.enableFacebook = this.simpleAuthSettings.enableFacebookSso;
+    this.enableMicrosoft = this.simpleAuthSettings.enableMicrosoftSso;
+    this.allowRegistration = this.simpleAuthSettings.allowRegistration;
+    this.enableLocalAccounts = this.simpleAuthSettings.enableLocalAccounts;
 
     if (this.auth.isLoggedIn()) {
       this.router.navigateByUrl('/');
@@ -39,7 +46,7 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.config.requireUserVerification) {
+    if (this.simpleAuthSettings.requireUserVerification) {
       this.auth.userVerified(this.model.username).subscribe((data) => {
         if (!data) {
           this.router.navigateByUrl('/account/verification-pending');
@@ -57,9 +64,9 @@ export class LoginComponent implements OnInit {
     this.auth.login(this.model).subscribe(
       (data: any) => {
         if (
-          this.config.enableMfaViaEmail ||
-          this.config.enableMfaViaSms ||
-          this.config.enableMfaViaOtp
+          this.simpleAuthSettings.enableMfaViaEmail ||
+          this.simpleAuthSettings.enableMfaViaSms ||
+          this.simpleAuthSettings.enableMfaViaOtp
         ) {
           let verifyRoute: string;
           if (this.model.mfaMethod === MfaMethod.Email) {

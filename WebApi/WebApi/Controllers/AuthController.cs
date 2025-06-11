@@ -29,7 +29,7 @@ namespace WebApi.Controllers;
 public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
-    private readonly AppConfig _appConfig = configuration.GetSection("AppConfig").Get<AppConfig>()!;
+    private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("SimpleAuthSettings").Get<SimpleAuthSettings>()!;
 
     #region Register
 
@@ -37,8 +37,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
-        if (!_appConfig.AllowRegistration) return BadRequest("Public registration is not allowed.");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
+        if (!_simpleAuthSettings.AllowRegistration) return BadRequest("Public registration is not allowed.");
         if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("User already exists...");
 
         var userCount = await db.AppUsers.CountAsync();
@@ -74,11 +74,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         var message = "User Registered Successfully";
 
-        if (_appConfig.RequireUserVerification)
+        if (_simpleAuthSettings.RequireUserVerification)
         {
             var verifyToken = await SetupVerifyToken(user);
             await SendVerificationEmail(user.EmailAddress, verifyToken, "Verify your email address");
-            if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+            if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
         }
 
         // If this is the first user in the system, grant admin access:
@@ -118,7 +118,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
 
         var user = await GetUserWithCredentialsAndRoles(model.Username);
         if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
@@ -127,7 +127,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var isLocked = await HandleLockedAccounts(user);
         if (isLocked) return Unauthorized("The account is locked.");
 
-        if (_appConfig.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
+        if (_simpleAuthSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
 
         var match = CheckPassword(model.Password, user);
 
@@ -156,16 +156,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         user.AppUserCredential.LastFailedLoginAttempt = null;
         await db.SaveChangesAsync();
 
-        if (_appConfig.EnableMfaViaEmail || _appConfig.EnableMfaViaSms)
+        if (_simpleAuthSettings.EnableMfaViaEmail || _simpleAuthSettings.EnableMfaViaSms)
         {
             var verifyToken = await SetupVerifyToken(user, true);
             var message = "A verification code has been sent to your email";
-            if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+            if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
             if (model.MfaMethod == MfaMethod.Email) await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
             if (model.MfaMethod == MfaMethod.Sms) await SendVerificationSms(user.PhoneNumber, verifyToken);
 
-            user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
+            user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
             await db.SaveChangesAsync();
 
             return Ok(new
@@ -184,11 +184,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithSsoModel model)
     {
-        if (!_appConfig.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
+        if (!_simpleAuthSettings.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
-            Audience = new List<string> { _appConfig.GoogleClientId }
+            Audience = new List<string> { _simpleAuthSettings.GoogleClientId }
         };
 
         GoogleJsonWebSignature.Payload payload;
@@ -213,9 +213,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithSsoModel model)
     {
-        if (!_appConfig.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
+        if (!_simpleAuthSettings.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
 
-        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromProvider}&access_token={_appConfig.FacebookAppId}|{_authSettings.FacebookAppSecret}");
+        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromProvider}&access_token={_simpleAuthSettings.FacebookAppId}|{_authSettings.FacebookAppSecret}");
         var stringResponse = await tokenResponse.Content.ReadAsStringAsync();
         var facebookUser = JsonConvert.DeserializeObject<FacebookUser>(stringResponse);
         if (facebookUser == null) return Unauthorized(GetErrorResponse("User not found."));
@@ -238,16 +238,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithSsoModel model)
     {
-        if (!_appConfig.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
-        var tokenEndpoint = $"https://login.microsoftonline.com/{_appConfig.MicrosoftTenantId}/oauth2/v2.0/token";
+        if (!_simpleAuthSettings.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
+        var tokenEndpoint = $"https://login.microsoftonline.com/{_simpleAuthSettings.MicrosoftTenantId}/oauth2/v2.0/token";
 
         var requestContent = new FormUrlEncodedContent(new[]
         {
-            new KeyValuePair<string, string>("client_id", _appConfig.MicrosoftClientId),
+            new KeyValuePair<string, string>("client_id", _simpleAuthSettings.MicrosoftClientId),
             new KeyValuePair<string, string>("client_secret", _authSettings.MicrosoftClientSecret),
             new KeyValuePair<string, string>("code", model.CredentialsFromProvider),
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
-            new KeyValuePair<string, string>("redirect_uri", _appConfig.MicrosoftRedirectUri),
+            new KeyValuePair<string, string>("redirect_uri", _simpleAuthSettings.MicrosoftRedirectUri),
         });
 
         var response = await httpClient.PostAsync(tokenEndpoint, requestContent);
@@ -366,7 +366,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -378,7 +378,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
 
         var message = "Password reset email sent.";
-        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
         return Ok(new { message });
     }
 
@@ -386,7 +386,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -447,7 +447,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         user.Verified = true;
 
         // Indicate cooldown period:
-        user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_appConfig.ResendCodeDelaySeconds);
+        user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
         await db.SaveChangesAsync();
 
         return Ok(new { success = true, message = "Password reset successfully." });
@@ -476,7 +476,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyIdentityModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -502,7 +502,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> SendNewCode([FromBody] SendNewCodeModel model)
     {
-        if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
+        if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -542,12 +542,12 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             return BadRequest("Unsupported MFA method.");
         }
 
-        user.AppUserCredential.VerificationCooldownExpires = now.AddSeconds(_appConfig.ResendCodeDelaySeconds);
+        user.AppUserCredential.VerificationCooldownExpires = now.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
 
         await db.SaveChangesAsync();
 
         var message = "A new verification code has been sent.";
-        if (_appConfig.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
         return Ok(new { success = true, message });
     }
@@ -560,7 +560,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [Authorize]
     public async Task<IActionResult> SetupAuthenticator([FromQuery] string username)
     {
-        if (!_appConfig.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
+        if (!_simpleAuthSettings.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
 
         if (User.Identity == null)
         {
@@ -599,7 +599,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var qrCodeImage = qrCode.GetGraphic(20);
         var qrCodeBase64 = Convert.ToBase64String(qrCodeImage.ToArray());
 
-        var totpSecret = _appConfig.Environment.Name.Contains("Local") ? $"Development ONLY: {user.AppUserCredential.TotpSecret}" : "REDACTED";
+        var totpSecret = _simpleAuthSettings.Environment.Name.Contains("Local") ? $"Development ONLY: {user.AppUserCredential.TotpSecret}" : "REDACTED";
 
         return Ok(new
         {
@@ -611,7 +611,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpPost("VerifyAuthenticatorCode")]
     public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyTotpModel model)
     {
-        if (!_appConfig.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
+        if (!_simpleAuthSettings.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
