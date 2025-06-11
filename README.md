@@ -256,9 +256,3 @@ SimpleAuth is a community-driven project, and we welcome your contributions to m
 - Report issues or suggest features to improve the project
 
 If you’re using SimpleAuth and find it helpful, we’d also love to hear your feedback.
-
----
-
-**SimpleAuth for .NET** – Simplifying identity management for .NET developers.
-
-> **Future Vision:** SimpleAuth is intended to be a core part of [LymeStack](https://www.lymestack.com), a full-stack web application template that simplifies application development. Once fully integrated, SimpleAuth will provide seamless authentication and authorization out-of-the-box within LymeStack.

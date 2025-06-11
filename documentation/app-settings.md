@@ -57,6 +57,21 @@ The `AuthSettings` section of the config file contains configuration variables t
 | FacebookAppSecret | TBD | The app secret for your Facebook integration. |
 | MicrosoftClientSecret | TBD | The app secret for your Microsoft Entra ID integration. |
 
+## RateLimit Section
+
+The `RateLimit` section of the config file defines how rate limiting is applied to protected WebApi endpoints. This helps guard against brute-force attacks and abusive clients by throttling requests based on a fixed window policy.
+
+| Name | Default | Description |
+| ---- | ------- | ----------- |
+| PermitLimit | `5` | The maximum number of requests allowed during each time window. If this limit is exceeded, further requests will be rejected or queued. |
+| WindowInSeconds | `60` | The length of the time window (in seconds) used for rate limiting. The permit count resets after this window expires. |
+| QueueLimit | `2` | The number of additional requests that may be queued after the limit is reached. If the queue is full, requests will be rejected with an HTTP 429 (Too Many Requests) status. |
+
+**Example Usage**:
+If `PermitLimit` is set to `5`, `WindowInSeconds` is `60`, and `QueueLimit` is `2`, a client can make up to 5 requests per minute. Two additional requests may be queued, after which further requests are rejected.
+
+To enable rate limiting on specific endpoints, use the `[EnableRateLimiting("fixed")]` attribute.
+
 ## EmailSettings Section
 
 The `EmailSettings` section of the config file controls how emails are sent to users from the WebApi.

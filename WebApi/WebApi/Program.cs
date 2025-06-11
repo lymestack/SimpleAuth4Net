@@ -7,6 +7,7 @@ using SimpleAuthNet.Models.Config;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,25 @@ builder.Services.AddCors(options =>
             .AllowCredentials(); // Required to allow cookies with cross-origin requests
     });
 });
+
+// Rate Limiting:
+var rateLimitOptions = builder.Configuration.GetSection("AuthSettings:RateLimit").Get<RateLimitOptions>()!;
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("fixed", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.User.Identity?.Name ?? httpContext.Connection.RemoteIpAddress?.ToString(),
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = rateLimitOptions.PermitLimit,
+                Window = TimeSpan.FromSeconds(rateLimitOptions.WindowInSeconds),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = rateLimitOptions.QueueLimit
+            }));
+
+    options.RejectionStatusCode = 429;
+});
+
 
 var secret = builder.Configuration["AuthSettings:TokenSecret"];
 

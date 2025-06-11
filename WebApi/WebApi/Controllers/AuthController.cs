@@ -1,6 +1,7 @@
 ﻿using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -33,6 +34,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region Register
 
     [HttpPost("Register")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
@@ -97,6 +99,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region UserExists
 
     [HttpGet("UserExists")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> UserExists([FromQuery] string username)
     {
         if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
@@ -110,6 +113,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook / LoginWithMicrosoft
 
     [HttpPost("Login")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
@@ -175,6 +179,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("LoginWithGoogle")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
@@ -203,6 +208,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("LoginWithFacebook")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
@@ -227,6 +233,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("LoginWithMicrosoft")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithSsoModel model)
     {
         if (!_appConfig.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
@@ -277,6 +284,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region RefreshToken
 
     [HttpGet("RefreshToken")]
+    [EnableRateLimiting("fixed")]
     public async Task<ActionResult<string>> RefreshToken(string deviceId)
     {
         var tokenValue = Request.Cookies["X-Refresh-Token"];
@@ -353,6 +361,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region ForgotPassword / ResetPassword / VerifyAccount / VerifyMfa / SendNewCode
 
     [HttpPost("ForgotPassword")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
@@ -442,6 +451,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("VerifyAccount")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyAccount([FromBody] VerifyIdentityModel model)
     {
         var user = await db.AppUsers
@@ -460,6 +470,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("VerifyMfa")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyIdentityModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
@@ -485,6 +496,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     }
 
     [HttpPost("SendNewCode")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> SendNewCode([FromBody] SendNewCodeModel model)
     {
         if (!_appConfig.EnableLocalAccounts) return NotFound("Local accounts are disabled");
@@ -641,6 +653,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     #region UserVerified
 
     [HttpGet("UserVerified")]
+    [EnableRateLimiting("fixed")]
     public async Task<ActionResult<bool>> UserVerified([FromQuery] string username)
     {
         if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
