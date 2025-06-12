@@ -371,7 +371,7 @@ export class AuthService {
   }
 
   updateUserProfile(user: any): Observable<any> {
-    return this.httpClient.post<any>(`${this.apiUrl}Auth/AppUser`, user, {
+    return this.httpClient.post<any>(`${this.apiUrl}AppUser`, user, {
       withCredentials: true,
     });
   }

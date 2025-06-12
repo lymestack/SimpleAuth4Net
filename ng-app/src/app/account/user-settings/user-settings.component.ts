@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { LoggerService } from '../../core/_services/logger.service';
-import { AppConfig } from '../../_api';
+import { AppConfig, AppUser } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
@@ -10,11 +10,7 @@ import { APP_CONFIG } from '../../core/_services/config-injection';
   styleUrls: ['./user-settings.component.scss'],
 })
 export class UserSettingsComponent implements OnInit {
-  user = {
-    firstName: '',
-    lastName: '',
-    emailAddress: '',
-  };
+  user: AppUser;
 
   otpEnabled = false;
 
@@ -28,12 +24,8 @@ export class UserSettingsComponent implements OnInit {
     this.otpEnabled = this.config.simpleAuth.enableMfaViaOtp;
 
     this.authService.getUserProfile().subscribe({
-      next: (data: any) => {
-        this.user = {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          emailAddress: data.emailAddress,
-        };
+      next: (data: AppUser) => {
+        this.user = data;
       },
       error: (err: any) => {
         this.logger.error('Failed to load user profile', err);

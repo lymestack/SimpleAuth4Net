@@ -29,8 +29,6 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
 
         appConfig.SimpleAuth.SsoProviders = clientSsoProviders ?? [];
         appConfig.SessionId = Guid.NewGuid();
-
         return Ok(appConfig);
-
     }
 }
