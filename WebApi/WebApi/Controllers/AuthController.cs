@@ -355,7 +355,6 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         return Ok(jwt);
     }
 
-
     #endregion
 
     #region CheckPasswordComplexity

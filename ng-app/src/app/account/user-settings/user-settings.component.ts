@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { AuthService } from '../../core/_services/auth.service';
 import { LoggerService } from '../../core/_services/logger.service';
+import { AppConfig } from '../../_api';
+import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
   selector: 'app-user-settings',
@@ -14,12 +16,17 @@ export class UserSettingsComponent implements OnInit {
     emailAddress: '',
   };
 
+  otpEnabled = false;
+
   constructor(
+    @Inject(APP_CONFIG) public config: AppConfig,
     private authService: AuthService,
     private logger: LoggerService
   ) {}
 
   ngOnInit(): void {
+    this.otpEnabled = this.config.simpleAuth.enableMfaViaOtp;
+
     this.authService.getUserProfile().subscribe({
       next: (data: any) => {
         this.user = {

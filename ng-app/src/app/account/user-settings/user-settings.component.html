@@ -61,6 +61,7 @@
         mat-button
         color="accent"
         routerLink="/account/setup-authenticator"
+        *ngIf="otpEnabled"
       >
         Set Up Authenticator App
       </button>
