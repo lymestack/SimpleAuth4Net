@@ -13,12 +13,10 @@
               <mat-card-title>General Information</mat-card-title>
               <mat-card-subtitle *ngIf="model.id">
                 <div>
-                  <label>Date Entered:</label>
-                  <span>{{ model.dateEntered | date : "M/d/yyyy" }}</span>
+                  Date Entered: {{ model.dateEntered | date : "M/d/yyyy" }}
                 </div>
                 <div *ngIf="model.lastSeen">
-                  <label>Last Seen on</label>
-                  <span>{{ model.lastSeen | date : "M/d/yyyy" }}</span>
+                  Last Seen on {{ model.lastSeen | date : "M/d/yyyy" }}
                 </div>
               </mat-card-subtitle>
             </mat-card-header>
