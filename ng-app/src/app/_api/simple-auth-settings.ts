@@ -4,24 +4,18 @@
  */
 
 import { Environment } from "./environment";
+import { ClientSsoProviderSettings } from "./client-sso-provider-settings";
 
 export class SimpleAuthSettings {
     environment: Environment;
     googleClientId: string;
     sessionId: string;
     enableLocalAccounts: boolean;
-    enableGoogleSso: boolean;
-    enableFacebookSso: boolean;
-    facebookAppId: string;
     allowRegistration: boolean;
     requireUserVerification: boolean;
     enableMfaViaEmail: boolean;
     enableMfaViaSms: boolean;
     enableMfaViaOtp: boolean;
     resendCodeDelaySeconds: number;
-    enableMicrosoftSso: boolean;
-    microsoftTenantId: string;
-    microsoftClientId: string;
-    microsoftRedirectUri: string;
-    enableAppleSso: boolean;
+    ssoProviders: ClientSsoProviderSettings[] = [];
 }

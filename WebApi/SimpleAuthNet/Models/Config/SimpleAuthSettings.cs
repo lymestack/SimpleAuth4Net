@@ -10,12 +10,6 @@ public class SimpleAuthSettings
 
     public bool EnableLocalAccounts { get; set; }
 
-    public bool EnableGoogleSso { get; set; }
-
-    public bool EnableFacebookSso { get; set; }
-
-    public string FacebookAppId { get; set; }
-
     public bool AllowRegistration { get; set; }
 
     public bool RequireUserVerification { get; set; }
@@ -28,13 +22,5 @@ public class SimpleAuthSettings
 
     public int ResendCodeDelaySeconds { get; set; }
 
-    public bool EnableMicrosoftSso { get; set; }
-
-    public string MicrosoftTenantId { get; set; }
-
-    public string MicrosoftClientId { get; set; }
-
-    public string MicrosoftRedirectUri { get; set; }
-
-    public bool EnableAppleSso { get; set; }
+    public List<ClientSsoProviderSettings> SsoProviders { get; set; } = new();
 }

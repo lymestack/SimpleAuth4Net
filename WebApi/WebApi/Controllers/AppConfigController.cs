@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SimpleAuthNet.Models.Config;
-using System.Diagnostics;
 
 namespace WebApi.Controllers;
 
@@ -13,9 +12,25 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
     [AllowAnonymous]
     public ActionResult<SimpleAuthSettings> Get()
     {
+        var authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>();
         var appConfig = configuration.GetSection("AppConfig").Get<AppConfig>();
-        Debug.Assert(appConfig != null, nameof(appConfig) + " != null");
+
+        var clientSsoProviders = authSettings.SsoProviders?
+            .Where(p => p.Enabled)
+            .Select(p => new ClientSsoProviderSettings
+            {
+                Name = p.Name,
+                Enabled = true,
+                AppId = p.AppId,
+                TenantId = p.TenantId,
+                RedirectUri = p.RedirectUri
+            })
+            .ToList();
+
+        appConfig.SimpleAuth.SsoProviders = clientSsoProviders ?? [];
         appConfig.SessionId = Guid.NewGuid();
+
         return Ok(appConfig);
+
     }
 }

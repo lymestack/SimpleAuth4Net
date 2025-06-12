@@ -12,7 +12,13 @@ export class VerificationPendingComponent {
   facebookEnabled = false;
 
   constructor(@Inject(APP_CONFIG) public config: AppConfig) {
-    this.googleEnabled = this.config.simpleAuth.enableGoogleSso;
-    this.facebookEnabled = this.config.simpleAuth.enableFacebookSso;
+    const googleSsoSettings = this.config.simpleAuth.ssoProviders.find(
+      (x) => x.name === 'Google'
+    );
+    const facebookSsoSettings = this.config.simpleAuth.ssoProviders.find(
+      (x) => x.name === 'Facebook'
+    );
+    this.googleEnabled = googleSsoSettings?.enabled ?? false;
+    this.facebookEnabled = facebookSsoSettings?.enabled ?? false;
   }
 }

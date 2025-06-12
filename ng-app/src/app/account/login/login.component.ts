@@ -36,9 +36,9 @@ export class LoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.simpleAuthSettings = this.config.simpleAuth;
-    this.enableGoogle = this.simpleAuthSettings.enableGoogleSso;
-    this.enableFacebook = this.simpleAuthSettings.enableFacebookSso;
-    this.enableMicrosoft = this.simpleAuthSettings.enableMicrosoftSso;
+    this.enableGoogle = this.isSsoEnabled('Google');
+    this.enableFacebook = this.isSsoEnabled('Facebook');
+    this.enableMicrosoft = this.isSsoEnabled('Microsoft');
     this.allowRegistration = this.simpleAuthSettings.allowRegistration;
     this.enableLocalAccounts = this.simpleAuthSettings.enableLocalAccounts;
 
@@ -60,6 +60,14 @@ export class LoginComponent implements OnInit {
     } else {
       this.performLogin();
     }
+  }
+
+  private isSsoEnabled(provider: string): boolean {
+    const providerSettings = this.simpleAuthSettings.ssoProviders.find(
+      (x) => x.name === provider
+    );
+
+    return providerSettings?.enabled ?? false;
   }
 
   private performLogin() {

@@ -142,7 +142,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             user.AppUserCredential.FailedLoginAttempts++;
             user.AppUserCredential.LastFailedLoginAttempt = DateTime.UtcNow;
 
-            if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogLoginFailure)
+            if (_authSettings.AuditLogging is { Enabled: true, LogLoginFailure: true })
             {
                 logger.LogWarning("Failed login attempt for user {Username}", model.Username);
             }
@@ -187,7 +187,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             });
         }
 
-        if (_authSettings.AuditLogging.Enabled && _authSettings.AuditLogging.LogLoginSuccess)
+        if (_authSettings.AuditLogging is { Enabled: true, LogLoginSuccess: true })
         {
             logger.LogInformation("User {Username} successfully logged in.", user.Username);
         }
@@ -200,7 +200,9 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithSsoModel model)
     {
-        if (!_simpleAuthSettings.EnableGoogleSso) return BadRequest("Sign in with Google is not enabled.");
+        var authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+        var ssoSettings = authSettings.SsoProviders.Single(x => x.Name == "Google");
+        if (!ssoSettings.Enabled) return BadRequest("Sign in with Google is not enabled.");
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
@@ -229,9 +231,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithSsoModel model)
     {
-        if (!_simpleAuthSettings.EnableFacebookSso) return BadRequest("Sign in with Facebook is not enabled.");
+        var authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+        var ssoSettings = authSettings.SsoProviders.Single(x => x.Name == "Facebook");
+        if (!ssoSettings.Enabled) return BadRequest("Sign in with Facebook is not enabled.");
 
-        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromProvider}&access_token={_simpleAuthSettings.FacebookAppId}|{_authSettings.FacebookAppSecret}");
+        var tokenResponse = await httpClient.GetAsync($"https://graph.facebook.com/debug_token?input_token={model.CredentialsFromProvider}&access_token={ssoSettings.AppId}|{ssoSettings.AppSecret}");
         var stringResponse = await tokenResponse.Content.ReadAsStringAsync();
         var facebookUser = JsonConvert.DeserializeObject<FacebookUser>(stringResponse);
         if (facebookUser == null) return Unauthorized(GetErrorResponse("User not found."));
@@ -254,16 +258,20 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithSsoModel model)
     {
-        if (!_simpleAuthSettings.EnableMicrosoftSso) return BadRequest(GetErrorResponse("Sign in with Microsoft is not enabled."));
-        var tokenEndpoint = $"https://login.microsoftonline.com/{_simpleAuthSettings.MicrosoftTenantId}/oauth2/v2.0/token";
+
+        var authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+        var ssoSettings = authSettings.SsoProviders.Single(x => x.Name == "Microsoft");
+        if (!ssoSettings.Enabled) return BadRequest("Sign in with Microsoft is not enabled.");
+
+        var tokenEndpoint = $"https://login.microsoftonline.com/{ssoSettings.TenantId}/oauth2/v2.0/token";
 
         var requestContent = new FormUrlEncodedContent(new[]
         {
-            new KeyValuePair<string, string>("client_id", _simpleAuthSettings.MicrosoftClientId),
-            new KeyValuePair<string, string>("client_secret", _authSettings.MicrosoftClientSecret),
+            new KeyValuePair<string, string>("client_id", ssoSettings.AppId),
+            new KeyValuePair<string, string>("client_secret", ssoSettings.AppSecret),
             new KeyValuePair<string, string>("code", model.CredentialsFromProvider),
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
-            new KeyValuePair<string, string>("redirect_uri", _simpleAuthSettings.MicrosoftRedirectUri),
+            new KeyValuePair<string, string>("redirect_uri", ssoSettings.RedirectUri),
         });
 
         var response = await httpClient.PostAsync(tokenEndpoint, requestContent);
