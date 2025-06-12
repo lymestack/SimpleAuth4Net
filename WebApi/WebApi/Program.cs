@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Logging;
-using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 using System.Diagnostics;
 using System.Text;

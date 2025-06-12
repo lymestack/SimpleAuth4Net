@@ -1,4 +1,4 @@
-﻿namespace SimpleAuthNet.Models;
+﻿namespace SimpleAuthNet.Logging;
 
 public enum AuthLogEventType
 {

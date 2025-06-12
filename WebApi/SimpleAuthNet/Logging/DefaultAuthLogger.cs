@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 
 namespace SimpleAuthNet.Logging;

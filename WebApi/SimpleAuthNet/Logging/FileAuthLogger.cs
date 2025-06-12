@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using SimpleAuthNet.Models;
 
 namespace SimpleAuthNet.Logging;
 

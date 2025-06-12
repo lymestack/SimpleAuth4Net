@@ -9,6 +9,7 @@ using OtpNet;
 using QRCoder;
 using SimpleAuthNet;
 using SimpleAuthNet.Data;
+using SimpleAuthNet.Logging;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 using SimpleAuthNet.Models.SsoResponse;
