@@ -36,14 +36,14 @@ public class AppUser
     /// <summary>
     /// EF Navigation Property
     /// </summary>
-    public IList<AppUserRole>? AppUserRoles { get; set; } = [];
+    public IList<AppUserRole> AppUserRoles { get; set; } = [];
 
     /// <summary>
     /// EF Navigation Property
     /// </summary>
     public IList<AppRefreshToken>? AppRefreshTokens { get; set; } = [];
 
-    public IList<AppUserPasswordHistory>? AppUserPasswordHistories { get; set; } = [];
+    public IList<AppUserPasswordHistory> AppUserPasswordHistories { get; set; } = [];
 
     [NotMapped] public IList<string> Roles { get; set; } = [];
 

@@ -11,4 +11,5 @@ public class AuditLoggingOptions
     public bool LogAccountVerification { get; set; }
     public bool LogUserRegistration { get; set; }
     public bool LogSessionRevocations { get; set; } // <-- add this
+    public string LogFolder { get; set; } = "";
 }

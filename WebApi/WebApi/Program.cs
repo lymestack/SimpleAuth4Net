@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using SimpleAuthNet.Data;
+using SimpleAuthNet.Logging;
+using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Config;
 using System.Diagnostics;
 using System.Text;
@@ -15,6 +17,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+#region SimpleAuth
+
 // Database Context:
 builder.Services.AddDbContext<SimpleAuthContext>();
 
@@ -24,7 +28,7 @@ builder.Services.AddControllers().AddJsonOptions(x =>
 
 builder.Services.AddHttpClient();
 
-var authSettings = builder.Configuration.GetSection("AuthSettings").Get<AuthSettings>();
+var authSettings = builder.Configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
 
 // Define CORS Policy:
 builder.Services.AddCors(options =>
@@ -70,6 +74,16 @@ builder.Services.AddRateLimiter(options =>
     }
 });
 
+// Auth Audit Logging:
+var auditLogging = authSettings.AuditLogging!;
+if (auditLogging.Enabled == true)
+{
+    if (!string.IsNullOrEmpty(auditLogging.LogFolder) && Directory.Exists(auditLogging.LogFolder))
+        builder.Services.AddScoped<IAuthLogger, FileAuthLogger>();
+    else
+        builder.Services.AddScoped<IAuthLogger, DefaultAuthLogger>();
+
+}
 
 var secret = builder.Configuration["AuthSettings:TokenSecret"];
 
@@ -114,6 +128,8 @@ builder.Services.AddMvc(o =>
         .Build();
     o.Filters.Add(new AuthorizeFilter(policy));
 });
+
+#endregion
 
 var app = builder.Build();
 

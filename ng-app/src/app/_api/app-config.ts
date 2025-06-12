@@ -7,6 +7,7 @@ import { Environment } from "./environment";
 import { SimpleAuthSettings } from "./simple-auth-settings";
 
 export class AppConfig {
+    version: string;
     environment: Environment;
     sessionId: string;
     simpleAuth: SimpleAuthSettings;
