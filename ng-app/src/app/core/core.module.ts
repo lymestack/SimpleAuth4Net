@@ -8,7 +8,7 @@ import { SharedModule } from '../shared/shared.module';
 import { RestService } from './_services/rest.service';
 import { LoggerService } from './_services/logger.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
-import { JwtInterceptor } from './jwt-interceptor';
+import { ErrorInterceptor } from './error-interceptor';
 import { CurrentUserService } from './_services/current-user.service';
 import { LocalStorageService } from './_services/local-storage.service';
 
@@ -17,11 +17,11 @@ import { LocalStorageService } from './_services/local-storage.service';
   imports: [CommonModule, BrowserAnimationsModule, SharedModule],
   exports: [ShellComponent],
   providers: [
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: JwtInterceptor,
-    //   multi: true,
-    // },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor,
+      multi: true,
+    },
     CurrentUserService,
     LocalStorageService,
     LoggerService,

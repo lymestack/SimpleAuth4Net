@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Inject, Injectable, Injector } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import {
   HttpRequest,
@@ -10,10 +10,16 @@ import {
 import { Observable, of, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from './_services/auth.service';
+import { AppConfig } from '../_api';
+import { APP_CONFIG } from './_services/config-injection';
 
 @Injectable()
-export class JwtInterceptor implements HttpInterceptor {
-  constructor(private inject: Injector, private router: Router) {}
+export class ErrorInterceptor implements HttpInterceptor {
+  constructor(
+    @Inject(APP_CONFIG) public config: AppConfig,
+    private inject: Injector,
+    private router: Router
+  ) {}
 
   ctr = 0;
 
@@ -23,9 +29,6 @@ export class JwtInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
-        // if (err instanceof HttpErrorResponse) {
-        // }
-
         this.handleAuthError(err);
         return next.handle(request);
       })
@@ -34,27 +37,12 @@ export class JwtInterceptor implements HttpInterceptor {
 
   private handleAuthError(err: HttpErrorResponse) {
     if (err && err.status === 401 && this.ctr != 1) {
-      this.ctr++;
       let service = this.inject.get(AuthService);
-
-      service.refreshToken().subscribe({
-        next: (x: any) => {
-          console.log('Tokens refreshed, try again');
-          return of(
-            'We refreshed the token no do again what you were trying to do.'
-          );
-        },
-        error: (err: any) => {
-          service.revokeToken().subscribe({
-            next: (x: any) => {
-              this.router.navigateByUrl('/');
-              return of(err.message);
-            },
-          });
-        },
+      service.logout().subscribe(() => {
+        this.router.navigateByUrl('/account/login');
       });
 
-      return of('Attempting to refresh tokens.');
+      return of('Signing out and redirecting to login page...');
     } else {
       this.ctr = 0;
       return throwError(() => new Error('Non auth error'));
