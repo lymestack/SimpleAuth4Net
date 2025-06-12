@@ -7,7 +7,8 @@ Welcome to the SimpleAuth for .NET documentation.
 This documentation is a work in progress. Constructive criticism and contributions are welcome.
 
 - [Background](background.md) - How and why this project came to exist.
-- [Getting Started](getting-started.md) - Getting started with SimpleAuth for .NET
+- [Getting Started](getting-started.md) - Run the demo app locally in a few minutes.
+- [Implementation Guide](implementation-guide.md) - Instructions on installing SimpleAuth into a new .NET WebApi project.
 - [Configuration Options](app-settings.md) - Configuration options for your API and configuration endpoint.
 - [API](api.md) - An explanation of the API endpoints and the sample apps.
   - [Configuration Endpoint](api.md#configuration-endpoint) - Delivers basic configuration information to your API.
