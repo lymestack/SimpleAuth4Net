@@ -286,6 +286,11 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     [HttpDelete("Logout")]
     public async Task<IActionResult> Logout()
     {
+        if (User.Identity is { IsAuthenticated: true })
+        {
+            await logger.LogAsync(AuthLogEventType.Logout, User.Identity.Name, null);
+        }
+
         SetJwtAccessTokenCookie("");
         SetJwtRefreshTokenCookie("", DateTime.UtcNow);
         await Task.CompletedTask;
