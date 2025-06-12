@@ -93,7 +93,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         user.AppUserRoles.Add(appUserRole);
         await db.SaveChangesAsync();
-        await logger.LogRegistrationAsync(user.Username);
+        await logger.LogAsync(AuthLogEventType.Registration, user.Username, null);
         return Ok(new { success = true, message });
     }
 
@@ -136,7 +136,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         {
             user.AppUserCredential.FailedLoginAttempts++;
             user.AppUserCredential.LastFailedLoginAttempt = DateTime.UtcNow;
-            await logger.LogLoginFailureAsync(model.Username, "Invalid credentials");
+            await logger.LogAsync(AuthLogEventType.LoginFailure, user.Username, null);
 
             if (user.AppUserCredential.FailedLoginAttempts >= _authSettings.MaxFailedLoginAttempts)
             {
@@ -179,7 +179,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         }
 
         var jwt = await JwtGenerator(user, model.DeviceId);
-        await logger.LogLoginSuccessAsync(user.Username, "Local Account");
+        await logger.LogAsync(AuthLogEventType.LoginSuccess, user.Username, model.DeviceId);
         return Ok(jwt);
     }
 
@@ -341,7 +341,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         // Set the new refresh token in a secure cookie
         SetJwtRefreshTokenCookie(newRefreshToken.Token, newRefreshToken.Expires);
-        await logger.LogTokenRefreshAsync(refreshToken.AppUser.Username);
+        await logger.LogAsync(AuthLogEventType.TokenRefresh, refreshToken.AppUser.Username, new { deviceId });
 
         return Ok(jwt);
     }
@@ -465,8 +465,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         // Indicate cooldown period:
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
         await db.SaveChangesAsync();
-
-        await logger.LogPasswordResetAsync(user.Username);
+        await logger.LogAsync(AuthLogEventType.PasswordReset, user.Username, null);
         return Ok(new { success = true, message = "Password reset successfully." });
     }
 
@@ -486,7 +485,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         user.Verified = true;
         await db.SaveChangesAsync();
 
-        await logger.LogAccountVerifiedAsync(user.Username);
+        await logger.LogAsync(AuthLogEventType.AccountVerified, user.Username, null);
         return Ok(new { success = true, message = "Account verified successfully..." });
     }
 
@@ -513,7 +512,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var jwt = await JwtGenerator(user, model.DeviceId);
         await db.SaveChangesAsync();
 
-        await logger.LogMfaVerifiedAsync(user.Username, model is VerifyOtpModel ? "OTP" : "Email/SMS");
+        var data = new { Type = model is VerifyOtpModel ? "OTP" : "Email/SMS", model.DeviceId };
+        await logger.LogAsync(AuthLogEventType.MfaVerified, user.Username, data);
         return Ok(jwt);
     }
 
@@ -734,7 +734,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         // Generate JWT
         retVal.Jwt = await JwtGenerator(user, deviceId);
-        await logger.LogLoginSuccessAsync(user.Username, "SSO");
+        await logger.LogAsync(AuthLogEventType.LoginSuccess, user.Username, new { deviceId, ssoProvider = "SSO" });
         return retVal;
     }
 
@@ -1050,7 +1050,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var tokens = db.AppRefreshTokens.Where(rt => rt.AppUserId == user.Id);
         db.AppRefreshTokens.RemoveRange(tokens);
         await db.SaveChangesAsync();
-        await logger.LogSessionRevokedAsync(username, "Admin revoked all sessions");
+        await logger.LogAsync(AuthLogEventType.SessionRevoked, username, new { Message = $"Admin {User.Identity.Name} revoked all sessions for {username}" });
         return Ok($"All sessions revoked for user {username}.");
     }
 
@@ -1062,7 +1062,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var allTokens = db.AppRefreshTokens;
         db.AppRefreshTokens.RemoveRange(allTokens);
         await db.SaveChangesAsync();
-        await logger.LogSessionRevokedAsync("All Users", "Admin revoked all sessions for all users");
+        await logger.LogAsync(AuthLogEventType.SessionRevoked, "", new { Message = $"Admin {User.Identity.Name} revoked all sessions for all users." });
         return Ok("All sessions have been revoked.");
     }
 

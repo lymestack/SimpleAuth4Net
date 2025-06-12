@@ -10,6 +10,6 @@ public class AuditLoggingOptions
     public bool LogMfaVerification { get; set; }
     public bool LogAccountVerification { get; set; }
     public bool LogUserRegistration { get; set; }
-    public bool LogSessionRevocations { get; set; } // <-- add this
+    public bool LogSessionRevocation { get; set; }
     public string LogFolder { get; set; } = "";
 }
