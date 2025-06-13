@@ -4,9 +4,10 @@ import { LoggerService } from '../../core/_services/logger.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-reset-password',
-  templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss'],
+    selector: 'app-reset-password',
+    templateUrl: './reset-password.component.html',
+    styleUrls: ['./reset-password.component.scss'],
+    standalone: false
 })
 export class ResetPasswordComponent {
   verificationCode: string = '';

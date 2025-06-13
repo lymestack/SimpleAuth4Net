@@ -2,9 +2,10 @@ import { Component } from '@angular/core';
 import { CardMenuItem } from '../shared/card-menu/card-menu.component';
 
 @Component({
-  selector: 'app-auth-admin',
-  templateUrl: './auth-admin.component.html',
-  styleUrl: './auth-admin.component.scss',
+    selector: 'app-auth-admin',
+    templateUrl: './auth-admin.component.html',
+    styleUrl: './auth-admin.component.scss',
+    standalone: false
 })
 export class AuthAdminComponent {
   menuItems: CardMenuItem[] = [

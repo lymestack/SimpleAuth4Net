@@ -2,10 +2,11 @@ import { Component } from '@angular/core';
 import { routerTransition } from './core/router.animation';
 
 @Component({
-  selector: 'app-root',
-  animations: [routerTransition],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
+    selector: 'app-root',
+    animations: [routerTransition],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss',
+    standalone: false
 })
 export class AppComponent {
   isIframe = false;

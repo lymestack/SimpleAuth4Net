@@ -8,9 +8,10 @@ import { AuthService } from '../../core/_services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-google-login-button',
-  templateUrl: './google-login-button.component.html',
-  styleUrls: ['./google-login-button.component.scss'],
+    selector: 'app-google-login-button',
+    templateUrl: './google-login-button.component.html',
+    styleUrls: ['./google-login-button.component.scss'],
+    standalone: false
 })
 export class GoogleLoginButtonComponent implements OnInit {
   myId = uuid.v4();

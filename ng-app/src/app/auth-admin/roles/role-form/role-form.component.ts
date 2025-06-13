@@ -5,9 +5,10 @@ import { LoggerService } from '../../../core/_services/logger.service';
 import { RestService } from '../../../core/_services/rest.service';
 
 @Component({
-  selector: 'app-role-form',
-  templateUrl: './role-form.component.html',
-  styleUrls: ['./role-form.component.scss'],
+    selector: 'app-role-form',
+    templateUrl: './role-form.component.html',
+    styleUrls: ['./role-form.component.scss'],
+    standalone: false
 })
 export class RoleFormComponent implements OnInit {
   model = new AppRole();

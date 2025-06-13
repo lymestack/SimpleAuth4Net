@@ -7,9 +7,10 @@ import { LoggerService } from '../../../core/_services/logger.service';
 import { RestService } from '../../../core/_services/rest.service';
 
 @Component({
-  selector: 'app-user-form',
-  templateUrl: './user-form.component.html',
-  styleUrls: ['./user-form.component.scss'],
+    selector: 'app-user-form',
+    templateUrl: './user-form.component.html',
+    styleUrls: ['./user-form.component.scss'],
+    standalone: false
 })
 export class UserFormComponent implements OnInit {
   rolesChanged = false;

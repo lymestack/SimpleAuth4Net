@@ -6,9 +6,10 @@ import { RestService } from '../../core/_services/rest.service';
 import { ApiSearchResults } from '../../core/api-search-results.class';
 
 @Component({
-  selector: 'app-roles',
-  templateUrl: './roles.component.html',
-  styleUrl: './roles.component.scss',
+    selector: 'app-roles',
+    templateUrl: './roles.component.html',
+    styleUrl: './roles.component.scss',
+    standalone: false
 })
 export class RolesComponent {
   results: ApiSearchResults<AppRole>;

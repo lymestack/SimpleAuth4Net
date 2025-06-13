@@ -6,9 +6,10 @@ export class UsernameEmailInputData {
 }
 
 @Component({
-  selector: 'app-username-email-input',
-  templateUrl: './username-email-input.component.html',
-  styleUrls: ['./username-email-input.component.scss'],
+    selector: 'app-username-email-input',
+    templateUrl: './username-email-input.component.html',
+    styleUrls: ['./username-email-input.component.scss'],
+    standalone: false
 })
 export class UsernameEmailInputComponent implements OnInit {
   @Input() emailAddress: string = '';

@@ -9,9 +9,10 @@ import { LoggerService } from '../_services/logger.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../_services/auth.service';
 @Component({
-  selector: 'app-shell',
-  templateUrl: './shell.component.html',
-  styleUrl: './shell.component.scss',
+    selector: 'app-shell',
+    templateUrl: './shell.component.html',
+    styleUrl: './shell.component.scss',
+    standalone: false
 })
 export class ShellComponent implements OnInit {
   pageTitle = '';

@@ -9,9 +9,10 @@ export class CardMenuItem {
 }
 
 @Component({
-  selector: 'app-card-menu',
-  templateUrl: './card-menu.component.html',
-  styleUrls: ['./card-menu.component.scss'],
+    selector: 'app-card-menu',
+    templateUrl: './card-menu.component.html',
+    styleUrls: ['./card-menu.component.scss'],
+    standalone: false
 })
 export class CardMenuComponent implements OnInit {
   @Input() menuItems: CardMenuItem[] = [];

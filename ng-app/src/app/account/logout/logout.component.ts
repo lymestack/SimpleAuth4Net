@@ -5,9 +5,10 @@ import { AppConfig } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
-  selector: 'app-logout',
-  templateUrl: './logout.component.html',
-  styleUrl: './logout.component.scss',
+    selector: 'app-logout',
+    templateUrl: './logout.component.html',
+    styleUrl: './logout.component.scss',
+    standalone: false
 })
 export class LogoutComponent implements OnInit {
   constructor(

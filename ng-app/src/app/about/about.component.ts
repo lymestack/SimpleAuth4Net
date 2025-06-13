@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { LoggerService } from '../core/_services/logger.service';
 
 @Component({
-  selector: 'app-about',
-  templateUrl: './about.component.html',
-  styleUrl: './about.component.scss',
+    selector: 'app-about',
+    templateUrl: './about.component.html',
+    styleUrl: './about.component.scss',
+    standalone: false
 })
 export class AboutComponent implements OnInit {
   preferredMfaMethodExists: boolean = false;

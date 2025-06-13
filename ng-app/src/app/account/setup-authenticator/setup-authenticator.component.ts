@@ -3,9 +3,10 @@ import { AuthService } from '../../core/_services/auth.service';
 import { LoggerService } from '../../core/_services/logger.service';
 
 @Component({
-  selector: 'app-setup-authenticator',
-  templateUrl: './setup-authenticator.component.html',
-  styleUrls: ['./setup-authenticator.component.scss'],
+    selector: 'app-setup-authenticator',
+    templateUrl: './setup-authenticator.component.html',
+    styleUrls: ['./setup-authenticator.component.scss'],
+    standalone: false
 })
 export class SetupAuthenticatorComponent implements OnInit {
   qrCodeBase64: string | null = null;

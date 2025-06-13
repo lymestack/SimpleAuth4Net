@@ -3,9 +3,10 @@ import { AppConfig } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
-  selector: 'app-microsoft-login-button',
-  templateUrl: './microsoft-login-button.component.html',
-  styleUrl: './microsoft-login-button.component.scss',
+    selector: 'app-microsoft-login-button',
+    templateUrl: './microsoft-login-button.component.html',
+    styleUrl: './microsoft-login-button.component.scss',
+    standalone: false
 })
 export class MicrosoftLoginButtonComponent {
   constructor(@Inject(APP_CONFIG) public config: AppConfig) {}

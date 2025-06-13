@@ -5,8 +5,9 @@ import { AuthService } from '../../../core/_services/auth.service';
 import { LoggerService } from '../../../core/_services/logger.service';
 
 @Component({
-  selector: 'app-reset-password-modal',
-  templateUrl: './reset-password-modal.component.html',
+    selector: 'app-reset-password-modal',
+    templateUrl: './reset-password-modal.component.html',
+    standalone: false
 })
 export class ResetPasswordModalComponent implements OnInit {
   model: { username: string; verifyToken: string | null; newPassword: string };

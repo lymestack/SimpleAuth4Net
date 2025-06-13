@@ -8,9 +8,10 @@ import { ResetPasswordModalComponent } from './reset-password-modal/reset-passwo
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
-  selector: 'app-users',
-  templateUrl: './users.component.html',
-  styleUrl: './users.component.scss',
+    selector: 'app-users',
+    templateUrl: './users.component.html',
+    styleUrl: './users.component.scss',
+    standalone: false
 })
 export class UsersComponent {
   results: ApiSearchResults<AppUser>;

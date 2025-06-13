@@ -2,9 +2,10 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { AppRole } from '../../../_api';
 
 @Component({
-  selector: 'app-role-list',
-  templateUrl: './role-list.component.html',
-  styleUrls: ['./role-list.component.scss'],
+    selector: 'app-role-list',
+    templateUrl: './role-list.component.html',
+    styleUrls: ['./role-list.component.scss'],
+    standalone: false
 })
 export class RoleListComponent implements OnInit {
   @Input() roles: AppRole[];

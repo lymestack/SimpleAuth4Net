@@ -4,9 +4,10 @@ import { LoggerService } from '../../core/_services/logger.service';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-forgot-password',
-  templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss',
+    selector: 'app-forgot-password',
+    templateUrl: './forgot-password.component.html',
+    styleUrl: './forgot-password.component.scss',
+    standalone: false
 })
 export class ForgotPasswordComponent {
   email: string = '';

@@ -7,9 +7,10 @@ import { LoggerService } from '../core/_services/logger.service';
 import { CurrentUserService } from '../core/_services/current-user.service';
 
 @Component({
-  selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
+    selector: 'app-home',
+    templateUrl: './home.component.html',
+    styleUrl: './home.component.scss',
+    standalone: false
 })
 export class HomeComponent implements OnInit {
   appUser: AppUser;

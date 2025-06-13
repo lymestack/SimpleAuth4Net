@@ -3,9 +3,10 @@ import { AppConfig, SimpleAuthSettings } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
-  selector: 'app-verification-pending',
-  templateUrl: './verification-pending.component.html',
-  styleUrl: './verification-pending.component.scss',
+    selector: 'app-verification-pending',
+    templateUrl: './verification-pending.component.html',
+    styleUrl: './verification-pending.component.scss',
+    standalone: false
 })
 export class VerificationPendingComponent {
   googleEnabled = false;

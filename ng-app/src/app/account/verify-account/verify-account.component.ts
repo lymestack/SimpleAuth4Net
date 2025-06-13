@@ -6,9 +6,10 @@ import { AppConfig, MfaMethod, SimpleAuthSettings } from '../../_api';
 import { APP_CONFIG } from '../../core/_services/config-injection';
 
 @Component({
-  selector: 'app-verify-account',
-  templateUrl: './verify-account.component.html',
-  styleUrl: './verify-account.component.scss',
+    selector: 'app-verify-account',
+    templateUrl: './verify-account.component.html',
+    styleUrl: './verify-account.component.scss',
+    standalone: false
 })
 export class VerifyAccountComponent implements OnInit {
   verificationCode: string = '';

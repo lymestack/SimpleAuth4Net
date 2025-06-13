@@ -12,9 +12,10 @@ import { Router } from '@angular/router';
 import { CurrentUserService } from '../../core/_services/current-user.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.scss',
+    standalone: false
 })
 export class LoginComponent implements OnInit {
   model: LoginModel = new LoginModel();

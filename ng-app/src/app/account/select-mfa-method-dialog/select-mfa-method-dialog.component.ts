@@ -3,9 +3,10 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MfaMethod } from '../../_api';
 
 @Component({
-  selector: 'app-select-mfa-method-dialog',
-  templateUrl: './select-mfa-method-dialog.component.html',
-  styleUrl: './select-mfa-method-dialog.component.scss',
+    selector: 'app-select-mfa-method-dialog',
+    templateUrl: './select-mfa-method-dialog.component.html',
+    styleUrl: './select-mfa-method-dialog.component.scss',
+    standalone: false
 })
 export class SelectMfaMethodDialogComponent {
   MfaMethod = MfaMethod;

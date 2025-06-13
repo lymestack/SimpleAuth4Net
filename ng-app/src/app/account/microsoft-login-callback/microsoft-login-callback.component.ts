@@ -3,9 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/_services/auth.service';
 
 @Component({
-  selector: 'app-microsoft-login-callback',
-  templateUrl: './microsoft-login-callback.component.html',
-  styleUrl: './microsoft-login-callback.component.scss',
+    selector: 'app-microsoft-login-callback',
+    templateUrl: './microsoft-login-callback.component.html',
+    styleUrl: './microsoft-login-callback.component.scss',
+    standalone: false
 })
 export class MicrosoftLoginCallbackComponent {
   constructor(
