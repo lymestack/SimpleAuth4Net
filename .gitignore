@@ -367,3 +367,4 @@ WebApi/appdata.db-shm
 WebApi/appdata.db-wal
 
 package-lock.json
+ng-app/yarn.lock
