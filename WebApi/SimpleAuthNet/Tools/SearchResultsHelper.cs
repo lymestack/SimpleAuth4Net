@@ -28,7 +28,7 @@ public class SearchResultsHelper
     public static async Task<ApiSearchResults<T>> GetApiSearchResultsAsync<T>(IQueryable<T> query, int pageSize,
         int pageIndex, string orderByField, bool orderAscending = true)
     {
-        var totalCount = query.Count();
+        var totalCount = await query.CountAsync();
         var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
         IList<T> results = await query.OrderByField(orderByField, orderAscending)

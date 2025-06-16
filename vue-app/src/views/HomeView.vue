@@ -3,10 +3,13 @@
     <h1>Welcome to SimpleAuth for .NET</h1>
     <p v-if="loggedIn">
       You are logged in.
+      <router-link to="/user-settings" class="btn btn-link">Settings</router-link>
       <button @click="logout" class="btn btn-danger">Log out</button>
     </p>
     <p v-else>
-      You are not logged in. <router-link to="/login">Log in</router-link>
+      You are not logged in.
+      <router-link to="/login">Log in</router-link> or
+      <router-link to="/register">Register</router-link>
     </p>
   </div>
 </template>

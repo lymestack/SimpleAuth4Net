@@ -24,6 +24,11 @@
       </div>
       <button type="submit" class="btn btn-primary">Login</button>
     </form>
+    <p class="mt-3">
+      <router-link to="/forgot-password">Forgot password?</router-link>
+      |
+      <router-link to="/register">Register</router-link>
+    </p>
   </div>
 </template>
 
