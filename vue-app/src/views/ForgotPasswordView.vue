@@ -24,8 +24,8 @@ export default defineComponent({
     async onSubmit() {
       try {
         await AuthService.forgotPassword(this.email);
-        alert("Password reset instructions sent.");
-        this.$router.push("/login");
+        alert("Password reset instructions sent. Please check your email for the verification code.");
+        this.$router.push("/reset-password");
       } catch (e) {
         alert("Error sending reset email.");
       }
