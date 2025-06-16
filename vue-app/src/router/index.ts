@@ -6,6 +6,7 @@ import ForgotPasswordView from "@/views/ForgotPasswordView.vue";
 import ResetPasswordView from "@/views/ResetPasswordView.vue";
 import VerifyAccountView from "@/views/VerifyAccountView.vue";
 import UserSettingsView from "@/views/UserSettingsView.vue";
+import SetupAuthenticatorView from "@/views/SetupAuthenticatorView.vue";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -37,6 +38,26 @@ const routes: Array<RouteRecordRaw> = [
     path: "/verify",
     name: "VerifyAccount",
     component: VerifyAccountView,
+  },
+  {
+    path: "/verify-mfa-email",
+    name: "VerifyMfaEmail",
+    component: VerifyAccountView,
+  },
+  {
+    path: "/verify-mfa-sms",
+    name: "VerifyMfaSms",
+    component: VerifyAccountView,
+  },
+  {
+    path: "/verify-mfa-otp",
+    name: "VerifyMfaOtp",
+    component: VerifyAccountView,
+  },
+  {
+    path: "/setup-authenticator",
+    name: "SetupAuthenticator",
+    component: SetupAuthenticatorView,
   },
   {
     path: "/user-settings",

@@ -1,9 +1,16 @@
 import axios from "axios";
 
+export enum MfaMethod {
+  Email = 1,
+  Sms = 2,
+  Otp = 3,
+}
+
 export interface LoginModel {
   username: string;
   password: string;
   deviceId: string;
+  mfaMethod?: MfaMethod;
 }
 
 export interface LoginWithGoogleModel {
@@ -61,13 +68,16 @@ class AuthService {
 
   public async login(loginModel: LoginModel): Promise<any> {
     try {
+      localStorage.setItem("verifyUsername", loginModel.username.trim());
       const response = await axios.post(`${this.apiUrl}Login`, loginModel, {
         withCredentials: true,
       });
-      this.storeTokenExpiration(
-        response.data.expires,
-        response.data.refreshTokenExpires
-      );
+      if (response.data && response.data.expires) {
+        this.storeTokenExpiration(
+          response.data.expires,
+          response.data.refreshTokenExpires
+        );
+      }
       return response.data;
     } catch (error) {
       console.error("Error during login:", error);
@@ -136,13 +146,59 @@ class AuthService {
     return response.data;
   }
 
-  public async verifyAccount(code: string): Promise<any> {
+  public async verifyAccount(code: string, isMfa = false): Promise<any> {
     const username = localStorage.getItem("verifyUsername");
+    const endpoint = isMfa ? "VerifyMfa" : "VerifyAccount";
     const response = await axios.post(
-      `${this.apiUrl}VerifyAccount`,
+      `${this.apiUrl}${endpoint}`,
       { username, verifyToken: code, deviceId: this.deviceId },
       { withCredentials: true }
     );
+    if (isMfa && response.data.token) {
+      this.storeTokenExpiration(
+        response.data.expires,
+        response.data.refreshTokenExpires
+      );
+    }
+    return response.data;
+  }
+
+  public async sendNewVerificationCode(
+    username: string,
+    mfaMethod: MfaMethod
+  ): Promise<any> {
+    const response = await axios.post(
+      `${this.apiUrl}SendNewCode`,
+      { username, mfaMethod },
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async setupAuthenticator(username: string): Promise<any> {
+    const response = await axios.post(
+      `${this.apiUrl}SetupAuthenticator`,
+      null,
+      { params: { username }, withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async verifyAuthenticator(
+    username: string,
+    code: string
+  ): Promise<any> {
+    const response = await axios.post(
+      `${this.apiUrl}VerifyAuthenticatorCode`,
+      { username, code, deviceId: this.deviceId },
+      { withCredentials: true }
+    );
+    if (response.data.token) {
+      this.storeTokenExpiration(
+        response.data.expires,
+        response.data.refreshTokenExpires
+      );
+    }
     return response.data;
   }
 
