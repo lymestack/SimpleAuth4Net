@@ -64,10 +64,9 @@ export default defineComponent({
         password: "",
         deviceId: AuthService["deviceId"],
       } as LoginModel,
-      mfaMethod:
-        (localStorage.getItem("preferredMfaMethod")
-          ? parseInt(localStorage.getItem("preferredMfaMethod") as string, 10)
-          : MfaMethod.Email) as MfaMethod,
+      mfaMethod: (localStorage.getItem("preferredMfaMethod")
+        ? parseInt(localStorage.getItem("preferredMfaMethod") as string, 10)
+        : MfaMethod.Email) as MfaMethod,
       rememberChoice: true,
       MfaMethod,
     };
@@ -78,10 +77,7 @@ export default defineComponent({
         this.loginModel.mfaMethod = this.mfaMethod;
         const result = await AuthService.login(this.loginModel);
         if (this.rememberChoice) {
-          localStorage.setItem(
-            "preferredMfaMethod",
-            this.mfaMethod.toString()
-          );
+          localStorage.setItem("preferredMfaMethod", this.mfaMethod.toString());
         }
         if (this.mfaMethod === MfaMethod.Email) {
           this.$router.push("/verify-mfa-email");

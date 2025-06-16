@@ -1,14 +1,14 @@
 <template>
   <div class="container">
     <h1>Set Up Authenticator App</h1>
-    <div v-if="qrCodeBase64; else loading">
+    <template v-if="qrCodeBase64">
       <img :src="'data:image/png;base64,' + qrCodeBase64" alt="QR Code" />
       <p class="mt-3">
         If you cannot scan the QR code, enter this secret in your app:
       </p>
       <p class="fw-bold">{{ totpSecret }}</p>
-    </div>
-    <template #loading>
+    </template>
+    <template v-else>
       <p>Loading QR code...</p>
     </template>
   </div>
@@ -40,4 +40,3 @@ export default defineComponent({
   },
 });
 </script>
-
