@@ -11,9 +11,19 @@ export interface LoginWithGoogleModel {
   deviceId: string;
 }
 
+export interface RegisterModel {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
+}
+
 class AuthService {
   // private apiUrl: string = 'http://localhost/SimpleAuthNet/api/Auth/'; <-- Use this for IIS
-  private apiUrl: string = "http://localhost:5218/Auth/";
+  private baseUrl: string = "http://localhost:5218/";
+  private apiUrl: string = `${this.baseUrl}Auth/`;
   private deviceId: string = this.getOrGenerateDeviceId();
 
   // Store token expiration in local storage
@@ -95,6 +105,59 @@ class AuthService {
       console.error("Error during logout:", error);
       alert("Error logging out. Please try again.");
     }
+  }
+
+  public async register(model: RegisterModel): Promise<any> {
+    const response = await axios.post(`${this.apiUrl}Register`, model, {
+      withCredentials: true,
+    });
+    return response.data;
+  }
+
+  public async forgotPassword(email: string): Promise<any> {
+    const response = await axios.post(
+      `${this.apiUrl}ForgotPassword`,
+      { email },
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async resetPassword(
+    username: string,
+    newPassword: string,
+    verifyToken: string
+  ): Promise<any> {
+    const response = await axios.post(
+      `${this.apiUrl}ResetPassword`,
+      { username, newPassword, verifyToken },
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async verifyAccount(code: string): Promise<any> {
+    const username = localStorage.getItem("verifyUsername");
+    const response = await axios.post(
+      `${this.apiUrl}VerifyAccount`,
+      { username, verifyToken: code, deviceId: this.deviceId },
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async getUserProfile(): Promise<any> {
+    const response = await axios.get(`${this.baseUrl}AppUser/Me`, {
+      withCredentials: true,
+    });
+    return response.data;
+  }
+
+  public async updateUserProfile(user: any): Promise<any> {
+    const response = await axios.post(`${this.baseUrl}AppUser`, user, {
+      withCredentials: true,
+    });
+    return response.data;
   }
 
   public isLoggedIn(): boolean {
