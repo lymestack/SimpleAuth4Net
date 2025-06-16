@@ -79,7 +79,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         {
             var verifyToken = await SetupVerifyToken(user);
             await SendVerificationEmail(user.EmailAddress, verifyToken, "Verify your email address");
-            if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+            if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
         }
 
         // If this is the first user in the system, grant admin access:
@@ -163,7 +163,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         {
             var verifyToken = await SetupVerifyToken(user, true);
             var message = "A verification code has been sent to your email";
-            if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+            if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
             if (model.MfaMethod == MfaMethod.Email) await SendVerificationEmail(user.EmailAddress, verifyToken, "MFA Verification Code");
             if (model.MfaMethod == MfaMethod.Sms) await SendVerificationSms(user.PhoneNumber, verifyToken);
@@ -395,7 +395,8 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
 
         var message = "Password reset email sent.";
-        if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+
         return Ok(new { message });
     }
 
@@ -572,7 +573,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         await db.SaveChangesAsync();
 
         var message = "A new verification code has been sent.";
-        if (_simpleAuthSettings.Environment.Name.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
 
         return Ok(new { success = true, message });
     }
@@ -624,7 +625,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var qrCodeImage = qrCode.GetGraphic(20);
         var qrCodeBase64 = Convert.ToBase64String(qrCodeImage.ToArray());
 
-        var totpSecret = _simpleAuthSettings.Environment.Name.Contains("Local") ? $"Development ONLY: {user.AppUserCredential.TotpSecret}" : "REDACTED";
+        var totpSecret = configuration["AppConfig:Environment:Name"]!.Contains("Local") ? $"Development ONLY: {user.AppUserCredential.TotpSecret}" : "REDACTED";
 
         return Ok(new
         {

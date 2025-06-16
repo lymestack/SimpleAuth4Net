@@ -12,7 +12,12 @@
       </div>
       <div class="mb-3">
         <label class="form-label">Email</label>
-        <input v-model="model.emailAddress" type="email" class="form-control" required />
+        <input
+          v-model="model.emailAddress"
+          type="email"
+          class="form-control"
+          required
+        />
       </div>
       <div class="mb-3">
         <label class="form-label">Username</label>
@@ -20,11 +25,21 @@
       </div>
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input v-model="model.password" type="password" class="form-control" required />
+        <input
+          v-model="model.password"
+          type="password"
+          class="form-control"
+          required
+        />
       </div>
       <div class="mb-3">
         <label class="form-label">Confirm Password</label>
-        <input v-model="model.confirmPassword" type="password" class="form-control" required />
+        <input
+          v-model="model.confirmPassword"
+          type="password"
+          class="form-control"
+          required
+        />
       </div>
       <button type="submit" class="btn btn-primary">Register</button>
     </form>

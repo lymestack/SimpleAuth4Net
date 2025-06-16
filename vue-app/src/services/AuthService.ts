@@ -21,8 +21,8 @@ export interface RegisterModel {
 }
 
 class AuthService {
-  // private apiUrl: string = 'http://localhost/SimpleAuthNet/api/Auth/'; <-- Use this for IIS
-  private baseUrl: string = "http://localhost:5218/";
+  private baseUrl: string = "http://localhost/SimpleAuthNet/api/"; // <-- Use this for IIS
+  // private baseUrl: string = "http://localhost:5218/";
   private apiUrl: string = `${this.baseUrl}Auth/`;
   private deviceId: string = this.getOrGenerateDeviceId();
 

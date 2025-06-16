@@ -12,7 +12,12 @@
       </div>
       <div class="mb-3">
         <label class="form-label">New Password</label>
-        <input v-model="newPassword" type="password" class="form-control" required />
+        <input
+          v-model="newPassword"
+          type="password"
+          class="form-control"
+          required
+        />
       </div>
       <button type="submit" class="btn btn-primary">Reset Password</button>
     </form>
@@ -35,7 +40,11 @@ export default defineComponent({
   methods: {
     async onSubmit() {
       try {
-        await AuthService.resetPassword(this.username, this.newPassword, this.code);
+        await AuthService.resetPassword(
+          this.username,
+          this.newPassword,
+          this.code
+        );
         alert("Password reset successful.");
         this.$router.push("/login");
       } catch (e) {
