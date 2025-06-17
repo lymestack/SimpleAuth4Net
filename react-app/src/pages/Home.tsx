@@ -4,10 +4,25 @@ import AuthService from '../services/AuthService';
 const Home: React.FC = () => {
   const [loggedIn, setLoggedIn] = useState<boolean>(false);
   const [apiUrl, setApiUrl] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
-    setLoggedIn(AuthService.isLoggedIn());
+    const logged = AuthService.isLoggedIn();
+    setLoggedIn(logged);
     setApiUrl(AuthService.getApiUrl());
+    if (logged) {
+      const profile = AuthService.getStoredUserProfile();
+      if (profile) {
+        setUsername(profile.username);
+        setIsAdmin(profile.roles?.includes('Admin'));
+      } else {
+        AuthService.getUserProfile().then((p) => {
+          setUsername(p.username);
+          setIsAdmin(p.roles?.includes('Admin'));
+        });
+      }
+    }
   }, []);
 
   const handleTestSecureEndpoint = async () => {
@@ -47,7 +62,7 @@ const Home: React.FC = () => {
           )}
           {loggedIn && (
             <div className="alert alert-success">
-              You are logged in. <button onClick={handleLogout}>Log out</button>
+              You are logged in as {username}. <button onClick={handleLogout}>Log out</button>
             </div>
           )}
         </div>
@@ -62,6 +77,11 @@ const Home: React.FC = () => {
           <button className="btn btn-primary" onClick={handleTestSecureEndpoint}>
             Test Secure Resource
           </button>
+          {isAdmin && (
+            <div className="mt-3">
+              <a href="/admin">Go to Admin Area</a>
+            </div>
+          )}
         </div>
       </div>
     </div>

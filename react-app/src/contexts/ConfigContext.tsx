@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import AuthService from '../services/AuthService';
 
 interface Config {
     allowRegistration: boolean;
@@ -20,7 +21,10 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     React.useEffect(() => {
         fetch('http://localhost/SimpleAuthNet/api/AppConfig')
             .then((res) => res.json())
-            .then((data) => setConfig(data))
+            .then((data) => {
+                AuthService.setApiUrl(data.environment.api);
+                setConfig(data);
+            })
             .catch((error) => console.error('Failed to fetch config:', error));
     }, []);
 
