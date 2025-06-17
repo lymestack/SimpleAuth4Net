@@ -10,7 +10,7 @@ const Login: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-      await AuthService.login({ username, password, deviceId: AuthService['deviceId'] });
+      await AuthService.login({ username, password, deviceId: AuthService.getDeviceId() });
       alert('Login successful!');
     } catch (error) {
       alert('Login failed!');

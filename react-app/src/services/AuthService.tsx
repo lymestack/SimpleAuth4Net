@@ -11,10 +11,27 @@ export interface LoginWithGoogleModel {
   deviceId: string;
 }
 
+export interface RegisterModel {
+  firstName: string;
+  lastName: string;
+  emailAddress: string;
+  username: string;
+  password: string;
+  confirmPassword: string;
+}
+
 class AuthService {
   // private apiUrl: string = 'http://localhost/SimpleAuthNet/api/'; <-- Use this for IIS
   private apiUrl: string = 'http://localhost:5218/';
   private deviceId: string = this.getOrGenerateDeviceId();
+
+  public setApiUrl(url: string) {
+    this.apiUrl = url.endsWith('/') ? url : url + '/';
+  }
+
+  public getDeviceId(): string {
+    return this.deviceId;
+  }
 
   public getApiUrl(): string {
     return this.apiUrl;
@@ -50,6 +67,7 @@ class AuthService {
         withCredentials: true,
       });
       this.storeTokenExpiration(response.data.expires, response.data.refreshTokenExpires);
+      await this.storeUserProfile();
       return response.data;
     } catch (error) {
       console.error('Error during login:', error);
@@ -68,6 +86,7 @@ class AuthService {
         { withCredentials: true }
       );
       this.storeTokenExpiration(response.data.expires, response.data.refreshTokenExpires);
+      await this.storeUserProfile();
       return response.data;
     } catch (error) {
       console.error('Error during Google login:', error);
@@ -94,6 +113,7 @@ class AuthService {
       localStorage.removeItem('accessTokenExpiration');
       localStorage.removeItem('refreshTokenExpiration');
       localStorage.removeItem('deviceId');
+      localStorage.removeItem('AppUser');
       alert('Logged out successfully.');
     } catch (error) {
       console.error('Error during logout:', error);
@@ -115,6 +135,57 @@ class AuthService {
       return true;
     }
     return false;
+  }
+
+  public async register(model: RegisterModel): Promise<any> {
+    const response = await axios.post(`${this.apiUrl}Auth/Register`, model, {
+      withCredentials: true,
+    });
+    return response.data;
+  }
+
+  public async userExists(username: string): Promise<boolean> {
+    const response = await axios.get(
+      `${this.apiUrl}Auth/UserExists?username=${encodeURIComponent(username)}`,
+      { withCredentials: true }
+    );
+    return response.data.exists;
+  }
+
+  public async checkPasswordComplexity(password: string): Promise<any> {
+    const response = await axios.get(
+      `${this.apiUrl}Auth/CheckPasswordComplexity?password=${encodeURIComponent(
+        password
+      )}`,
+      { withCredentials: true }
+    );
+    return response.data;
+  }
+
+  public async getUserProfile(): Promise<any> {
+    const response = await axios.get(`${this.apiUrl}AppUser/Me`, {
+      withCredentials: true,
+    });
+    localStorage.setItem('AppUser', JSON.stringify(response.data));
+    return response.data;
+  }
+
+  public getStoredUserProfile(): any {
+    const profile = localStorage.getItem('AppUser');
+    return profile ? JSON.parse(profile) : null;
+  }
+
+  public isInRole(role: string): boolean {
+    const profile = this.getStoredUserProfile();
+    return profile?.roles?.includes(role) ?? false;
+  }
+
+  private async storeUserProfile(): Promise<void> {
+    try {
+      await this.getUserProfile();
+    } catch (err) {
+      console.error('Unable to retrieve user profile:', err);
+    }
   }
 
   private getOrGenerateDeviceId(): string {
