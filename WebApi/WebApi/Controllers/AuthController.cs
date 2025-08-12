@@ -468,6 +468,15 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         user.AppUserCredential.VerifyTokenUsed = true;
         user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
+		
+		// Unlock the account if it was locked
+        if (user.Locked)
+        {
+            user.Locked = false;
+            user.AppUserCredential.FailedLoginAttempts = 0;
+            user.AppUserCredential.LockoutEndTime = null;
+            user.AppUserCredential.LastFailedLoginAttempt = null;
+        }
 
         // Indicate cooldown period:
         user.AppUserCredential.VerificationCooldownExpires = DateTime.UtcNow.AddSeconds(_simpleAuthSettings.ResendCodeDelaySeconds);
