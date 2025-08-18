@@ -40,7 +40,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
         if (!_simpleAuthSettings.AllowRegistration) return BadRequest("Public registration is not allowed.");
-        if (db.AppUsers.FirstOrDefault(x => x.Username == model.Username) != null) return BadRequest("User already exists...");
+        
+        // Check for duplicate username
+        if (await db.AppUsers.AnyAsync(x => x.Username == model.Username))
+        {
+            return BadRequest(new { error = "USERNAME_EXISTS", message = "A user with this username already exists." });
+        }
+        
+        // Check for duplicate email if different from username
+        if (!string.IsNullOrEmpty(model.Username) && await db.AppUsers.AnyAsync(x => x.EmailAddress == model.Username))
+        {
+            return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
+        }
 
         var userCount = await db.AppUsers.CountAsync();
         var user = new AppUser
@@ -71,7 +82,24 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         }
 
         await db.AppUsers.AddAsync(user);
-        await db.SaveChangesAsync();
+        
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Handle database constraint violations
+            if (ex.InnerException?.Message.Contains("IX_AppUser_Username") == true)
+            {
+                return BadRequest(new { error = "USERNAME_EXISTS", message = "A user with this username already exists." });
+            }
+            if (ex.InnerException?.Message.Contains("IX_AppUser_Email") == true)
+            {
+                return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
+            }
+            throw; // Re-throw if it's a different error
+        }
 
         var message = "User Registered Successfully";
 
@@ -406,13 +434,22 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
-        var user = await db.AppUsers
+        var query = db.AppUsers
             .Include(x => x.AppUserCredential)
-            .Include(x => x.AppUserPasswordHistories)
-            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
+            .Include(x => x.AppUserPasswordHistories);
 
-        if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
-            user.AppUserCredential.VerifyTokenUsed)
+        // Allow admins to reset passwords without a verification token
+        var user = User.IsInRole("Admin")
+            ? await query.FirstOrDefaultAsync(x => x.Username == model.Username)
+            : await query.FirstOrDefaultAsync(x => 
+                x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
+
+        if (user == null) 
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+
+        // Only check token expiration and usage for non-admin users
+        if (!User.IsInRole("Admin") && (user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
+            user.AppUserCredential.VerifyTokenUsed))
             return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
 
         // Validate the new password
@@ -423,12 +460,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         // Check if reusing the current password is allowed
         if (_authSettings.PreventReuseOfPreviousPasswords)
         {
-            using (var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt))
+            // Only check current password if salt and hash exist (user has set a password before)
+            if (user.AppUserCredential.PasswordSalt != null && user.AppUserCredential.PasswordHash != null)
             {
-                var currentPasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-                if (currentPasswordHash.SequenceEqual(user.AppUserCredential.PasswordHash))
+                using (var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt))
                 {
-                    return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as the current password." } });
+                    var currentPasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+                    if (currentPasswordHash.SequenceEqual(user.AppUserCredential.PasswordHash))
+                    {
+                        return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as the current password." } });
+                    }
                 }
             }
 
@@ -444,17 +485,20 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             }
         }
 
-        // Save current password to history
-        var passwordHistory = new AppUserPasswordHistory
+        // Save current password to history (only if a password was previously set)
+        if (user.AppUserCredential.PasswordHash != null && user.AppUserCredential.PasswordSalt != null)
         {
-            AppUserId = user.Id,
-            HashedPassword = user.AppUserCredential.PasswordHash,
-            Salt = user.AppUserCredential.PasswordSalt,
-            DateCreated = DateTime.UtcNow
-        };
+            var passwordHistory = new AppUserPasswordHistory
+            {
+                AppUserId = user.Id,
+                HashedPassword = user.AppUserCredential.PasswordHash,
+                Salt = user.AppUserCredential.PasswordSalt,
+                DateCreated = DateTime.UtcNow
+            };
 
-        db.AppUserPasswordHistories.Add(passwordHistory);
-        await db.SaveChangesAsync();
+            db.AppUserPasswordHistories.Add(passwordHistory);
+            await db.SaveChangesAsync();
+        }
 
         // Invalidate all existing refresh tokens for this user
         var existingTokens = db.AppRefreshTokens.Where(rt => rt.AppUserId == user.Id);
@@ -465,7 +509,13 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         using var newHmac = new HMACSHA512();
         user.AppUserCredential.PasswordSalt = newHmac.Key;
         user.AppUserCredential.PasswordHash = newHmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-        user.AppUserCredential.VerifyTokenUsed = true;
+        
+        // Only mark token as used if not an admin (since admins don't need a token)
+        if (!User.IsInRole("Admin"))
+        {
+            user.AppUserCredential.VerifyTokenUsed = true;
+        }
+        
         user.AppUserCredential.PendingMfaLogin = false;
         user.Verified = true;
 		

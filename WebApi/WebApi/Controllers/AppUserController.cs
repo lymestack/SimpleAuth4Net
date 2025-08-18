@@ -83,6 +83,23 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
 
         if (dbItem == null)
         {
+            // Check for duplicate username before inserting
+            var existingUsername = await db.AppUsers.AnyAsync(x => x.Username == value.Username);
+            if (existingUsername)
+            {
+                return BadRequest(new { error = "USERNAME_EXISTS", message = "A user with this username already exists." });
+            }
+
+            // Check for duplicate email if provided
+            if (!string.IsNullOrEmpty(value.EmailAddress))
+            {
+                var existingEmail = await db.AppUsers.AnyAsync(x => x.EmailAddress == value.EmailAddress);
+                if (existingEmail)
+                {
+                    return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
+                }
+            }
+
             dbItem = new AppUser
             {
                 DateEntered = DateTime.UtcNow
@@ -90,6 +107,28 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
 
             db.AppUsers.Add(dbItem);
             inserting = true;
+        }
+        else
+        {
+            // Check for duplicate username if it's being changed
+            if (dbItem.Username != value.Username)
+            {
+                var existingUsername = await db.AppUsers.AnyAsync(x => x.Username == value.Username && x.Id != value.Id);
+                if (existingUsername)
+                {
+                    return BadRequest(new { error = "USERNAME_EXISTS", message = "A user with this username already exists." });
+                }
+            }
+
+            // Check for duplicate email if it's being changed
+            if (!string.IsNullOrEmpty(value.EmailAddress) && dbItem.EmailAddress != value.EmailAddress)
+            {
+                var existingEmail = await db.AppUsers.AnyAsync(x => x.EmailAddress == value.EmailAddress && x.Id != value.Id);
+                if (existingEmail)
+                {
+                    return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
+                }
+            }
         }
 
         dbItem.Username = value.Username;
@@ -105,7 +144,23 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
             dbItem.DateEntered = DateTime.UtcNow;
         }
 
-        await db.SaveChangesAsync();
+        try
+        {
+            await db.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Handle database constraint violations
+            if (ex.InnerException?.Message.Contains("IX_AppUser_Username") == true)
+            {
+                return BadRequest(new { error = "USERNAME_EXISTS", message = "A user with this username already exists." });
+            }
+            if (ex.InnerException?.Message.Contains("IX_AppUser_Email") == true)
+            {
+                return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
+            }
+            throw; // Re-throw if it's a different error
+        }
 
         SaveRoles(value, dbItem);
 

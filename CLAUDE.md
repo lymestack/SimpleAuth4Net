@@ -113,3 +113,28 @@ Primary configuration in `WebApi/WebApi/appsettings.json`:
 ## Git Commits
 
 **CRITICAL** When forming Git commit messages, never mention Claude or Anthropic.
+
+## Custom Command: "update docs"
+
+When the user says **"update docs"** or **"update documentation"**, you should:
+
+1. Review all pending git changes (`git status` and `git diff`) and all uncommitted changes.
+1. Update relevant spec files in `/documentation/` folder based on the changes made.
+1. Provide a summary of documentation updates made.
+1. Update any relevant info on the main `/README.md` file. Only high level information goes into this file so technical details should be omitted.
+
+This helps keep app store submissions streamlined by ensuring documentation stays current with code changes.
+
+### Documentation Reminder
+
+**IMPORTANT**: When completing a feature or making significant changes, proactively remind the user to run the "update docs" command before committing. Use prompts like:
+
+- "The feature looks complete! Would you like me to run 'update docs' before we commit?"
+- "Before we wrap up, should I update the documentation with these changes?"
+- "Ready to commit? Don't forget we can run 'update docs' first to keep everything in sync."
+
+This ensures documentation stays current without being overly automatic.
+
+### ZOMBIE Comments
+
+Code blocks that are prefaced with a ZOMBIE prefix denotes some commented code that is commented for a reason, maybe because it might be re-implemented in some part. So don't delete these ZOMBIE commented code blocks when editing code. They might actually add some value in the future.

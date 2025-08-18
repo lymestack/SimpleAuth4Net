@@ -5,6 +5,7 @@ import { AppUser, AppRole } from '../../../_api';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { LoggerService } from '../../../core/_services/logger.service';
 import { RestService } from '../../../core/_services/rest.service';
+import { PasswordService } from '../../../core/_services/password.service';
 
 @Component({
     selector: 'app-user-form',
@@ -17,6 +18,7 @@ export class UserFormComponent implements OnInit {
   model = new AppUser();
   roles: AppRole[];
   saving = false;
+  passwordHint: string = '';
 
   usernameValid: boolean;
   checkingUsername: boolean;
@@ -29,10 +31,12 @@ export class UserFormComponent implements OnInit {
     private logger: LoggerService,
     private rest: RestService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private passwordService: PasswordService
   ) {}
 
   ngOnInit() {
+    this.passwordHint = this.passwordService.getPasswordHint();
     this.model.newPassword = this.generatePassword();
 
     let AppUserId = this.route.snapshot.params['id'];
@@ -47,19 +51,28 @@ export class UserFormComponent implements OnInit {
 
   onSave() {
     this.saving = true;
-    this.rest.postResource('AppUser', this.model).subscribe((data) => {
-      this.logger.success('User saved.');
-      this.router.navigateByUrl('/auth-admin/users');
+    this.rest.postResource('AppUser', this.model).subscribe({
+      next: (data) => {
+        this.logger.success('User saved.');
+        this.router.navigateByUrl('/auth-admin/users');
+      },
+      error: (error) => {
+        this.saving = false;
+        if (error.error?.error === 'USERNAME_EXISTS') {
+          this.logger.error('Username already exists. Please choose a different username.');
+        } else if (error.error?.error === 'EMAIL_EXISTS') {
+          this.logger.error('Email address already exists. Please use a different email.');
+        } else if (error.error?.message) {
+          this.logger.error(error.error.message);
+        } else {
+          this.logger.error('Failed to save user. Please try again.');
+        }
+      }
     });
   }
 
   generatePassword(): string {
-    const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
-    return Array.from(
-      { length: 12 },
-      () => chars[Math.floor(Math.random() * chars.length)]
-    ).join('');
+    return this.passwordService.generatePassword();
   }
 
   onGenerateNewPassword() {

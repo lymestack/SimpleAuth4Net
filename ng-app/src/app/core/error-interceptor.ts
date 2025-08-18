@@ -29,23 +29,22 @@ export class ErrorInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((err: HttpErrorResponse) => {
-        this.handleAuthError(err);
-        return next.handle(request);
+        return this.handleAuthError(err);
       })
     );
   }
 
-  private handleAuthError(err: HttpErrorResponse) {
+  private handleAuthError(err: HttpErrorResponse): Observable<never> {
     if (err && err.status === 401 && this.ctr != 1) {
       let service = this.inject.get(AuthService);
       service.logout().subscribe(() => {
         this.router.navigateByUrl('/account/login');
       });
 
-      return of('Signing out and redirecting to login page...');
+      return throwError(() => err);
     } else {
       this.ctr = 0;
-      return throwError(() => new Error('Non auth error'));
+      return throwError(() => err);
     }
   }
 }

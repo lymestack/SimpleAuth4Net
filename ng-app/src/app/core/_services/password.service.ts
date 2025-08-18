@@ -105,21 +105,19 @@ export class PasswordService {
   }
 
   getPasswordHint(): string {
-    const parts: string[] = [];
+    const hints: string[] = [];
     
-    parts.push(`at least ${this.passwordRequirements.requiredLength} characters`);
+    hints.push(`${this.passwordRequirements.requiredLength}+ chars`);
     
-    const requirements: string[] = [];
-    if (this.passwordRequirements.requireUppercase) requirements.push('uppercase');
-    if (this.passwordRequirements.requireLowercase) requirements.push('lowercase');
-    if (this.passwordRequirements.requireDigit) requirements.push('number');
-    if (this.passwordRequirements.requireNonAlphanumeric) requirements.push('special character');
-    
-    if (requirements.length > 0) {
-      parts.push(requirements.join(', '));
+    if (this.passwordRequirements.requireUppercase) hints.push('uppercase');
+    if (this.passwordRequirements.requireLowercase) hints.push('lowercase');
+    if (this.passwordRequirements.requireDigit) hints.push('digit');
+    if (this.passwordRequirements.requireNonAlphanumeric) hints.push('special (!@#$%^&*()_-)');
+    if (this.passwordRequirements.requiredUniqueChars > 1) {
+      hints.push(`${this.passwordRequirements.requiredUniqueChars}+ unique`);
     }
     
-    return `Password must be ${parts.join(' with ')}`;
+    return hints.join(', ');
   }
 
   updateRequirements(requirements: Partial<PasswordComplexityOptions>): void {

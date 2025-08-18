@@ -84,7 +84,19 @@ export class RegisterComponent {
         console.log('Done:', data);
       },
       (err: any) => {
-        this.logger.error('An error occurred. ' + err);
+        if (err.error?.error === 'USERNAME_EXISTS') {
+          this.logger.error('Username already exists. Please choose a different username.');
+          this.usernameAvailable = false;
+          this.checkedUsername = true;
+        } else if (err.error?.error === 'EMAIL_EXISTS') {
+          this.logger.error('Email address already exists. Please use a different email.');
+          this.usernameAvailable = false;
+          this.checkedUsername = true;
+        } else if (err.error?.message) {
+          this.logger.error(err.error.message);
+        } else {
+          this.logger.error('An error occurred during registration. Please try again.');
+        }
       }
     );
   }

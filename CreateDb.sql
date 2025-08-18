@@ -169,4 +169,24 @@ ALTER TABLE AppUserCredential ALTER COLUMN PasswordHash VARBINARY(128) NULL
 
 -------------------------------------------------------
 
+-- Add unique index on Username column (required field)
+CREATE UNIQUE NONCLUSTERED INDEX IX_AppUser_Username ON dbo.AppUser
+    (Username) 
+    WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) 
+    ON [PRIMARY]
 
+-- Make EmailAddress nullable to support optional emails
+ALTER TABLE AppUser ALTER COLUMN EmailAddress VARCHAR(100) NULL
+
+-- Clean up empty string emails (convert to NULL)
+UPDATE dbo.AppUser
+    SET EmailAddress = NULL
+    WHERE EmailAddress = '';
+
+-- Add filtered unique index on EmailAddress (only for non-null values)
+CREATE UNIQUE NONCLUSTERED INDEX IX_AppUser_Email ON dbo.AppUser
+    (EmailAddress)
+    WHERE EmailAddress IS NOT NULL
+    WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) 
+    ON [PRIMARY]
+GO

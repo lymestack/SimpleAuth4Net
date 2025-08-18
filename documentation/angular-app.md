@@ -8,6 +8,14 @@ The API URL in the Angular front-end is located in the `main.ts` file.
 
 ## Core Services
 
+### ErrorInterceptor
+
+The Angular app includes an `ErrorInterceptor` that handles HTTP errors globally:
+
+- **401 Unauthorized**: Automatically logs out the user and redirects to the login page
+- **Other Errors**: Passes errors through for component-level handling
+- **Single Processing**: Ensures errors are only processed once, preventing duplicate error handling
+
 ### PasswordService
 
 The Angular app includes a centralized `PasswordService` that handles all password-related operations:
@@ -24,6 +32,33 @@ Key features:
 - Uses user-friendly special characters (!@#$%^&*()_-)
 - Provides detailed validation error messages
 - Supports dynamic requirement updates from the server
+
+#### Components Using PasswordService
+
+The following components have been integrated with the PasswordService:
+
+1. **Reset Password Modal** (`auth-admin/users/reset-password-modal/`)
+   - Real-time password validation as user types
+   - Password complexity error messages
+   - Submit button disabled for invalid passwords
+   - Loading state during submission
+   - Admin users can reset passwords without verification tokens
+
+2. **Account Reset Password** (`account/reset-password/`)
+   - Client-side validation before submission
+   - Password hint display
+   - Detailed error messages for each requirement
+   - Confirmation password matching
+
+3. **User Form** (`auth-admin/users/user-form/`)
+   - Generates complex passwords for new users
+   - Dynamic password hints
+   - Copy to clipboard functionality
+
+4. **Registration Component** (`account/register/`)
+   - Improved error handling for duplicate usernames/emails
+   - Real-time password validation
+   - Clear user feedback for registration failures
 
 ## Running the App
 
