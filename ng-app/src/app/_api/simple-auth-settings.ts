@@ -4,6 +4,7 @@
  */
 
 import { Environment } from "./environment";
+import { PasswordComplexityOptions } from "./password-complexity-options";
 import { ClientSsoProviderSettings } from "./client-sso-provider-settings";
 
 export class SimpleAuthSettings {
@@ -17,5 +18,6 @@ export class SimpleAuthSettings {
     enableMfaViaSms: boolean;
     enableMfaViaOtp: boolean;
     resendCodeDelaySeconds: number;
+    passwordComplexity: PasswordComplexityOptions;
     ssoProviders: ClientSsoProviderSettings[] = [];
 }

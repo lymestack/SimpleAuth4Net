@@ -6,6 +6,25 @@ The Angular App currently offers the most refined experience when it comes to in
 
 The API URL in the Angular front-end is located in the `main.ts` file.
 
+## Core Services
+
+### PasswordService
+
+The Angular app includes a centralized `PasswordService` that handles all password-related operations:
+
+- **Password Generation**: Creates strong passwords that meet all complexity requirements
+- **Password Validation**: Validates passwords against server-configured requirements
+- **Dynamic Configuration**: Automatically loads password requirements from the API's AppConfig endpoint
+- **User-Friendly Hints**: Generates helpful password requirement hints for form fields
+
+The service is located at `ng-app/src/app/core/_services/password.service.ts` and is automatically configured with password complexity requirements from the server, ensuring consistency between client-side and server-side validation.
+
+Key features:
+- Generates 12-character passwords with guaranteed complexity
+- Uses user-friendly special characters (!@#$%^&*()_-)
+- Provides detailed validation error messages
+- Supports dynamic requirement updates from the server
+
 ## Running the App
 
 To start the app, from a command prompt in the repo's root directory type:

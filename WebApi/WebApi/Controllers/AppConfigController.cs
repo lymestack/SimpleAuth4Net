@@ -28,6 +28,7 @@ public class AppConfigController(IConfiguration configuration) : ControllerBase
             .ToList();
 
         appConfig.SimpleAuth.SsoProviders = clientSsoProviders ?? [];
+        appConfig.SimpleAuth.PasswordComplexity = authSettings.PasswordComplexityOptions;
         appConfig.SessionId = Guid.NewGuid();
         return Ok(appConfig);
     }

@@ -32,12 +32,22 @@ Here's an example of the response given from the API:
     "enableMfaViaSms": true,
     "enableMfaViaOtp": false,
     "resendCodeDelaySeconds": 30,
+    "passwordComplexity": {
+        "requiredLength": 8,
+        "requiredUniqueChars": 4,
+        "requireDigit": true,
+        "requireLowercase": true,
+        "requireUppercase": true,
+        "requireNonAlphanumeric": true
+    },
     "enableMicrosoftSso": false,
     "microsoftTenantId": "REDACTED",
     "microsoftClientId": "REDACTED",
     "microsoftRedirectUri": "http://localhost:4200/account/microsoft-login-callback"
 }
 ```
+
+The `passwordComplexity` object provides the password requirements configured on the server, which are used by client applications for validation. These settings correspond to the `PasswordComplexityOptions` configured in the [Auth Settings](./app-settings.md#authsettings-section).
 
 Here's a breakdown on the meaning of the information in this response can be found on the [App Config Section](app-settings.md#appconfig-section) of the appsettings.json file.
 

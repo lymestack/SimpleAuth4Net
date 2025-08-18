@@ -22,5 +22,7 @@ public class SimpleAuthSettings
 
     public int ResendCodeDelaySeconds { get; set; }
 
+    public PasswordComplexityOptions PasswordComplexity { get; set; }
+
     public List<ClientSsoProviderSettings> SsoProviders { get; set; } = new();
 }
