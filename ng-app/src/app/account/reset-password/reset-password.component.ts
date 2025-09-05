@@ -60,8 +60,9 @@ export class ResetPasswordComponent implements OnInit {
     if (!this.canSubmit()) return;
     
     this.isSubmitting = true;
+    const username = localStorage.getItem('verifyUsername') || '';
     this.authService
-      .resetPassword(this.verificationCode, this.newPassword)
+      .resetPassword(username, this.newPassword, this.verificationCode)
       .subscribe({
         next: (data) => {
           this.logger.success('Password reset successfully.');
