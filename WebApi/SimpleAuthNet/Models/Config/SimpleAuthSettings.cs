@@ -6,8 +6,6 @@ public class SimpleAuthSettings
 
     public string GoogleClientId { get; set; }
 
-    public Guid SessionId { get; set; }
-
     public bool EnableLocalAccounts { get; set; }
 
     public bool AllowRegistration { get; set; }
