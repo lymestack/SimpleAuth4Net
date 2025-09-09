@@ -868,10 +868,102 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
     private async Task SendVerificationEmail(string email, string token, string subject)
     {
+        // Get the user's name for personalization (if available)
+        var user = await db.AppUsers.FirstOrDefaultAsync(x => x.EmailAddress == email);
+        var userName = user?.FirstName ?? "User";
+        
+        // Get the app name from configuration (using OtpIssuerName as the app name)
+        var appName = _authSettings.OtpIssuerName ?? "Your Application";
+        
+        // Build email body based on the subject/context
+        string emailBody;
+        
+        if (subject.Contains("Reset your password"))
+        {
+            emailBody = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <p>Dear {userName},</p>
+                    
+                    <p>You have requested to reset your password for the system maintained by {appName}.</p>
+                    
+                    <p>Please use the following verification code to complete your password reset:</p>
+                    
+                    <p style='font-size: 20px; font-weight: bold; padding: 10px; background-color: #f0f0f0; display: inline-block;'>{token}</p>
+                    
+                    <p>If you did not make this request, please disregard this message.</p>
+                    
+                    <p>Sincerely,<br>
+                    {appName}</p>
+                </body>
+                </html>";
+        }
+        else if (subject.Contains("MFA Verification") || subject.Contains("New MFA"))
+        {
+            emailBody = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <p>Dear {userName},</p>
+                    
+                    <p>You have requested a multi-factor authentication code to access the system maintained by {appName}.</p>
+                    
+                    <p>Please use the following verification code to complete your login:</p>
+                    
+                    <p style='font-size: 20px; font-weight: bold; padding: 10px; background-color: #f0f0f0; display: inline-block;'>{token}</p>
+                    
+                    <p>If you did not make this request, please disregard this message.</p>
+                    
+                    <p>Sincerely,<br>
+                    {appName}</p>
+                </body>
+                </html>";
+        }
+        else if (subject.Contains("Verify your email"))
+        {
+            emailBody = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <p>Dear {userName},</p>
+                    
+                    <p>You have created a new account for the system maintained by {appName}.</p>
+                    
+                    <p>Please use the following verification code to verify your email address:</p>
+                    
+                    <p style='font-size: 20px; font-weight: bold; padding: 10px; background-color: #f0f0f0; display: inline-block;'>{token}</p>
+                    
+                    <p>If you did not make this request, please disregard this message.</p>
+                    
+                    <p>Sincerely,<br>
+                    {appName}</p>
+                </body>
+                </html>";
+        }
+        else
+        {
+            // Default fallback template
+            emailBody = $@"
+                <html>
+                <body style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <p>Dear {userName},</p>
+                    
+                    <p>You have requested a verification code for the system maintained by {appName}.</p>
+                    
+                    <p>Please use the following verification code:</p>
+                    
+                    <p style='font-size: 20px; font-weight: bold; padding: 10px; background-color: #f0f0f0; display: inline-block;'>{token}</p>
+                    
+                    <p>If you did not make this request, please disregard this message.</p>
+                    
+                    <p>Sincerely,<br>
+                    {appName}</p>
+                </body>
+                </html>";
+        }
+        
         var mailMessage = new MailMessage
         {
             Subject = subject,
-            Body = $"Your verification code is: {token}",
+            Body = emailBody,
             IsBodyHtml = true
         };
 
