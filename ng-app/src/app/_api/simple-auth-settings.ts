@@ -10,7 +10,6 @@ import { ClientSsoProviderSettings } from "./client-sso-provider-settings";
 export class SimpleAuthSettings {
     environment: Environment;
     googleClientId: string;
-    sessionId: string;
     enableLocalAccounts: boolean;
     allowRegistration: boolean;
     requireUserVerification: boolean;
