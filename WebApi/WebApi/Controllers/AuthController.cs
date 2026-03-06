@@ -111,17 +111,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         }
 
         // If this is the first user in the system, grant admin access:
-        if (userCount != 0) return Ok(new { success = true, message });
-        var adminRole = await db.AppRoles.FirstAsync(r => r.Name == "Admin");
-
-        var appUserRole = new AppUserRole
+        if (userCount == 0)
         {
-            AppUserId = user.Id,
-            AppRoleId = adminRole.Id
-        };
+            var adminRole = await db.AppRoles.FirstAsync(r => r.Name == "Admin");
+            user.AppUserRoles.Add(new AppUserRole { AppUserId = user.Id, AppRoleId = adminRole.Id });
+            await db.SaveChangesAsync();
+        }
 
-        user.AppUserRoles.Add(appUserRole);
-        await db.SaveChangesAsync();
+        // Invoke post-registration handler if registered
+        var postRegistrationHandler = HttpContext.RequestServices.GetService<IPostRegistrationHandler>();
+        if (postRegistrationHandler != null)
+            await postRegistrationHandler.HandleAsync(user, userCount == 0);
+
         await logger.LogAsync(AuthLogEventType.Registration, user.Username, null);
         return Ok(new { success = true, message });
     }
@@ -1073,15 +1074,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         if (!_authSettings.StoreTokensInCookies) return;
 
         var expireInMinutes = _authSettings.AccessTokenExpirationMinutes;
+        var isHttps = HttpContext.Request.IsHttps;
 
         HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
             new CookieOptions
             {
                 Expires = DateTime.UtcNow.AddMinutes(expireInMinutes),
                 HttpOnly = true,
-                Secure = true,
+                Secure = isHttps,
                 IsEssential = true,
-                SameSite = SameSiteMode.None
+                SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
             });
     }
 
@@ -1089,14 +1091,16 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
     {
         if (!_authSettings.StoreTokensInCookies) return;
 
+        var isHttps = HttpContext.Request.IsHttps;
+
         HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue,
             new CookieOptions
             {
                 Expires = expires,
                 HttpOnly = true,
-                Secure = true,
+                Secure = isHttps,
                 IsEssential = true,
-                SameSite = SameSiteMode.None
+                SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
             });
     }
 
