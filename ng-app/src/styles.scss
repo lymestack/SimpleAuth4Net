@@ -131,6 +131,10 @@ body {
   display: none;
 }
 
+mat-form-field:has(mat-hint) {
+  margin-bottom: 24px;
+}
+
 @media (max-width: 600px) {
   .only-handset {
     display: inherit;
