@@ -138,3 +138,19 @@ This ensures documentation stays current without being overly automatic.
 ### ZOMBIE Comments
 
 Code blocks that are prefaced with a ZOMBIE prefix denotes some commented code that is commented for a reason, maybe because it might be re-implemented in some part. So don't delete these ZOMBIE commented code blocks when editing code. They might actually add some value in the future.
+
+### Error Handling
+
+**IMPORTANT**: Do NOT use try/catch blocks in API controller endpoints. The application has global error handling middleware that catches exceptions. Let exceptions bubble up naturally.
+
+### DateTime Handling
+
+**IMPORTANT**: Always use `DateTime.UtcNow` (not `DateTime.Now`) when saving dates to the database in DATETIME or DATETIME2 fields. DATETIMEOFFSET fields don't need this.
+
+### Database Schema
+
+No EF migrations. Schema is managed via SQL scripts (DbUp or manual).
+
+### Shared Models
+
+Prefer shared models between API and client. Use TypeGen to auto-generate TypeScript models from C# DTOs.
