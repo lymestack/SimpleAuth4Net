@@ -210,6 +210,18 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         var jwt = await JwtGenerator(user, model.DeviceId);
         await logger.LogAsync(AuthLogEventType.LoginSuccess, user.Username, model.DeviceId);
+
+        // If there's a return URL (from RelyingApp redirect), validate and include it in the response
+        var returnUrl = HttpContext.Request.Query[_authSettings.ReturnUrlParameter].FirstOrDefault();
+        if (!string.IsNullOrEmpty(returnUrl))
+        {
+            // Validate return URL against allowed domains to prevent open redirect
+            if (IsAllowedReturnUrl(returnUrl))
+            {
+                return Ok(new { token = ((dynamic)jwt).token, username = ((dynamic)jwt).username, expires = ((dynamic)jwt).expires, refreshTokenExpires = ((dynamic)jwt).refreshTokenExpires, returnUrl });
+            }
+        }
+
         return Ok(jwt);
     }
 
@@ -1028,14 +1040,25 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         var claims = new ClaimsIdentity(new[]
         {
             new Claim("id", user.Username),
+            new Claim("sub", user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Username)
         });
 
-        foreach (var role in user.AppUserRoles)
+        if (_authSettings.Mode == SimpleAuthMode.RelyingApp)
         {
-            claims.AddClaim(new Claim(ClaimTypes.Role, role.AppRole.Name));
+            throw new InvalidOperationException("RelyingApp mode should not issue tokens. Token generation must be handled by the IdentityProvider.");
         }
+
+        if (_authSettings.Mode != SimpleAuthMode.IdentityProvider)
+        {
+            // Standalone mode: include role claims in JWT (original behavior)
+            foreach (var role in user.AppUserRoles)
+            {
+                claims.AddClaim(new Claim(ClaimTypes.Role, role.AppRole.Name));
+            }
+        }
+        // IdentityProvider mode: no role claims — roles are resolved locally by each relying app
 
         var tokenDescriptor = new SecurityTokenDescriptor
         {
@@ -1075,16 +1098,23 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         var expireInMinutes = _authSettings.AccessTokenExpirationMinutes;
         var isHttps = HttpContext.Request.IsHttps;
+        var cookieOptions = new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddMinutes(expireInMinutes),
+            HttpOnly = true,
+            Secure = isHttps,
+            IsEssential = true,
+            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
+        };
 
-        HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken,
-            new CookieOptions
-            {
-                Expires = DateTime.UtcNow.AddMinutes(expireInMinutes),
-                HttpOnly = true,
-                Secure = isHttps,
-                IsEssential = true,
-                SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
-            });
+        if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
+        {
+            cookieOptions.Domain = _authSettings.CookieDomain;
+            cookieOptions.Secure = true;
+            cookieOptions.SameSite = SameSiteMode.Lax;
+        }
+
+        HttpContext.Response.Cookies.Append("X-Access-Token", encryptedToken, cookieOptions);
     }
 
     private void SetJwtRefreshTokenCookie(string tokenValue, DateTime expires)
@@ -1092,16 +1122,23 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
         if (!_authSettings.StoreTokensInCookies) return;
 
         var isHttps = HttpContext.Request.IsHttps;
+        var cookieOptions = new CookieOptions
+        {
+            Expires = expires,
+            HttpOnly = true,
+            Secure = isHttps,
+            IsEssential = true,
+            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
+        };
 
-        HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue,
-            new CookieOptions
-            {
-                Expires = expires,
-                HttpOnly = true,
-                Secure = isHttps,
-                IsEssential = true,
-                SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
-            });
+        if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
+        {
+            cookieOptions.Domain = _authSettings.CookieDomain;
+            cookieOptions.Secure = true;
+            cookieOptions.SameSite = SameSiteMode.Lax;
+        }
+
+        HttpContext.Response.Cookies.Append("X-Refresh-Token", tokenValue, cookieOptions);
     }
 
     private async Task WriteRefreshTokenToDatabase(AppRefreshToken refreshToken, AppUser user, string deviceId)
@@ -1194,6 +1231,30 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
             : input + new string('=', 4 - input.Length % 4);
 
         return Convert.FromBase64String(paddedInput.Replace('-', '+').Replace('_', '/'));
+    }
+
+    private bool IsAllowedReturnUrl(string returnUrl)
+    {
+        if (!Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri))
+            return false;
+
+        // Check against CookieDomain (e.g., ".lymestack.com")
+        if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
+        {
+            var cookieDomain = _authSettings.CookieDomain.TrimStart('.');
+            if (uri.Host.EndsWith(cookieDomain, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        // Check against AllowedOrigins
+        foreach (var origin in _authSettings.AllowedOrigins)
+        {
+            if (Uri.TryCreate(origin, UriKind.Absolute, out var allowedUri) &&
+                uri.Host.Equals(allowedUri.Host, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        return false;
     }
 
 

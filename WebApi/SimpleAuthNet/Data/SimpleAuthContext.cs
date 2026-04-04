@@ -7,7 +7,7 @@ using SimpleAuthNet.Models;
 
 namespace SimpleAuthNet.Data;
 
-public class SimpleAuthContext(IConfiguration configuration) : DbContext
+public class SimpleAuthContext(IConfiguration configuration) : DbContext, IRoleDbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
@@ -25,6 +25,8 @@ public class SimpleAuthContext(IConfiguration configuration) : DbContext
     public DbSet<AppUser> AppUsers { get; set; }
 
     public DbSet<AppRole> AppRoles { get; set; }
+
+    public DbSet<AppUserRole> AppUserRoles { get; set; }
 
     public DbSet<AppRefreshToken> AppRefreshTokens { get; set; }
 

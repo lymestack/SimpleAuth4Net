@@ -29,4 +29,12 @@ public class AuthSettings
     public AuditLoggingOptions AuditLogging { get; set; } = new();
 
     public List<SsoProviderSettings> SsoProviders { get; set; } = new();
+
+    public SimpleAuthMode Mode { get; set; } = SimpleAuthMode.Standalone;
+
+    public string IdentityProviderUrl { get; set; } = "";
+
+    public string? CookieDomain { get; set; }
+
+    public string ReturnUrlParameter { get; set; } = "returnUrl";
 }

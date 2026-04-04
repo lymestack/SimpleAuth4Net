@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -108,6 +111,8 @@ public static class SimpleAuthServiceExtensions
         var secret = configuration["AuthSettings:TokenSecret"];
         Debug.Assert(secret != null, "AuthSettings:TokenSecret must be defined.");
 
+        var authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -134,6 +139,30 @@ public static class SimpleAuthServiceExtensions
                 {
                     context.Token = context.Request.Cookies["X-Access-Token"];
                     return Task.CompletedTask;
+                },
+                OnChallenge = context =>
+                {
+                    // Resolve settings at request time (not registration time) so config overrides
+                    // from WebApplicationFactory and environment variables are respected
+                    var settings = context.HttpContext.RequestServices.GetRequiredService<IConfiguration>()
+                        .GetSection("AuthSettings").Get<AuthSettings>()!;
+
+                    if (settings.Mode != SimpleAuthMode.RelyingApp)
+                        return Task.CompletedTask;
+
+                    // Don't redirect API calls — they should still get 401
+                    var acceptHeader = context.Request.Headers["Accept"].ToString();
+                    if (acceptHeader.Contains("application/json") || context.Request.Path.StartsWithSegments("/api"))
+                        return Task.CompletedTask;
+
+                    // Build the redirect URL with return URL parameter
+                    var returnUrl = Uri.EscapeDataString($"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}{context.Request.QueryString}");
+                    var redirectUrl = $"{settings.IdentityProviderUrl.TrimEnd('/')}/login?{settings.ReturnUrlParameter}={returnUrl}";
+
+                    context.Response.Redirect(redirectUrl);
+                    context.HandleResponse(); // Suppress the default 401 response
+
+                    return Task.CompletedTask;
                 }
             };
         });
@@ -151,6 +180,27 @@ public static class SimpleAuthServiceExtensions
             options.Filters.Add(new AuthorizeFilter(policy));
         });
 
+        return services;
+    }
+
+    public static IServiceCollection AddSimpleAuthStartupValidation(this IServiceCollection services, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+
+        if (settings.Mode == SimpleAuthMode.IdentityProvider && string.IsNullOrEmpty(settings.CookieDomain))
+        {
+            var logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger("SimpleAuth");
+            logger.LogWarning("SimpleAuth is running in IdentityProvider mode but CookieDomain is not configured. Cross-subdomain SSO will not work without a CookieDomain (e.g., '.lymestack.com').");
+        }
+
+        return services;
+    }
+
+    public static IServiceCollection AddSimpleAuthLocalRoles<TContext>(this IServiceCollection services)
+        where TContext : DbContext, IRoleDbContext
+    {
+        services.AddScoped<IRoleDbContext>(sp => sp.GetRequiredService<TContext>());
+        services.AddScoped<IClaimsTransformation, LocalRoleClaimsTransformer>();
         return services;
     }
 }
