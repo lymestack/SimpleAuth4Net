@@ -209,6 +209,124 @@ SimpleAuth's "Local Accounts" support several features to make them more secure.
 
 ---
 
+## Operating Modes (SSO Support)
+
+SimpleAuth supports three operating modes, configured via `AuthSettings:Mode` in `appsettings.json`. The default mode is `Standalone`, which preserves full backward compatibility with existing setups.
+
+### Standalone (default)
+
+Traditional per-app authentication. Each app runs its own full auth stack — login, registration, password recovery, JWT issuance with role claims, the whole thing. If you're running a single app or don't need cross-app SSO, this is the mode you want.
+
+```json
+{
+  "AuthSettings": {
+    "Mode": "Standalone",
+    "IdentityProviderUrl": "",
+    "CookieDomain": "",
+    "ReturnUrlParameter": "returnUrl"
+  }
+}
+```
+
+Registration in `Program.cs`:
+
+```csharp
+builder.Services.AddSimpleAuth(builder.Configuration);
+```
+
+### IdentityProvider
+
+Centralized auth server for multi-app SSO. This app handles all login flows and issues JWTs containing only a `sub` claim (no role claims). Cookies are scoped to `CookieDomain` so they're accessible across subdomains (e.g., `*.mycompany.com`). Relying apps then resolve roles on their own side.
+
+```json
+{
+  "AuthSettings": {
+    "Mode": "IdentityProvider",
+    "IdentityProviderUrl": "",
+    "CookieDomain": ".mycompany.com",
+    "ReturnUrlParameter": "returnUrl"
+  }
+}
+```
+
+Registration in `Program.cs`:
+
+```csharp
+builder.Services.AddSimpleAuth(builder.Configuration);
+```
+
+### RelyingApp
+
+A downstream app that trusts tokens issued by an IdentityProvider. This mode has no auth endpoints of its own. Instead, it:
+
+- Validates JWTs issued by the IdentityProvider
+- Resolves roles locally via `LocalRoleClaimsTransformer` (looks up roles from the app's own database)
+- Redirects unauthenticated browser requests to the IdentityProvider login page
+
+```json
+{
+  "AuthSettings": {
+    "Mode": "RelyingApp",
+    "IdentityProviderUrl": "https://auth.mycompany.com",
+    "CookieDomain": ".mycompany.com",
+    "ReturnUrlParameter": "returnUrl"
+  }
+}
+```
+
+Registration in `Program.cs`:
+
+```csharp
+builder.Services.AddSimpleAuth(builder.Configuration);
+
+// If your DbContext implements IRoleDbContext, add local role resolution:
+builder.Services.AddSimpleAuthLocalRoles<YourDbContext>();
+```
+
+`LocalRoleClaimsTransformer` runs on every authenticated request and injects role claims from the local database into the user's identity, so `[Authorize(Roles = "Admin")]` and `User.IsInRole("Admin")` work exactly as expected.
+
+### Architecture Overview
+
+Here's how the three pieces fit together in a multi-app SSO setup:
+
+```
+  User Browser
+      |
+      |  1. Login request
+      v
++------------------+
+|  IdentityProvider |  <-- One central auth server
+|  (SimpleAuth)    |
+|                  |
+|  - Full auth     |
+|    endpoints     |
+|  - Issues JWT    |
+|    (sub only,    |
+|    no roles)     |
++------------------+
+      |
+      |  2. JWT in HTTP-only cookie
+      |     scoped to .mycompany.com
+      |
+      +---------------------------+
+      |                           |
+      v                           v
++-------------+           +-------------+
+|  RelyingApp |           |  RelyingApp |
+|     (A)     |           |     (B)     |
+|             |           |             |
+| - Validates |           | - Validates |
+|   JWT sig   |           |   JWT sig   |
+| - Resolves  |           | - Resolves  |
+|   roles from|           |   roles from|
+|   local DB  |           |   local DB  |
++-------------+           +-------------+
+```
+
+The IdentityProvider issues the identity (who you are). Each RelyingApp decides what you're allowed to do in that specific app based on its own local role assignments.
+
+---
+
 ### API Overview
 
 [The API](./documentation/api.md) is organized into two primary categories:

@@ -45,6 +45,10 @@ The backend is a modular authentication/authorization system built on .NET 8:
   - `Data/SimpleAuthContext.cs`: Entity Framework database context
   - `Models/`: Domain models (AppUser, AppRole, AppUserRole, etc.)
   - `EmailService.cs` & `SmsService.cs`: Communication services for MFA
+  - `Models/Config/SimpleAuthMode.cs`: Enum — Standalone, IdentityProvider, RelyingApp
+  - `Models/Config/AuthSettings.cs`: SSO properties — Mode, IdentityProviderUrl, CookieDomain, ReturnUrlParameter
+  - `Data/IRoleDbContext.cs`: Interface for local role lookup (AppUserRoles, AppRoles)
+  - `LocalRoleClaimsTransformer.cs`: IClaimsTransformation that enriches JWTs with local roles in RelyingApp mode
 
 **WebAPI Project** (`WebApi/WebApi/`):
 
@@ -62,6 +66,14 @@ The backend is a modular authentication/authorization system built on .NET 8:
 - Audit logging for security events
 - Support for multiple SSO providers (Google, Microsoft, Facebook)
 - MFA via email, SMS, or OTP authenticator apps
+
+### Operating Modes
+
+SimpleAuthNet supports three operating modes, configured via `AuthSettings:Mode` in appsettings.json. The unified `AddSimpleAuth(configuration)` method handles all mode-specific wiring.
+
+- **Standalone** (default): Full auth endpoints, role claims in JWT, no cross-app SSO
+- **IdentityProvider**: Issues identity-only JWTs (sub claim, no roles), cookies scoped to CookieDomain
+- **RelyingApp**: Validates tokens, resolves roles locally, redirects unauthenticated browser requests to IdentityProvider
 
 ### Frontend Architecture
 
