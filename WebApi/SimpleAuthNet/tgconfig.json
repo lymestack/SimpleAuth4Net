@@ -1,6 +1,6 @@
 {
   "generationSpecs": [ "TypeScriptExports" ],
-  "outputPath": "..\\..\\ng-app\\src\\app\\_api",
+  "outputPath": "../../ng-app/src/app/_api",
   "clearOutputDirectory": true,
   "createIndexFile": true
 }
