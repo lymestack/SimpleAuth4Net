@@ -27,7 +27,12 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [AllowAnonymous]
-public class AuthController(IConfiguration configuration, SimpleAuthContext db, HttpClient httpClient, IAuthLogger logger) : ControllerBase
+public class AuthController(
+    IConfiguration configuration,
+    SimpleAuthContext db,
+    HttpClient httpClient,
+    IAuthLogger logger,
+    ISimpleAuthEmailSender emailSender) : ControllerBase
 {
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("AppConfig:SimpleAuth").Get<SimpleAuthSettings>()!;
@@ -982,9 +987,7 @@ public class AuthController(IConfiguration configuration, SimpleAuthContext db, 
 
         mailMessage.To.Add(email);
 
-        var emailService = new EmailService(configuration);
-        emailService.SendEmailMessage(mailMessage);
-        await Task.CompletedTask;
+        await emailSender.SendAsync(mailMessage);
     }
 
     private async Task SendVerificationSms(string userPhoneNumber, string token)

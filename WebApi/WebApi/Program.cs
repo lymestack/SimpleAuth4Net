@@ -13,7 +13,8 @@ builder.Services
     .AddSimpleAuthLogging(builder.Configuration)
     .AddSimpleAuthJwt(builder.Configuration)
     .AddSimpleAuthDefaultAuthorization()
-    .AddSimpleAuthHttpClient();
+    .AddSimpleAuthHttpClient()
+    .AddSimpleAuthEmailSender();
 
 var app = builder.Build();
 

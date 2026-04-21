@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SimpleAuthNet.Data;
@@ -25,6 +26,17 @@ public static class SimpleAuthServiceExtensions
     {
         // Registers HttpClient for dependency injection
         services.AddHttpClient();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the default <see cref="ISimpleAuthEmailSender"/> that reads the top-level
+    /// EmailSettings config section and sends via SMTP or pickup directory.
+    /// Uses TryAddScoped so downstream layers (e.g. LymeStackCore) can override.
+    /// </summary>
+    public static IServiceCollection AddSimpleAuthEmailSender(this IServiceCollection services)
+    {
+        services.TryAddScoped<ISimpleAuthEmailSender, DefaultSimpleAuthEmailSender>();
         return services;
     }
 
