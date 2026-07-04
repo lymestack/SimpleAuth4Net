@@ -100,6 +100,42 @@ All three frontend apps follow similar patterns:
 - Password history tracking for reuse prevention
 - Separate credential storage for security
 
+### Connecting to the Database
+
+The shared dev SQL Server is `192.168.50.42\SQLEXPRESS`, database `SimpleAuth`. The
+default `appsettings.json` connection string uses Windows Integrated Security against
+`.\SQLEXPRESS` (for Windows dev machines); from macOS we connect with SQL auth instead.
+
+**Credentials live in `WebApi/WebApi/appsettings.Development.local.json`** — a
+gitignored file that is NEVER committed. It overrides `ConnectionStrings:DefaultConnection`
+(loaded last in `Program.cs`). Do NOT put the username/password anywhere else in the repo
+(not in this file, not in tracked appsettings). Read the connection details from that file
+when you need to connect. If the file is missing or still contains `REPLACE_ME`
+placeholders, stop and ask — the dev SQL user must be provisioned first.
+
+**Running SQL scripts via pymssql (macOS):** the Go-based `sqlcmd` can't resolve
+`\SQLEXPRESS` named instances from macOS — use `pymssql`. Split on `GO` batch separators
+(pymssql doesn't support them natively); strip comment-only lines within a batch but do NOT
+drop whole batches that start with `--`. Pull `server` / `user` / `password` / `database`
+from `appsettings.Development.local.json`:
+
+```python
+import pymssql, re
+conn = pymssql.connect(server='192.168.50.42\\SQLEXPRESS', user='<from-dev-local-json>',
+                       password='<from-dev-local-json>', database='SimpleAuth')
+cursor = conn.cursor()
+with open('migrations/2026-07-security-hardening.sql') as f:
+    sql = f.read()
+for batch in re.split(r'^\s*GO\s*$', sql, flags=re.MULTILINE | re.IGNORECASE):
+    if not [l for l in batch.split('\n') if l.strip() and not l.strip().startswith('--')]:
+        continue
+    try:
+        cursor.execute(batch); conn.commit()
+    except Exception as e:
+        print(f"ERROR: {e}"); conn.rollback()
+conn.close()
+```
+
 ### Configuration
 
 Primary configuration in `WebApi/WebApi/appsettings.json`:
@@ -162,6 +198,13 @@ Code blocks that are prefaced with a ZOMBIE prefix denotes some commented code t
 ### Database Schema
 
 No EF migrations. Schema is managed via SQL scripts (DbUp or manual).
+
+`CreateDb.sql` builds a fresh database with the current schema. Changes to the schema
+must ALSO be delivered as an idempotent, guarded migration script under `migrations/`
+(named `YYYY-MM-<slug>.sql`) so **existing** SimpleAuth databases can be upgraded — a
+`CreateDb.sql` edit alone only helps new instances. Migration scripts guard every
+statement (`IF NOT EXISTS (SELECT 1 FROM sys.columns ...)`) so they are safe to re-run.
+See `migrations/2026-07-security-hardening.sql`.
 
 ### Shared Models
 

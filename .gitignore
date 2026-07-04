@@ -369,3 +369,7 @@ WebApi/appdata.db-wal
 package-lock.json
 ng-app/yarn.lock
 ng-app/package-lock.json
+
+# Local dev-only secrets (DB credentials, etc.) — never commit
+appsettings.Development.local.json
+**/appsettings.Development.local.json
