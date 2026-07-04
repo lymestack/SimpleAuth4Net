@@ -515,7 +515,9 @@ public class AuthController(
         if (user != null)
         {
             var verifyToken = await SetupVerifyToken(user);
-            await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
+            // Best-effort send: a delivery failure here must NOT surface (a 500 on the account-exists
+            // path vs a 200 for a missing account would re-open the enumeration oracle this endpoint closes).
+            await TrySendVerificationEmailBestEffort(user.EmailAddress, verifyToken, "Reset your password");
             if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
         }
 
@@ -1149,6 +1151,24 @@ public class AuthController(
         mailMessage.To.Add(email);
 
         await emailSender.SendAsync(mailMessage);
+    }
+
+    // Anti-enumeration helper for ForgotPassword. SendVerificationEmail runs only when the account
+    // exists, so an exception (SMTP misconfig, transient delivery failure) would let the global error
+    // middleware return 500 for real accounts while missing accounts get a uniform 200 — an account
+    // enumeration oracle. Swallow delivery failures on this path so the response stays uniform. Kept in
+    // a private helper (not the endpoint body) per the no-try/catch-in-endpoints convention; the other
+    // SendVerificationEmail callers (register / MFA) intentionally still let failures bubble.
+    private async Task TrySendVerificationEmailBestEffort(string email, string token, string subject)
+    {
+        try
+        {
+            await SendVerificationEmail(email, token, subject);
+        }
+        catch
+        {
+            // Intentionally ignored — delivery failure must not reveal whether the account exists.
+        }
     }
 
     private async Task SendVerificationSms(string userPhoneNumber, string token)
