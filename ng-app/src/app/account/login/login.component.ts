@@ -74,21 +74,20 @@ export class LoginComponent implements OnInit {
   private performLogin() {
     this.auth.login(this.model).subscribe(
       (data: any) => {
-        if (
-          this.simpleAuthSettings.enableMfaViaEmail ||
-          this.simpleAuthSettings.enableMfaViaSms ||
-          this.simpleAuthSettings.enableMfaViaOtp
-        ) {
+        // Route on the server's response, not just client config. When a second factor is required
+        // the API returns { mfaRequired: true, redirectUrl }. OTP-only logins never set
+        // model.mfaMethod on the client, so trust the server's redirect to detect OTP; email/SMS
+        // stay method-derived since they share one server redirect but distinct client pages.
+        if (data?.mfaRequired) {
           let verifyRoute: string;
-          if (this.model.mfaMethod === MfaMethod.Email) {
-            verifyRoute = '/account/verify-mfa-email';
+          const serverWantsOtp = !!data.redirectUrl &&
+            data.redirectUrl.toLowerCase().includes('otp');
+          if (this.model.mfaMethod === MfaMethod.Otp || serverWantsOtp) {
+            verifyRoute = '/account/verify-mfa-otp';
           } else if (this.model.mfaMethod === MfaMethod.Sms) {
             verifyRoute = '/account/verify-mfa-sms';
-          } else if (this.model.mfaMethod === MfaMethod.Otp) {
-            verifyRoute = '/account/verify-mfa-otp';
           } else {
-            this.logger.error('Invalid MFA method selected.');
-            return;
+            verifyRoute = '/account/verify-mfa-email';
           }
           this.router.navigateByUrl(verifyRoute);
         } else {

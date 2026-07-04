@@ -37,6 +37,11 @@ public class AuthController(
     private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
     private readonly SimpleAuthSettings _simpleAuthSettings = configuration.GetSection("AppConfig:SimpleAuth").Get<SimpleAuthSettings>()!;
 
+    // Precomputed once per process. Used to equalize login timing when a username doesn't exist so a
+    // missing account can't be distinguished from a wrong password by response time (anti-enumeration).
+    private static readonly byte[] DummyPasswordHash =
+        SimpleAuthPasswordHasher.HashPassword("SimpleAuth::login-timing-equalizer::not-a-real-password").hash;
+
     #region Register
 
     [HttpPost("Register")]
@@ -75,9 +80,9 @@ public class AuthController(
             var result = validator.Validate(model.Password);
             if (!result.Succeeded) return BadRequest(new { success = false, errors = result.Errors });
 
-            using var hmac = new HMACSHA512();
-            user.AppUserCredential.PasswordSalt = hmac.Key;
-            user.AppUserCredential.PasswordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(model.Password));
+            var (hash, salt) = SimpleAuthPasswordHasher.HashPassword(model.Password);
+            user.AppUserCredential.PasswordSalt = salt;
+            user.AppUserCredential.PasswordHash = hash;
             user.AppUserCredential.DateCreated = DateTime.UtcNow;
             user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow;
         }
@@ -157,15 +162,18 @@ public class AuthController(
         if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local Accounts are not enabled.");
 
         var user = await GetUserWithCredentialsAndRoles(model.Username);
-        if (user == null) return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
-        if (!user.Active) return Unauthorized("The user is inactive.");
+        if (user == null)
+        {
+            // Anti-enumeration: run an equivalent Argon2id verification against a dummy hash so a
+            // non-existent account costs about the same wall-clock time as a wrong password on a real
+            // one. Without this, "no such user" returns instantly and reveals the account is missing.
+            // (Residual timing skew remains for un-migrated legacy HMAC rows, which verify faster.)
+            SimpleAuthPasswordHasher.Verify(model.Password, DummyPasswordHash, null);
+            return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
+        }
 
-        var isLocked = await HandleLockedAccounts(user);
-        if (isLocked) return Unauthorized("The account is locked.");
-
-        if (_simpleAuthSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
-
-        var match = CheckPassword(model.Password, user);
+        var passwordCheck = CheckPassword(model.Password, user);
+        var match = passwordCheck.Verified;
 
         if (!match)
         {
@@ -188,12 +196,51 @@ public class AuthController(
             return BadRequest(new { error = "INVALID_CREDENTIALS", message = "AppUser or password was invalid." });
         }
 
+        // Password is correct — only now enforce account state. Revealing inactive/locked/unverified
+        // is safe here because the caller has proven knowledge of the password; an anonymous
+        // enumerator (wrong password / no such user) only ever sees the generic INVALID_CREDENTIALS.
+        var statusResult = await CheckAccountStatus(user);
+        if (statusResult != null) return statusResult;
+
         // Reset failed login attempts on successful login
         user.AppUserCredential.FailedLoginAttempts = 0;
         user.AppUserCredential.LastFailedLoginAttempt = null;
+
+        // Rehash-on-login migration: if the stored hash is legacy HMAC-SHA512 (or uses outdated
+        // Argon2id parameters), transparently upgrade it to the current Argon2id scheme now that we
+        // hold the verified plaintext. No forced reset — same password, stronger storage.
+        if (passwordCheck.NeedsRehash)
+        {
+            var (rehash, resalt) = SimpleAuthPasswordHasher.HashPassword(model.Password);
+            user.AppUserCredential.PasswordSalt = resalt;
+            user.AppUserCredential.PasswordHash = rehash;
+        }
+
         await db.SaveChangesAsync();
 
-        if (_simpleAuthSettings.EnableMfaViaEmail || _simpleAuthSettings.EnableMfaViaSms)
+        // Multi-factor authentication gate — do not issue a token until a second factor is satisfied.
+        var otpEnrolled = _simpleAuthSettings.EnableMfaViaOtp && !string.IsNullOrEmpty(user.AppUserCredential.TotpSecret);
+        var emailOrSmsMfa = _simpleAuthSettings.EnableMfaViaEmail || _simpleAuthSettings.EnableMfaViaSms;
+
+        // OTP is enforced when it is the requested method, or when it is the only available second
+        // factor (prevents the client defaulting MfaMethod to Email and skipping OTP entirely).
+        if (otpEnrolled && (model.MfaMethod == MfaMethod.Otp || !emailOrSmsMfa))
+        {
+            // Nothing to send — the user reads the code from their authenticator app and completes
+            // login via VerifyAuthenticatorCode, which is gated on this PendingMfaLogin flag.
+            user.AppUserCredential.PendingMfaLogin = true;
+            user.AppUserCredential.FailedVerificationAttempts = 0;
+            await db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                mfaRequired = true,
+                redirectUrl = "/account/verify-mfa-otp",
+                message = "Enter the code from your authenticator app."
+            });
+        }
+
+        if (emailOrSmsMfa)
         {
             var verifyToken = await SetupVerifyToken(user, true);
             var message = "A verification code has been sent to your email";
@@ -367,7 +414,29 @@ public class AuthController(
             .Include(x => x.AppUser.AppUserRoles).ThenInclude(x => x.AppRole)
             .FirstOrDefaultAsync(x => x.Token == hashedInput && x.DeviceId == deviceId);
 
-        if (refreshToken == null || refreshToken.Expires < DateTime.UtcNow)
+        if (refreshToken == null)
+        {
+            // Reuse detection: the presented token isn't the current one. If it matches a
+            // previously-rotated (consumed) token, this is a replay of a stolen token — revoke the
+            // entire token family for that user and reject.
+            var consumed = await db.AppRefreshTokens
+                .FirstOrDefaultAsync(x => x.PreviousToken == hashedInput && x.DeviceId == deviceId);
+
+            if (consumed != null)
+            {
+                var compromisedUserId = consumed.AppUserId;
+                var familyTokens = db.AppRefreshTokens.Where(rt => rt.AppUserId == compromisedUserId);
+                db.AppRefreshTokens.RemoveRange(familyTokens);
+                await db.SaveChangesAsync();
+                await logger.LogAsync(AuthLogEventType.RefreshTokenReuseDetected, consumed.AppUser?.Username ?? compromisedUserId.ToString(),
+                    new { deviceId, Message = "Rotated refresh token replayed; revoked all sessions for user." });
+                return Unauthorized("The refresh token is invalid or has expired.");
+            }
+
+            return Unauthorized("The refresh token is invalid or has expired.");
+        }
+
+        if (refreshToken.Expires < DateTime.UtcNow)
         {
             return Unauthorized("The refresh token is invalid or has expired.");
         }
@@ -384,7 +453,10 @@ public class AuthController(
         // Generate a new refresh token
         var newRefreshToken = GenerateRefreshToken();
 
-        // Update the database atomically
+        // Rotate: remember the just-consumed token (the one the client presented) so a later replay
+        // of it is detected as reuse. Use hashedInput because JwtGenerator above may have already
+        // re-written this row's Token via its own refresh-token write.
+        refreshToken.PreviousToken = hashedInput;
         refreshToken.Token = HashToken(newRefreshToken.Token);
         refreshToken.Created = newRefreshToken.Created;
         refreshToken.Expires = newRefreshToken.Expires;
@@ -435,13 +507,17 @@ public class AuthController(
             .Include(x => x.AppUserCredential)
             .FirstOrDefaultAsync(x => x.EmailAddress == model.Email);
 
-        if (user == null) return BadRequest(GetErrorResponse("No user found with that email."));
+        // Anti-enumeration: always return the same generic response whether or not the account
+        // exists. Only actually issue + send a reset code when a matching account is found.
+        // (Residual timing skew: the existing-account path does extra DB/email work; acceptable here.)
+        var message = "If an account exists for that email, a password reset code has been sent.";
 
-        var verifyToken = await SetupVerifyToken(user);
-        await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
-
-        var message = "Password reset email sent.";
-        if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        if (user != null)
+        {
+            var verifyToken = await SetupVerifyToken(user);
+            await SendVerificationEmail(user.EmailAddress, verifyToken, "Reset your password");
+            if (configuration["AppConfig:Environment:Name"]!.Contains("Local")) message += $" Development ONLY: {verifyToken}";
+        }
 
         return Ok(new { message });
     }
@@ -456,19 +532,28 @@ public class AuthController(
             .Include(x => x.AppUserCredential)
             .Include(x => x.AppUserPasswordHistories);
 
-        // Allow admins to reset passwords without a verification token
-        var user = User.IsInRole("Admin")
-            ? await query.FirstOrDefaultAsync(x => x.Username == model.Username)
-            : await query.FirstOrDefaultAsync(x => 
-                x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken);
+        var isAdmin = User.IsInRole("Admin");
 
-        if (user == null) 
+        // Look up by username alone so a wrong code still resolves the account and counts against
+        // its per-account attempt budget. Admins reset without a verification token.
+        var user = await query.FirstOrDefaultAsync(x => x.Username == model.Username);
+
+        if (user == null)
             return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
 
-        // Only check token expiration and usage for non-admin users
-        if (!User.IsInRole("Admin") && (user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
-            user.AppUserCredential.VerifyTokenUsed))
-            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+        // Non-admin callers must present a valid, unexpired, unused reset code.
+        if (!isAdmin)
+        {
+            if (user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow || user.AppUserCredential.VerifyTokenUsed)
+                return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+
+            if (user.AppUserCredential.VerifyToken != model.VerifyToken)
+            {
+                // Wrong code — count it; the token is invalidated once the budget is exhausted.
+                await RegisterFailedCodeAttempt(user);
+                return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+            }
+        }
 
         // Validate the new password
         var validator = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions);
@@ -478,25 +563,21 @@ public class AuthController(
         // Check if reusing the current password is allowed
         if (_authSettings.PreventReuseOfPreviousPasswords)
         {
-            // Only check current password if salt and hash exist (user has set a password before)
-            if (user.AppUserCredential.PasswordSalt != null && user.AppUserCredential.PasswordHash != null)
+            // Only check current password if a hash exists (user has set a password before).
+            // Verify handles mixed schemes: legacy rows verify via HMAC+salt, Argon2id rows via
+            // the salt embedded in their PHC string.
+            if (user.AppUserCredential.PasswordHash != null)
             {
-                using (var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt))
+                if (SimpleAuthPasswordHasher.Verify(model.NewPassword, user.AppUserCredential.PasswordHash, user.AppUserCredential.PasswordSalt).Verified)
                 {
-                    var currentPasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-                    if (currentPasswordHash.SequenceEqual(user.AppUserCredential.PasswordHash))
-                    {
-                        return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as the current password." } });
-                    }
+                    return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as the current password." } });
                 }
             }
 
-            // Check password history
+            // Check password history (each entry may be legacy HMAC or Argon2id — Verify handles both)
             foreach (var history in user.AppUserPasswordHistories)
             {
-                using var hmac = new HMACSHA512(history.Salt); // Use historical salt
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
-                if (computedHash.SequenceEqual(history.HashedPassword))
+                if (SimpleAuthPasswordHasher.Verify(model.NewPassword, history.HashedPassword, history.Salt).Verified)
                 {
                     return BadRequest(new { success = false, errors = new List<string> { "New password cannot be the same as a previously used password." } });
                 }
@@ -523,18 +604,19 @@ public class AuthController(
         db.AppRefreshTokens.RemoveRange(existingTokens);
         await db.SaveChangesAsync();
 
-        // Hash and save the new password
-        using var newHmac = new HMACSHA512();
-        user.AppUserCredential.PasswordSalt = newHmac.Key;
-        user.AppUserCredential.PasswordHash = newHmac.ComputeHash(Encoding.UTF8.GetBytes(model.NewPassword));
+        // Hash and save the new password with Argon2id
+        var (newHash, newSalt) = SimpleAuthPasswordHasher.HashPassword(model.NewPassword);
+        user.AppUserCredential.PasswordSalt = newSalt;
+        user.AppUserCredential.PasswordHash = newHash;
         
         // Only mark token as used if not an admin (since admins don't need a token)
-        if (!User.IsInRole("Admin"))
+        if (!isAdmin)
         {
             user.AppUserCredential.VerifyTokenUsed = true;
         }
-        
+
         user.AppUserCredential.PendingMfaLogin = false;
+        user.AppUserCredential.FailedVerificationAttempts = 0;
         user.Verified = true;
 		
 		// Unlock the account if it was locked
@@ -579,17 +661,27 @@ public class AuthController(
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return NotFound("Local accounts are disabled");
 
+        // Resolve by username + pending state (not the code) so a wrong code still counts against
+        // the account's per-account attempt budget.
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
-            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.VerifyToken == model.VerifyToken && x.AppUserCredential.PendingMfaLogin);
+            .FirstOrDefaultAsync(x => x.Username == model.Username && x.AppUserCredential.PendingMfaLogin);
 
         if (user == null || user.AppUserCredential.VerifyTokenExpires < DateTime.UtcNow ||
             user.AppUserCredential.VerifyTokenUsed)
             return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
 
+        if (user.AppUserCredential.VerifyToken != model.VerifyToken)
+        {
+            // Wrong code — count it; the token is invalidated once the budget is exhausted.
+            await RegisterFailedCodeAttempt(user);
+            return BadRequest(new { success = false, errors = new List<string> { "Invalid or expired verification token." } });
+        }
+
         // Mark the token as used
         user.AppUserCredential.VerifyTokenUsed = true;
         user.AppUserCredential.PendingMfaLogin = false;
+        user.AppUserCredential.FailedVerificationAttempts = 0;
 
         // Generate JWT after successful MFA verification
         Debug.Assert(model.DeviceId != null, "model.DeviceId != null");
@@ -712,9 +804,13 @@ public class AuthController(
     }
 
     [HttpPost("VerifyAuthenticatorCode")]
+    [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyOtpModel model)
     {
         if (!_simpleAuthSettings.EnableMfaViaOtp) return NotFound("OTP MFA is disabled");
+
+        if (string.IsNullOrEmpty(model.DeviceId))
+            return BadRequest(new { success = false, message = "Device ID is required." });
 
         var user = await db.AppUsers
             .Include(x => x.AppUserCredential)
@@ -723,13 +819,46 @@ public class AuthController(
         if (user == null || string.IsNullOrEmpty(user.AppUserCredential.TotpSecret))
             return BadRequest("TOTP setup incomplete.");
 
-        var isValid = VerifyTotpCode(user.AppUserCredential.TotpSecret, model.Code);
-        if (!isValid) return Unauthorized("Invalid TOTP code.");
+        // Gate: only a session that has already passed password authentication (Login sets
+        // PendingMfaLogin) may complete OTP. This makes TOTP a genuine second factor and prevents an
+        // anonymous caller from brute-forcing or locking arbitrary accounts by username. Because this
+        // check precedes any failure counting below, it also blocks the counter as a DoS vector.
+        if (!user.AppUserCredential.PendingMfaLogin)
+            return Unauthorized("No pending MFA login for this account.");
 
-        if (string.IsNullOrEmpty(model.DeviceId))
-            return BadRequest(new { success = false, message = "Device ID is required." });
+        // Enforce the same account-state checks the standard login path enforces before issuing a token.
+        var statusResult = await CheckAccountStatus(user);
+        if (statusResult != null) return statusResult;
+
+        var isValid = VerifyTotpCode(user.AppUserCredential.TotpSecret, model.Code);
+        if (!isValid)
+        {
+            // Per-account lockout on repeated TOTP failures. There is no short-lived code to
+            // invalidate (the TOTP secret is long-lived), so lock the account like the password path.
+            user.AppUserCredential.FailedVerificationAttempts++;
+            if (_authSettings.MaxFailedLoginAttempts > 0 &&
+                user.AppUserCredential.FailedVerificationAttempts >= _authSettings.MaxFailedLoginAttempts)
+            {
+                user.Locked = true;
+                user.AppUserCredential.LockoutEndTime = _authSettings.AccountLockoutDurationInMinutes > 0
+                    ? DateTime.UtcNow.AddMinutes(_authSettings.AccountLockoutDurationInMinutes)
+                    : null;
+                user.AppUserCredential.FailedVerificationAttempts = 0;
+                await db.SaveChangesAsync();
+                return Unauthorized("The account has been locked due to multiple failed verification attempts.");
+            }
+
+            await db.SaveChangesAsync();
+            return Unauthorized("Invalid TOTP code.");
+        }
+
+        // Success — clear the pending state and reset the counter, then issue the token.
+        user.AppUserCredential.PendingMfaLogin = false;
+        user.AppUserCredential.FailedVerificationAttempts = 0;
 
         var jwt = await JwtGenerator(user, model.DeviceId);
+        await db.SaveChangesAsync();
+        await logger.LogAsync(AuthLogEventType.MfaVerified, user.Username, new { Type = "OTP", model.DeviceId });
 
         return Ok(new
         {
@@ -764,7 +893,9 @@ public class AuthController(
     {
         if (string.IsNullOrEmpty(username)) return BadRequest("Username must be provided.");
         var appUser = await db.AppUsers.SingleOrDefaultAsync(x => x.Username == username);
-        if (appUser == null) return BadRequest("User didn't exist.");
+        // Anti-enumeration: don't disclose whether the account exists. A missing account is reported
+        // as "not verified" — identical to an existing-but-unverified one. The client routes both to
+        // the verification-pending page; a real login attempt then fails with a generic error.
         return Ok(appUser is { Verified: true });
     }
 
@@ -882,6 +1013,36 @@ public class AuthController(
         }
 
         return false;
+    }
+
+    // Shared account-state gate used before issuing a token on any authentication path
+    // (password login and the OTP second-factor endpoint). Returns null when the account is
+    // usable, otherwise the appropriate error result. Keeps the checks — and their order —
+    // identical across entry points so a locked/inactive/unverified account can never obtain a token.
+    private async Task<IActionResult?> CheckAccountStatus(AppUser user)
+    {
+        if (!user.Active) return Unauthorized("The user is inactive.");
+        if (await HandleLockedAccounts(user)) return Unauthorized("The account is locked.");
+        if (_simpleAuthSettings.RequireUserVerification && !user.Verified) return Unauthorized("The user has not yet been verified.");
+        return null;
+    }
+
+    // Records a failed attempt against a short-lived verification code (email/SMS MFA or
+    // password-reset). Once the per-account budget is exhausted the current code is invalidated,
+    // forcing the caller to request a fresh one — this throttles distributed/multi-IP brute force
+    // that the per-IP rate limiter alone cannot stop.
+    private async Task RegisterFailedCodeAttempt(AppUser user)
+    {
+        user.AppUserCredential.FailedVerificationAttempts++;
+        if (_authSettings.MaxFailedLoginAttempts > 0 &&
+            user.AppUserCredential.FailedVerificationAttempts >= _authSettings.MaxFailedLoginAttempts)
+        {
+            // Invalidate the current code; the user must request a new one via SendNewCode/ForgotPassword.
+            user.AppUserCredential.VerifyTokenUsed = true;
+            user.AppUserCredential.FailedVerificationAttempts = 0;
+        }
+
+        await db.SaveChangesAsync();
     }
 
     private async Task SendVerificationEmail(string email, string token, string subject)
@@ -1020,6 +1181,8 @@ public class AuthController(
         user.AppUserCredential.VerifyTokenExpires = DateTime.UtcNow.AddMinutes(_authSettings.VerifyTokenExpiresInMinutes);
         user.AppUserCredential.VerifyTokenUsed = false;
         user.AppUserCredential.PendingMfaLogin = mfaToken;
+        // A freshly-issued code resets the per-account attempt budget.
+        user.AppUserCredential.FailedVerificationAttempts = 0;
         await db.SaveChangesAsync();
         return verifyToken;
     }
@@ -1034,7 +1197,8 @@ public class AuthController(
     private async Task<dynamic> JwtGenerator(AppUser user, string deviceId)
     {
         user.LastSeen = DateTime.UtcNow;
-        var key = Encoding.ASCII.GetBytes(_authSettings.TokenSecret);
+        // UTF8 to match token validation (Extensions uses Encoding.UTF8); equivalent for ASCII secrets.
+        var key = Encoding.UTF8.GetBytes(_authSettings.TokenSecret);
         var expiresInMinutes = _authSettings.AccessTokenExpirationMinutes;
         var refreshTokenExpires = DateTime.UtcNow;
 
@@ -1067,6 +1231,9 @@ public class AuthController(
         {
             Subject = claims,
             Expires = DateTime.UtcNow.AddMinutes(expiresInMinutes),
+            // Stamp iss/aud when configured so relying apps can validate token provenance/scope.
+            Issuer = string.IsNullOrEmpty(_authSettings.TokenIssuer) ? null : _authSettings.TokenIssuer,
+            Audience = string.IsNullOrEmpty(_authSettings.TokenAudience) ? null : _authSettings.TokenAudience,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
         };
 
@@ -1100,14 +1267,16 @@ public class AuthController(
         if (!_authSettings.StoreTokensInCookies) return;
 
         var expireInMinutes = _authSettings.AccessTokenExpirationMinutes;
-        var isHttps = HttpContext.Request.IsHttps;
+        // Honor forwarded proto (IsHttps reflects X-Forwarded-Proto once ForwardedHeaders is wired)
+        // and allow config to force Secure behind a TLS-terminating proxy.
+        var secure = _authSettings.AlwaysUseSecureCookies || HttpContext.Request.IsHttps;
         var cookieOptions = new CookieOptions
         {
             Expires = DateTime.UtcNow.AddMinutes(expireInMinutes),
             HttpOnly = true,
-            Secure = isHttps,
+            Secure = secure,
             IsEssential = true,
-            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
+            SameSite = secure ? SameSiteMode.None : SameSiteMode.Lax
         };
 
         if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
@@ -1124,14 +1293,14 @@ public class AuthController(
     {
         if (!_authSettings.StoreTokensInCookies) return;
 
-        var isHttps = HttpContext.Request.IsHttps;
+        var secure = _authSettings.AlwaysUseSecureCookies || HttpContext.Request.IsHttps;
         var cookieOptions = new CookieOptions
         {
             Expires = expires,
             HttpOnly = true,
-            Secure = isHttps,
+            Secure = secure,
             IsEssential = true,
-            SameSite = isHttps ? SameSiteMode.None : SameSiteMode.Lax
+            SameSite = secure ? SameSiteMode.None : SameSiteMode.Lax
         };
 
         if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
@@ -1153,8 +1322,9 @@ public class AuthController(
 
         if (existingToken != null)
         {
-            // Update existing token for this device
+            // Update existing token for this device (fresh login) — clear reuse-detection lineage.
             existingToken.Token = hashedToken;
+            existingToken.PreviousToken = null;
             existingToken.Created = refreshToken.Created;
             existingToken.Expires = refreshToken.Expires;
         }
@@ -1189,13 +1359,13 @@ public class AuthController(
         return refreshToken;
     }
 
-    private static bool CheckPassword(string password, AppUser user)
+    // Verifies the password against the stored credential. Handles both legacy HMAC-SHA512 rows
+    // and Argon2id rows; NeedsRehash signals the caller to upgrade the stored hash on success
+    // (rehash-on-login migration). Returns not-verified (rather than throwing) when no hash is set.
+    private static VerifyResult CheckPassword(string password, AppUser user)
     {
         Debug.Assert(user.AppUserCredential != null, "user.AppUserCredential != null");
-        using var hmac = new HMACSHA512(user.AppUserCredential.PasswordSalt);
-        var compute = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-        var result = compute.SequenceEqual(user.AppUserCredential.PasswordHash);
-        return result;
+        return SimpleAuthPasswordHasher.Verify(password, user.AppUserCredential.PasswordHash, user.AppUserCredential.PasswordSalt);
     }
 
     private string GenerateTotpSecret()
@@ -1241,11 +1411,22 @@ public class AuthController(
         if (!Uri.TryCreate(returnUrl, UriKind.Absolute, out var uri))
             return false;
 
-        // Check against CookieDomain (e.g., ".lymestack.com")
+        // Only permit http/https targets — block javascript:, data:, file:, etc.
+        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+            return false;
+
+        // Reject embedded credentials (e.g. https://trusted.com@evil.com) — the userinfo is a
+        // phishing lure and the real host is whatever follows the '@'.
+        if (!string.IsNullOrEmpty(uri.UserInfo))
+            return false;
+
+        // Check against CookieDomain (e.g., ".lymestack.com"). Require an exact host match or a
+        // proper subdomain (dot boundary) so "evillymestack.com" can't satisfy "lymestack.com".
         if (!string.IsNullOrEmpty(_authSettings.CookieDomain))
         {
             var cookieDomain = _authSettings.CookieDomain.TrimStart('.');
-            if (uri.Host.EndsWith(cookieDomain, StringComparison.OrdinalIgnoreCase))
+            if (uri.Host.Equals(cookieDomain, StringComparison.OrdinalIgnoreCase) ||
+                uri.Host.EndsWith("." + cookieDomain, StringComparison.OrdinalIgnoreCase))
                 return true;
         }
 

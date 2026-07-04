@@ -26,6 +26,10 @@ public class AppUserCredential
 
     public int FailedLoginAttempts { get; set; } = 0;
 
+    // Tracks failed attempts against short verification codes (email/SMS MFA, password-reset)
+    // and TOTP codes, so those flows can be locked/invalidated per-account (brute-force defense).
+    public int FailedVerificationAttempts { get; set; } = 0;
+
     public DateTime? LastFailedLoginAttempt { get; set; }
 
     public DateTime? LockoutEndTime { get; set; }

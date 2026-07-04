@@ -182,11 +182,37 @@ ALTER TABLE AppUser ALTER COLUMN EmailAddress VARCHAR(100) NULL
 UPDATE dbo.AppUser
     SET EmailAddress = NULL
     WHERE EmailAddress = '';
+GO
+
+-------------------------------------------------------
+
+-- Refresh-token rotation reuse detection: stores the hash of the immediately-preceding
+-- (consumed) refresh token for each device so a replay of a rotated token can be detected.
+ALTER TABLE dbo.AppRefreshToken ADD PreviousToken VARCHAR(100) NULL
+GO
 
 -- Add filtered unique index on EmailAddress (only for non-null values)
 CREATE UNIQUE NONCLUSTERED INDEX IX_AppUser_Email ON dbo.AppUser
     (EmailAddress)
     WHERE EmailAddress IS NOT NULL
-    WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) 
+    WITH(STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
     ON [PRIMARY]
+GO
+
+-------------------------------------------------------
+
+-- Per-account failed-attempt counter for short verification codes (email/SMS MFA and
+-- password-reset codes) and TOTP codes. Enables per-account lockout/invalidation on the
+-- code-verification paths (previously only per-IP rate limiting protected these).
+ALTER TABLE AppUserCredential ADD FailedVerificationAttempts int NOT NULL DEFAULT 0
+GO
+
+-------------------------------------------------------
+
+-- H1 remediation: passwords migrated from single-round HMAC-SHA512 to Argon2id.
+-- Argon2id credentials are stored as a self-describing PHC-style string
+-- ($argon2id$v=19$m=..,t=..,p=..$<salt>$<hash>) encoded as UTF-8 bytes, which is longer than the
+-- 64-byte legacy HMAC output. Widen PasswordHash to hold the encoded value. Existing legacy rows
+-- are upgraded transparently on next successful login (rehash-on-login); no forced password reset.
+ALTER TABLE AppUserCredential ALTER COLUMN PasswordHash VARBINARY(256) NULL
 GO

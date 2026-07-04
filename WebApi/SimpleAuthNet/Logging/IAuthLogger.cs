@@ -10,6 +10,7 @@ public enum AuthLogEventType
     Registration,
     AccountVerified,
     SessionRevoked,
+    RefreshTokenReuseDetected,
     Logout
 }
 

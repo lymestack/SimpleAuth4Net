@@ -11,6 +11,7 @@ export class AppRefreshToken {
     appUser: AppUser;
     deviceId: string = "";
     token: string = "";
+    previousToken: string;
     created: Date;
     expires: Date;
 }

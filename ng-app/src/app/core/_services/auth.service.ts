@@ -91,7 +91,10 @@ export class AuthService {
       })
       .pipe(
         map((response: any) => {
-          if (!this.simpleAuthSettings.enableMfaViaEmail) {
+          // Only persist token timing when the server actually issued a token. An MFA-gated login
+          // returns { mfaRequired: true } with no expiry (true for OTP-only / SMS-only configs too,
+          // where the old enableMfaViaEmail check wrongly tried to store an undefined expiry).
+          if (!response?.mfaRequired && response?.expires) {
             this.storeTokenExpiration(response.expires);
             this.scheduleTokenRefresh(response.expires);
           }

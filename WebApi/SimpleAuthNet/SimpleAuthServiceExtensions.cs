@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -44,6 +45,35 @@ public static class SimpleAuthServiceExtensions
     {
         services.AddDbContext<SimpleAuthContext>();
         return services;
+    }
+
+    /// <summary>
+    /// Configures ForwardedHeaders so that <c>Request.IsHttps</c> / <c>Request.Scheme</c> reflect the
+    /// original client protocol (X-Forwarded-Proto) when TLS is terminated at a reverse proxy or load
+    /// balancer. Without this, auth cookies could be issued without the Secure flag in production.
+    /// Pair with <see cref="UseSimpleAuthForwardedHeaders"/> in the request pipeline.
+    /// </summary>
+    public static IServiceCollection AddSimpleAuthForwardedHeaders(this IServiceCollection services)
+    {
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            // Proxies/load balancers are deployment-specific; clear the defaults so the configured
+            // proxy chain is trusted. Restrict KnownProxies/KnownNetworks in hardened deployments.
+            options.KnownNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+        return services;
+    }
+
+    /// <summary>
+    /// Applies ForwardedHeaders middleware. Must run before authentication so the corrected scheme is
+    /// available when cookies are read/written. Pair with <see cref="AddSimpleAuthForwardedHeaders"/>.
+    /// </summary>
+    public static IApplicationBuilder UseSimpleAuthForwardedHeaders(this IApplicationBuilder app)
+    {
+        app.UseForwardedHeaders();
+        return app;
     }
 
     public static IServiceCollection AddSimpleAuthControllers(this IServiceCollection services)
@@ -134,12 +164,20 @@ public static class SimpleAuthServiceExtensions
         {
             options.RequireHttpsMetadata = false;
             options.SaveToken = true;
+            // Issuer/audience validation is opt-in via config so existing Standalone setups that
+            // don't configure them keep working. When TokenIssuer/TokenAudience are set (required for
+            // multi-app SSO), tokens minted for one relying app won't be accepted by another.
+            var validateIssuer = !string.IsNullOrEmpty(authSettings.TokenIssuer);
+            var validateAudience = !string.IsNullOrEmpty(authSettings.TokenAudience);
+
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                ValidateIssuer = false,
-                ValidateAudience = false,
+                ValidateIssuer = validateIssuer,
+                ValidIssuer = validateIssuer ? authSettings.TokenIssuer : null,
+                ValidateAudience = validateAudience,
+                ValidAudience = validateAudience ? authSettings.TokenAudience : null,
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.Zero,
                 ValidAlgorithms = new[] { SecurityAlgorithms.HmacSha512 }

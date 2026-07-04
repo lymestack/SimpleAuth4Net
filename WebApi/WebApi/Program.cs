@@ -7,6 +7,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddSimpleAuthDbContext()
+    .AddSimpleAuthForwardedHeaders()
     .AddSimpleAuthControllers()
     .AddSimpleAuthCors(builder.Configuration)
     .AddSimpleAuthRateLimiting(builder.Configuration)
@@ -24,6 +25,7 @@ if (app.Environment.IsDevelopment() && bool.Parse(builder.Configuration["Swagger
     app.UseSwaggerUI();
 }
 
+app.UseSimpleAuthForwardedHeaders();
 app.UseCors("default");
 app.UseRateLimiter();
 app.UseAuthentication();

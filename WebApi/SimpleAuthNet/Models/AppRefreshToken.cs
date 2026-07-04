@@ -15,6 +15,13 @@ public class AppRefreshToken
 
     public string Token { get; set; } = "";
 
+    /// <summary>
+    /// Hash of the immediately-preceding (now-consumed) refresh token for this device. Used for
+    /// rotation reuse detection: if a token matching this value is presented, it was already rotated
+    /// out, which signals theft/replay — the whole token family for the user is then revoked.
+    /// </summary>
+    public string? PreviousToken { get; set; }
+
     public DateTime Created { get; set; }
 
     public DateTime Expires { get; set; }
