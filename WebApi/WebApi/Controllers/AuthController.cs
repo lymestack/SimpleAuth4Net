@@ -1481,6 +1481,32 @@ public class AuthController(
         return Ok($"All sessions revoked for user {username}.");
     }
 
+    [HttpPost("UnlockUser")]
+    [Authorize(Roles = "Admin")]
+    [EnableRateLimiting("fixed")]
+    public async Task<IActionResult> UnlockUser([FromQuery] string username)
+    {
+        var user = await db.AppUsers
+            .Include(x => x.AppUserCredential)
+            .SingleOrDefaultAsync(u => u.Username == username);
+
+        if (user == null) return NotFound("User not found.");
+
+        user.Locked = false;
+
+        if (user.AppUserCredential != null)
+        {
+            user.AppUserCredential.FailedLoginAttempts = 0;
+            user.AppUserCredential.FailedVerificationAttempts = 0;
+            user.AppUserCredential.LockoutEndTime = null;
+            user.AppUserCredential.LastFailedLoginAttempt = null;
+        }
+
+        await db.SaveChangesAsync();
+        await logger.LogAsync(AuthLogEventType.AccountUnlocked, username, new { Message = $"Admin {User.Identity.Name} unlocked the account for {username}" });
+        return Ok(new { success = true, message = $"The account for {username} has been unlocked." });
+    }
+
     [HttpPost("RevokeAllSessions")]
     [Authorize(Roles = "Admin")]
     [EnableRateLimiting("fixed")]

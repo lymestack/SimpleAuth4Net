@@ -11,7 +11,8 @@ public enum AuthLogEventType
     AccountVerified,
     SessionRevoked,
     RefreshTokenReuseDetected,
-    Logout
+    Logout,
+    AccountUnlocked
 }
 
 public interface IAuthLogger

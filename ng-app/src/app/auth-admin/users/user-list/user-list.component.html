@@ -89,11 +89,16 @@
             <i class="fa fa-sign-out padded-right"></i>
             <span>Log User Out from ALL Sessions</span>
           </button>
+          <button mat-menu-item *ngIf="user.locked" (click)="unlock.emit(user)">
+            <i class="fa fa-unlock padded-right"></i>
+            <span>Unlock This User</span>
+          </button>
         </mat-menu>
       </td>
       <td>
         {{ user.username }}
         <div *ngIf="!user.active" class="badge bg-danger">INACTIVE</div>
+        <div *ngIf="user.locked" class="badge bg-warning text-dark">LOCKED</div>
       </td>
       <td>
         {{ user.firstName }}

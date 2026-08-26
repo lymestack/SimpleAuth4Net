@@ -105,6 +105,24 @@ export class UsersComponent {
     }
   }
 
+  onUnlockUser(user: AppUser) {
+    let confirm = window.confirm(
+      `Are you sure you want to unlock the account for ${user.username}?`
+    );
+
+    if (confirm) {
+      this.rest
+        .postResource(
+          'Auth/UnlockUser?username=' + encodeURIComponent(user.username),
+          {}
+        )
+        .subscribe(() => {
+          this.logger.info(`The account for ${user.username} was unlocked.`);
+          this.refresh();
+        });
+    }
+  }
+
   onRevokeSessions(user: AppUser) {
     let confirm = window.confirm(
       `Are you sure you want to revoke all sessions for ${user.username}?`
