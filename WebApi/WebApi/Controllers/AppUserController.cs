@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SimpleAuthNet;
 using SimpleAuthNet.Data;
 using SimpleAuthNet.Models;
 using SimpleAuthNet.Models.Api;
+using SimpleAuthNet.Models.Config;
 using SimpleAuthNet.Models.SearchOptions;
 
 namespace WebApi.Controllers;
@@ -11,8 +13,10 @@ namespace WebApi.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize(Roles = "Admin")]
-public class AppUserController(SimpleAuthContext db) : ControllerBase
+public class AppUserController(SimpleAuthContext db, IConfiguration configuration) : ControllerBase
 {
+    private readonly AuthSettings _authSettings = configuration.GetSection("AuthSettings").Get<AuthSettings>() ?? new AuthSettings();
+
     #region GET
 
     [HttpGet("Me")]
@@ -83,6 +87,14 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
 
         if (dbItem == null)
         {
+            // Validate the admin-entered password before anything is written
+            if (!string.IsNullOrEmpty(value.NewPassword))
+            {
+                var result = new PasswordComplexityValidator(_authSettings.PasswordComplexityOptions).Validate(value.NewPassword);
+                if (!result.Succeeded)
+                    return BadRequest(new { error = "INVALID_PASSWORD", message = string.Join(" ", result.Errors), errors = result.Errors });
+            }
+
             // Check for duplicate username before inserting
             var existingUsername = await db.AppUsers.AnyAsync(x => x.Username == value.Username);
             if (existingUsername)
@@ -142,6 +154,17 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
         {
             dbItem.AppUserCredential = new AppUserCredential { DateCreated = DateTime.UtcNow, VerifyTokenExpires = DateTime.UtcNow };
             dbItem.DateEntered = DateTime.UtcNow;
+
+            // Store the password the admin set in the Create User form. Existing users change
+            // passwords through Auth/ResetPassword (history and reuse checks), never here.
+            if (!string.IsNullOrEmpty(value.NewPassword))
+            {
+                var (hash, salt) = SimpleAuthPasswordHasher.HashPassword(value.NewPassword);
+                dbItem.AppUserCredential.PasswordHash = hash;
+                dbItem.AppUserCredential.PasswordSalt = salt;
+                // Admin vouches for the account, same as an admin password reset.
+                dbItem.Verified = true;
+            }
         }
 
         try
@@ -162,14 +185,19 @@ public class AppUserController(SimpleAuthContext db) : ControllerBase
             throw; // Re-throw if it's a different error
         }
 
-        SaveRoles(value, dbItem);
+        SaveRoles(value, dbItem, inserting);
 
+        // Keep the password hash out of the response. Stop tracking first so EF never reads the
+        // cleared navigation as a deleted credential.
+        db.ChangeTracker.Clear();
+        dbItem.AppUserCredential = null;
         return Ok(dbItem);
     }
 
-    private void SaveRoles(AppUser value, AppUser? dbItem)
+    private void SaveRoles(AppUser value, AppUser dbItem, bool inserting)
     {
-        db.DeleteRolesForUser(dbItem.Id);
+        // A brand-new user has no roles to clear
+        if (!inserting) db.DeleteRolesForUser(dbItem.Id);
 
         foreach (var role in value.Roles)
         {
