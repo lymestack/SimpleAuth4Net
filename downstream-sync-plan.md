@@ -231,7 +231,7 @@ Fixes that exist downstream and have not reached the layer that owns the code.
 | `qc-sod-ordering` | **Split.** `develop` has the Argon2id port and unlock but no G19. `main` has G19 (inline HMAC) and the CLAUDE.md upstream tag but no Argon2id. 8 vs 3 commits apart |
 | `lymestats` | `origin/main` is 1 commit behind `develop`; G19 on neither |
 | `playmusiconline` | `origin/main` is 71 commits behind `develop` |
-| `lymesend`, `paymentz` | Stale `origin/develop` branches (19 and 74 commits behind `main`) |
+| `lymesend`, `paymentz` | ~~Stale `origin/develop` branches (19 and 74 commits behind `main`)~~ Deleted 2026-10-01 |
 | `md-ccrs-dev` | 29 unpushed commits on `develop`; `origin/main` has 14 that `develop` lacks. Left as is (D2) |
 | `lymebooks` | Local leftover branches from before the history rewrite |
 | `lymecrm` | 29 `worktree-agent-*` branches (M0 count): 24 are patch-identical to `develop`; 5 carry commits `develop` lacks (4 POS feature commits, 1 worker summary) — the same pattern that hid LymeBooks' lost unlock port |
@@ -485,8 +485,8 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 - [ ] `ping`: same.
 - [ ] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both.
 - [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level.
-- [ ] `playmusiconline`: report what the 71 `develop`-only commits contain; do not merge to `main` without Mike.
-- [ ] `lymesend`, `paymentz`: propose deleting the stale `origin/develop` branches.
+- [x] `playmusiconline`: Mike's call 2026-10-01 — leave `main` alone. No merge, no report needed. (The D1 authorization fix on `develop` in M4 still stands.)
+- [x] `lymesend`, `paymentz`: stale `origin/develop` branches deleted 2026-10-01 on Mike's go-ahead (tips `82c3f43` and `b6fedd5`; both were strict ancestors of `main`, and TeamCity builds from `main`). `lymesend`'s local `develop` deleted too.
 - [x] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. All 29 deleted 2026-10-01 (see Progress Log).
 - [x] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`. Both local branches deleted 2026-10-01 (`origin/accounting-remediation` still exists).
 - [ ] Produce a table: repo · working branch · deploy branch · commits apart.
@@ -642,7 +642,7 @@ Do not run two workers in the same repo at once; no worktree isolation is needed
 - **.NET on this Mac:** every worker prompt that builds includes `export DOTNET_ROOT=/usr/local/share/dotnet PATH="/usr/local/share/dotnet:$PATH"`.
 - **Attribution hook:** a PreToolUse hook rejects any shell command that both commits and contains an assistant/vendor name or a co-author trailer, including inside heredoc text or a `grep` pattern. Keep such words out of commit commands; run message checks as a separate command.
 - **Shared repo, shared index:** when the orchestrator commits this document while a worker is active in `SimpleAuth4Net`, use `git commit downstream-sync-plan.md -m "…"` (pathspec form) so no worker's staged files are swept in.
-- **Still needing Mike mid-run** (not hands-on tests): the `lymebooks-intake.md` review in M8, and the branch deletions and `playmusiconline` merge question in M6. Treat each as non-blocking: carry on with every milestone that does not depend on the answer.
+- **Still needing Mike mid-run** (not a hands-on test): the `lymebooks-intake.md` review in M8. Treat it as non-blocking: carry on with every milestone that does not depend on the answer. M6's Mike-dependent items were all settled on 2026-10-01 (see M6).
 
 **Orchestrator context management.** Fan-outs here reach 8–13 workers. If dispatching prompts fills the orchestrator context, prompt Mike to run `/compact` while workers run; suggest it proactively when approaching the limit. After compacting, resume from `.orchestrator/state.json`.
 
