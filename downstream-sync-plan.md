@@ -24,8 +24,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 |---|---|---|---|---|
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
-| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | 🔄 In Progress | — | Auth hole, logger, publish env, email check. Dispatched by the orchestrator 2026-10-01 17:45 (the earlier hand-issued prompt was never run) |
-| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
+| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ✅ Complete | 6 | `8417557..ced452a`, 12 local commits. F uses the existing `EMAIL_EXISTS` code; prod `ng build` budget failure is pre-existing |
+| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | 🔄 In Progress | — | Unit/integration. Dispatched 2026-10-01 17:52 |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ⬜ Not Started | — | 7 repos (L1) + 5 repos (L2) |
@@ -358,17 +358,17 @@ Bring this machine's clones level with origin so every later milestone works fro
 
 Make this repo the true L1 source again. *Workers must complete all items below.*
 
-- [ ] **A:** remove class-level `[AllowAnonymous]` from `AuthController`; add `[AllowAnonymous]` to each action that must be public, using lymestarter `8c201de` as the reference list. Drop the dead `is VerifyOtpModel` check in `VerifyMfa`.
-- [ ] **B:** `DefaultAuthLogger.WriteLog` takes and logs `eventType`.
-- [ ] **G:** `<EnvironmentName>Production</EnvironmentName>` and `CopyToPublishDirectory="Never"` for `appsettings.Development.json` in `WebApi.csproj`; flip `web.config` to `Production`.
-- [ ] **F:** implement email duplicate validation per `simple-auth-email-check-fix.md` — `Auth/EmailExists`, the `EMAIL_TAKEN` check in `AppUserController.Post`, and the Angular user-form feedback. Decide the `EmailExists` authorization deliberately: an anonymous version is an account-enumeration oracle, which the 2026-07 hardening closed elsewhere. Default: `[Authorize(Roles = "Admin")]`. No `try/catch` in the controller.
-- [ ] UI for F: match the existing Material form's hint/error treatment exactly — spacing, colour tokens and icon weight consistent with the username-availability feedback beside it, no inline `style` attributes.
-- [ ] Triage the `SimpleAuthNet` differences between this repo and `lymestarter` (11 files, [1.5](#15-upstream-bound-backlog)): list each as *intentional template adaptation* or *should be upstreamed here*, and upstream the latter.
-- [ ] If D11 = yes: add `WebApi/WebApi.Tests` (xUnit) to `WebApi.sln`.
-- [ ] If D10 = default: note in `README.md` that `react-app` and `vue-app` are unmaintained.
-- [ ] Delete `PLAN-smoke-test.md`; replace this repo's `downstream-inventory.md` with a one-line pointer to `~/git/lymestarter/downstream-inventory.md`; delete `simple-auth-email-check-fix.md` once F is in.
-- [ ] Run "update docs" (`documentation/api.md`, `README.md`) for unlock, G19, F and the authorization change.
-- [ ] Commit locally as separate commits per item.
+- [x] **A:** remove class-level `[AllowAnonymous]` from `AuthController`; add `[AllowAnonymous]` to each action that must be public, using lymestarter `8c201de` as the reference list. Drop the dead `is VerifyOtpModel` check in `VerifyMfa`.
+- [x] **B:** `DefaultAuthLogger.WriteLog` takes and logs `eventType`.
+- [x] **G:** `<EnvironmentName>Production</EnvironmentName>` and `CopyToPublishDirectory="Never"` for `appsettings.Development.json` in `WebApi.csproj`; flip `web.config` to `Production`.
+- [x] **F:** implement email duplicate validation per `simple-auth-email-check-fix.md` — `Auth/EmailExists`, the `EMAIL_TAKEN` check in `AppUserController.Post`, and the Angular user-form feedback (done as `EMAIL_EXISTS`, the code this repo and the template already use; wherever this plan says `EMAIL_TAKEN`, read `EMAIL_EXISTS`). Decide the `EmailExists` authorization deliberately: an anonymous version is an account-enumeration oracle, which the 2026-07 hardening closed elsewhere. Default: `[Authorize(Roles = "Admin")]`. No `try/catch` in the controller. (`EmailExists` is Admin-only. The pre-existing `try/catch` in `AppUserController.Post` was left: this repo has no global error middleware. Decision queued for T5.)
+- [x] UI for F: match the existing Material form's hint/error treatment exactly — spacing, colour tokens and icon weight consistent with the username-availability feedback beside it, no inline `style` attributes.
+- [x] Triage the `SimpleAuthNet` differences between this repo and `lymestarter` (11 files, [1.5](#15-upstream-bound-backlog)): list each as *intentional template adaptation* or *should be upstreamed here*, and upstream the latter.
+- [x] If D11 = yes: add `WebApi/WebApi.Tests` (xUnit) to `WebApi.sln`.
+- [x] If D10 = default: note in `README.md` that `react-app` and `vue-app` are unmaintained.
+- [x] Delete `PLAN-smoke-test.md`; replace this repo's `downstream-inventory.md` with a one-line pointer to `~/git/lymestarter/downstream-inventory.md`; delete `simple-auth-email-check-fix.md` once F is in.
+- [x] Run "update docs" (`documentation/api.md`, `README.md`) for unlock, G19, F and the authorization change.
+- [x] Commit locally as separate commits per item.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,9 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - M2: `SimpleAuth4Net` production `npm run build` fails its bundle budget (1.42 MB against a 1.00 MB error limit in `angular.json`); it fails the same way before M2. Raise the budget or trim the bundle?
+  - M2: `SimpleAuth4Net` has no global error middleware, so the old `try/catch (DbUpdateException)` in `AppUserController.Post` stays. Add middleware and drop the catch, or keep it?
+  - M2: `Auth/UserExists` is still anonymous (the public register form uses it), so usernames can be probed, rate limited only. Same in the template. Accept, or close it?
 
 If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-presents only the failed check.
 
@@ -686,6 +689,16 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 17:50** - M2 complete (17:42 to 17:48, 12 local commits `8417557..ced452a`, nothing pushed; `origin/master` still `4d61814`). Verified by the orchestrator: no class-level `[AllowAnonymous]`, all 22 `AuthController` actions carry exactly one attribute, the three admin actions and the new `EmailExists` require `Admin`, markers B/G/F present, test project in the solution, obsolete documents removed.
+
+- **A** `8417557`, **B** `7337a1c`, **G** `524264f` (also excludes `appsettings.Development.local.json`, which holds dev DB credentials, from publish), **F** `86c99bd` (API) + `f978131` (UI), triage upstreams `ccf9096` `5ed59d6` `018ef0a`, test project `b4f094f`, README `5b79514`, housekeeping `1af5759`, docs `ced452a`.
+- **F deviations:** error code is `EMAIL_EXISTS` (already used here, in the template and across the fleet), not `EMAIL_TAKEN`. `EmailExists` is `[Authorize(Roles = "Admin")]`.
+- **Triage result:** upstreamed here: `AddSimpleAuth(configuration)`, explicit cookie-then-Bearer read, monthly dev SMS log folders, `AppUser` include on refresh-token reuse detection. Deferred to M8: `IPostRegistrationHandler` invite-token overload and `RegisterModel.InviteToken` (dead code in the template; only LymeBooks uses them). Everything else is intentional template adaptation.
+- **For M3 (template defects found by the triage):** the template's `Register` never calls `IPostRegistrationHandler`; its `CookieDomain` cookies do not set `Secure`; add `appsettings.Development.local.json` to the publish exclusion if the template uses that file.
+- **For M7:** the G fan-out should exclude `appsettings.Development.local.json` wherever it exists.
+- **Build:** `dotnet build` clean (131 warnings, 2 fewer than before), `dotnet test` 1/1. Production `npm run build` fails the bundle budget, pre-existing; the development build compiles. Three items queued for T5.
+- T1 dispatched to a Sonnet worker.
 
 **2026-10-01 17:45** - Orchestrator session started (state in `.orchestrator/downstream-sync-plan/`, gitignored). Checked before dispatch: no M2 commits after `9e75a85` (only two commits to this document), working tree clean, class-level `[AllowAnonymous]` still present, and the only other context open in this repo is the idle planning session. M2 dispatched to an Opus worker. Noted for M3: `~/git/lymestarter` has uncommitted work from the separate `lymetools-port-plan` session (sample features); re-check before sending a worker there.
 
