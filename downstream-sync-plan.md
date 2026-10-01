@@ -22,7 +22,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 
 | Milestone | Model | Status | Duration (min) | Notes |
 |---|---|---|---|---|
-| [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ⬜ Not Started | — | Sequential blocker for everything |
+| [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ⬜ Not Started | — | 11 decisions; defaults proposed |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ⬜ Not Started | — | Auth hole, logger, publish env, email check |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
@@ -96,10 +96,12 @@ Retired and excluded: `lymeauth`, `lymecrm-v1`.
 
 After `git fetch` on 2026-10-01. "Behind" work was done and pushed from another machine on 2026-09-23 through 2026-10-01.
 
+> **Superseded by M0 (2026-10-01 17:01).** The table below is the pre-M0 snapshot, kept for the record. Every repo is now level with origin except `sawgrass-v2` (deliberately diverged) and unpushed local commits. The rebases changed two SHAs: SimpleAuth4Net unlock `160a9db` → `ea622c8`, lymestarter attachments `4ea9c23` → `b8ec996`; the rest of this document uses the new ones. See the Progress Log.
+
 | Repo | Behind | Ahead | What is local-only | Action |
 |---|---|---|---|---|
-| `SimpleAuth4Net` | 1 | 1 | `160a9db` admin unlock (code) | **Diverged.** Rebase onto origin; do not push the unlock until M2's fix is in the same push |
-| `lymestarter` | 7 | 1 | `4ea9c23` LymeSend attachments (code) | **Diverged.** Rebase, then push in M3 |
+| `SimpleAuth4Net` | 1 | 1 | `ea622c8` admin unlock (code) | **Diverged.** Rebase onto origin; do not push the unlock until M2's fix is in the same push |
+| `lymestarter` | 7 | 1 | `b8ec996` LymeSend attachments (code) | **Diverged.** Rebase, then push in M3 |
 | `lymebooks` | 379 | 0 | — | Fast-forward. Local `accounting-remediation` (407 ahead) and `backup/pre-rewrite` (501 ahead) are pre-history-rewrite leftovers |
 | `lymetimer` | 1 | 1 | `b24b904` RESUME only | Diverged, trivial |
 | `lymesend` | 1 | 1 | `39d2151` doc only | Diverged, trivial |
@@ -124,7 +126,7 @@ L1 code is `WebApi/SimpleAuthNet/**`, `AuthController.cs`, `AppUserController.cs
 | **A** | Remove class-level `[AllowAnonymous]` from `AuthController`; mark public actions individually | lymestarter `8c201de` |
 | **B** | `DefaultAuthLogger` passes `eventType` as the `{Label}` argument | lymestarter `8c201de` |
 | **C** | 2026-07 security hardening (Argon2id, lockout, token integrity, enumeration) | SimpleAuth4Net `ebc5f51..2a9901d` |
-| **D** | Admin account unlock | SimpleAuth4Net `160a9db` (local only) |
+| **D** | Admin account unlock | SimpleAuth4Net `ea622c8` (local only) |
 | **E** | G19 — admin Create User stores the password | SimpleAuth4Net `4d61814` |
 | **F** | Email duplicate validation on the user form | `simple-auth-email-check-fix.md`; only implementation is in `atcc-app` |
 | **G** | Publish as Production (`<EnvironmentName>`, `web.config`, exclude `appsettings.Development.json`) | lymestarter `3751db1` |
@@ -177,7 +179,7 @@ L2 code is `WebApi/LymeStackCore/**`, `WebApi/DbUp`, and the `lymestack-core` / 
 | ID | Changeset | Reference |
 |---|---|---|
 | **J** | `.ls-*` design system (global SCSS + 55 `lymestack-admin` files + `docs/design-system.md`) | lymestarter `f1d88b5`; source is LymeBooks `develop` |
-| **K** | LymeSend transport sends `MailMessage` attachments | lymestarter `4ea9c23` (local only) |
+| **K** | LymeSend transport sends `MailMessage` attachments | lymestarter `b8ec996` (local only) |
 | **L** | AppConfig bootstrap resolves the deployed origin instead of `localhost:5218` | lymestarter `9ce88cd` |
 | **M** | DbUp console `--check` preview mode | lymestarter `3b34a0a` |
 | **N** | `ConfigSettingController` GETs no longer anonymous | LymeBooks, 2026-09-28 (pending upstream) |
@@ -231,7 +233,7 @@ Fixes that exist downstream and have not reached the layer that owns the code.
 | `lymesend`, `paymentz` | Stale `origin/develop` branches (19 and 74 commits behind `main`) |
 | `md-ccrs-dev` | 29 unpushed commits on `develop`; `origin/main` has 14 that `develop` lacks |
 | `lymebooks` | Local leftover branches from before the history rewrite |
-| `lymecrm` | 25 `worktree-agent-*` branches with unmerged commits — the same pattern that hid LymeBooks' lost unlock port |
+| `lymecrm` | 29 `worktree-agent-*` branches (M0 count): 24 are patch-identical to `develop`; 5 carry commits `develop` lacks (4 POS feature commits, 1 worker summary) — the same pattern that hid LymeBooks' lost unlock port |
 
 Which code is actually **deployed** in each environment is not determinable from the repos. M11 establishes it from LymeDeploy.
 
@@ -272,7 +274,7 @@ SimpleAuth-lineage Angular counts are inflated by UI-kit rewrites (Bootstrap, Pr
 
 - [ ] `lymestarter/downstream-inventory.md` has no rows for `lymestats` or `md-ccrs-dev/atcc-app`.
 - [ ] Its 2026-09-26 note says `qc-sod-ordering` and `sawgrass-v2` are unported for Argon2id. Both ports exist — on `develop`, and unpushed on this machine, respectively. The other machine never saw them.
-- [ ] `lymestarter/core-fix-log.md` has no entries for `8c201de` (A, B), `3751db1` (G), `9ce88cd` (L), `4ea9c23` (K) or `18a9108` (backslash TypeGen files), so none of them has ever had a tracked fan-out.
+- [ ] `lymestarter/core-fix-log.md` has no entries for `8c201de` (A, B), `3751db1` (G), `9ce88cd` (L), `b8ec996` (K) or `18a9108` (backslash TypeGen files), so none of them has ever had a tracked fan-out.
 - [ ] `lymestarter/security-port-plan.md` status header still reads "MED batch next".
 - [ ] The `port-core-fix` skill's member lists omit `lymestats` and `atcc-app`.
 - [ ] `> **Upstream:**` tag missing from `CLAUDE.md` in `lymecrm`, `qc-sod-ordering` (`develop`), `playmusiconline`, `md-ccrs-dev`. `ping` and `lymestats` have no root `CLAUDE.md` at all.
@@ -316,6 +318,7 @@ Organized by layer and urgency: reconcile → fix upstream → fan out security 
 - **Semantic merge, never blind patch.** Every `AuthController.cs` has diverged.
 - **Commit locally, plain human commit messages, no AI attribution. Do not push** unless the milestone says Mike has approved it.
 - **Never exercise a production system.** All verification runs against local or dev instances.
+- **On this Mac, run `dotnet` from the arm64 SDK:** `export DOTNET_ROOT=/usr/local/share/dotnet PATH="/usr/local/share/dotnet:$PATH"`. The brew `dotnet` in `/usr/local/bin` is x86_64 and fails at the TypeGen post-build step (found in M0).
 - Fan-outs use `/iadev-lyme:port-core-fix`; every fan-out gets a section in `~/git/lymestarter/core-fix-log.md`.
 - Per-repo quirks (DbUp layout, UI kit, gitignored `_api/`) live in `~/git/lymestarter/downstream-inventory.md`. Read it before porting.
 
@@ -325,14 +328,14 @@ Organized by layer and urgency: reconcile → fix upstream → fan out security 
 
 Bring this machine's clones level with origin so every later milestone works from one truth. *Workers must complete all items below.*
 
-- [ ] Fast-forward `lymebooks`, `lymedeploy`, `paymentz`, `open-mic-night`, `playmusiconline`.
-- [ ] Rebase the trivial divergences onto origin: `lymetimer` (`b24b904`), `lymesend` (`39d2151`).
-- [ ] Rebase `lymestarter` `4ea9c23` onto `origin/main`; rebuild and run `LymeStack.Tests`.
-- [ ] Rebase `SimpleAuth4Net` `160a9db` onto `origin/master`; `dotnet build WebApi/WebApi.sln`. **Do not push** — the unlock must not reach GitHub before item A is fixed.
-- [ ] Leave `sawgrass-v2` diverged; record its state for M5.
-- [ ] Delete the untracked literal-backslash directory in `paymentz/WebApi/WebApi/`.
-- [ ] List (do not delete) stale local branches: `lymebooks` `accounting-remediation` and `backup/pre-rewrite`; `lymecrm`'s 25 `worktree-agent-*`. For each `lymecrm` branch, report whether its commit is patch-identical to something on `develop` (`git cherry`).
-- [ ] Re-run the [appendix probe](#appendix--probe-markers) against local working trees and confirm it matches tables 1.3 and 1.4. Record any difference in the Progress Log.
+- [x] Fast-forward `lymebooks`, `lymedeploy`, `paymentz`, `open-mic-night`, `playmusiconline`.
+- [x] Rebase the trivial divergences onto origin: `lymetimer` (now `27d6499`), `lymesend` (now `f35587c`).
+- [x] Rebase `lymestarter` `4ea9c23` onto `origin/main` (now `b8ec996`); rebuild and run `LymeStack.Tests` — 110 passed.
+- [x] Rebase `SimpleAuth4Net` `160a9db` onto `origin/master` (now `ea622c8`); `dotnet build WebApi/WebApi.sln` — succeeded. **Do not push** — the unlock must not reach GitHub before item A is fixed.
+- [x] Leave `sawgrass-v2` diverged; record its state for M5 (see Progress Log).
+- [x] Delete the untracked literal-backslash directory in `paymentz/WebApi/WebApi/` (88 untracked TypeGen `.ts` files).
+- [x] List (do not delete) stale local branches: `lymebooks` `accounting-remediation` and `backup/pre-rewrite`; `lymecrm`'s `worktree-agent-*` (29, not 25). For each `lymecrm` branch, report whether its commit is patch-identical to something on `develop` (`git cherry`). Report is in the Progress Log.
+- [x] Re-run the [appendix probe](#appendix--probe-markers) against local working trees and confirm it matches tables 1.3 and 1.4. Matches.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -376,7 +379,7 @@ Make this repo the true L1 source again. *Workers must complete all items below.
 - [ ] Run the suite green: `cd WebApi && dotnet test`.
 - [ ] Start the API locally (`cd WebApi/WebApi && dotnet run`) and confirm with `curl -X POST` and no token that the three admin endpoints return 401, while `Login`, `ForgotPassword` and `RefreshToken` remain reachable.
 - [ ] `cd ng-app && npm run build` succeeds.
-- [ ] Hand to Mike for push approval: this is the first push of `160a9db`, and it must go together with A.
+- [ ] Hand to Mike for push approval: this is the first push of `ea622c8`, and it must go together with A.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -405,7 +408,7 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 - [ ] `cd WebApi && dotnet test` green (baseline before M3: 103+ tests).
 - [ ] `npx ng build` green.
 - [ ] Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
-- [ ] Mike approves pushing `lymestarter` (includes `4ea9c23`).
+- [ ] Mike approves pushing `lymestarter` (includes `b8ec996`).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -481,7 +484,7 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 - [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level.
 - [ ] `playmusiconline`: report what the 71 `develop`-only commits contain; do not merge to `main` without Mike.
 - [ ] `lymesend`, `paymentz`: propose deleting the stale `origin/develop` branches.
-- [ ] `lymecrm`: act on Mike's M1 decision for the 25 `worktree-agent-*` branches.
+- [ ] `lymecrm`: act on Mike's M1 decision for the 29 `worktree-agent-*` branches.
 - [ ] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`.
 - [ ] Produce a table: repo · working branch · deploy branch · commits apart.
 
@@ -652,6 +655,17 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 17:01** - M0 complete. Nothing pushed, no branches created or deleted, no conflicts, no dirty repos.
+
+- **Level with origin (0 behind):** `lymebooks` `14f49547` (was 395 behind, not 379), `lymedeploy` `124244c`, `paymentz` `17dd783`, `open-mic-night` `d6ec759`, `playmusiconline` `0e5a8df`.
+- **Rebased, unpushed:** `lymetimer` `27d6499` (ahead 1), `lymesend` `f35587c` (ahead 1), `lymestarter` `b8ec996` (was `4ea9c23`, ahead 1; 110 tests pass), `SimpleAuth4Net` `ea622c8` unlock (was `160a9db`) + `b037138` this document (ahead 2; build clean).
+- **`sawgrass-v2` (untouched, HEAD `3491a28`, behind 3 / ahead 2):** local-only `3491a28` (Argon2id), `b229593` (unlock); origin-only `3159146` (G19), `2ec26bd` (merge), `ebd2f83` (CLAUDE.md conventions). No textual conflict (`git merge-tree` clean). The conflict is semantic: origin's G19 writes inline HMAC in `AppUserController.cs` and `AppUserControllerTests.cs`, while local adds `SimpleAuthPasswordHasher`.
+- **`paymentz` stray directory:** 88 untracked TypeGen-generated `.ts` files; deleted.
+- **Stale branches, `lymebooks`:** `accounting-remediation` has nothing `develop` lacks (still tracks origin); `backup/pre-rewrite` has one merge commit `d51c299a`.
+- **Stale branches, `lymecrm`:** 29 `worktree-agent-*`, not 25. 24 are fully patch-identical to `develop`. 5 are not: `a27f245` "Add sale detail / receipt read API (J2-2)"; `a3760b3` "P9: customer import with synthetic source key and scored duplicate review"; `a4054db` "POS P12: tender + payment capture"; `ab0bf01` "Add POS reporting: deposit, sales, inventory, purchasing, orders, returns (P29)"; `a35471c` "P7: add worker summary" (its other commit is identical).
+- **Probe at local HEAD, all 15 repos:** matches tables 1.3 and 1.4. Only expected deviations: `SimpleAuth4Net` D reads ✅ locally; `lymecrm`, `ping`, `qc-sod-ordering` show their known branch splits.
+- **Tooling:** brew's x86_64 `dotnet` fails at the TypeGen post-build step on this arm64 Mac; use the arm64 SDK (added to the ground rules).
 
 **2026-10-01 14:15** - Inventory taken. All 15 repos fetched and probed at their origin tips; trackers in `~/git/lymestarter` read at `origin/main` (the local clone was 7 commits behind). Item A verified by reading `AuthController.cs` at lines 27–30 and the four `[Authorize]` actions in this repo; not exercised against any running system. Items N and O taken from LymeBooks' `lymestack-todos.md` and a marker count, not yet from a diff. Production deployment state and production DB migration state are **unknown** from here and are M11's first job. Nothing was changed in any repo other than adding this file.
 
