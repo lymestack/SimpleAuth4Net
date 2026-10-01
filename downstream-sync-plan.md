@@ -28,8 +28,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | 🔄 In Progress | — | Template is the L2 diff base. Dispatched 2026-10-01 17:56 in a detached worktree (main tree is in use by the lymetools plan) |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
-| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | — | L1 half dispatched 2026-10-01 17:56: 6 repos on Sonnet, `pmo-app` on Opus. L2 half waits on T2 |
-| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ⬜ Not Started | — | sawgrass-v2, qc-sod-ordering (pmo-app deferred per D1; atcc-app excluded per D2) |
+| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half waits on T2 |
+| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | 🔄 In Progress | — | Dispatched 2026-10-01 18:04: sawgrass-v2 (Opus), qc-sod-ordering (Sonnet). pmo-app deferred per D1; atcc-app excluded per D2 |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | ⬜ Not Started | — | Email check, publish env, TypeGen, G19 gaps |
@@ -423,13 +423,13 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 
 **L1 half — items A + B**, reference SimpleAuth4Net's M2 commit:
 
-- [ ] `lymetimer` (production)
-- [ ] `lymesend` (production)
-- [ ] `paymentz` (production)
-- [ ] `sawgrass-v2` — apply on top of the local unpushed commits; do not resolve the origin divergence here (M5)
-- [ ] `open-mic-night`
-- [ ] `qc-sod-ordering` — on `develop`
-- [ ] `playmusiconline/pmo-app` — in scope per D1
+- [x] `lymetimer` (production) — `4df9db3`, `e49c9c2`; 415 tests pass
+- [x] `lymesend` (production) — `35a0156`, `283f9f5`; 103 tests pass
+- [x] `paymentz` (production) — `147f33d`, `8fd4f43`; 260 tests pass
+- [x] `sawgrass-v2` — apply on top of the local unpushed commits; do not resolve the origin divergence here (M5) — `37194ed`, `512462f`; 435 pass, the same 11 pre-existing failures as before
+- [x] `open-mic-night` — `a2a21a1`, `cbd6f5d`; 76 of 77 pass, 1 pre-existing failure
+- [x] `qc-sod-ordering` — on `develop` — `7f16632`, `26ceaf8`; 107 tests pass
+- [x] `playmusiconline/pmo-app` — in scope per D1 — `f47ecc6`, `ea37760`; 139 pass, 3 skipped
 - [x] ~~`md-ccrs-dev/atcc-app`~~ — excluded per D2; do not open the repo
 
 For each: enumerate that repo's own actions before deciding which are public — several have app-specific endpoints the reference knows nothing about. Add the reflection test where a test project exists.
@@ -577,6 +577,11 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - M4 `lymesend`: `SendController` is class-level `[AllowAnonymous]` by design; `ApiKeyAuthMiddleware` is its only gate. Also, `CLAUDE.md` there carries a plaintext DB credential.
+  - M4 `qc-sod-ordering`: `MockQcApiController` is class-level `[AllowAnonymous]` with its own service JWT; confirm it is not reachable in production.
+  - M4 `pmo-app`: `RoomHub` has `[Authorize]` commented out ("temporarily removed to debug SignalR authentication") and checks auth per method.
+  - M4, several repos: each repo's `CLAUDE.md` still tells readers to put `[AllowAnonymous]` on the controller, or says the 2026-07 hardening is outstanding. Docs touch-up in M12.
+  - M8 drift audit: `/Users/michaeljosephwork/git/SimpleAuth4Net/core-drift-audit.md` proposes 14 upstream items (U1 to U14) and two template design questions.
   - M2: `SimpleAuth4Net` production `npm run build` fails its bundle budget (1.42 MB against a 1.00 MB error limit in `angular.json`); it fails the same way before M2. Raise the budget or trim the bundle?
   - M2: `SimpleAuth4Net` has no global error middleware, so the old `try/catch (DbUpdateException)` in `AppUserController.Post` stays. Add middleware and drop the catch, or keep it?
   - M2: `Auth/UserExists` is still anonymous (the public register form uses it), so usernames can be probed, rate limited only. Same in the template. Accept, or close it?
@@ -689,6 +694,18 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:04** - M4 L1 half complete in all 7 repos (17:55 to 18:03); M8 drift audit complete; M5 dispatched.
+
+- **Verified by the orchestrator in every repo:** no class-level `[AllowAnonymous]` on `AuthController`, both commits on the working branch, logger fix present, nothing pushed, clean commit messages.
+- **Commits (A, B):** `lymetimer` `4df9db3` `e49c9c2` · `lymesend` `35a0156` `283f9f5` · `paymentz` `147f33d` `8fd4f43` · `sawgrass-v2` `37194ed` `512462f` · `open-mic-night` `a2a21a1` `cbd6f5d` · `qc-sod-ordering` (`develop`) `7f16632` `26ceaf8` · `pmo-app` (`develop`) `f47ecc6` `ea37760`.
+- Every repo has the global authenticated-user filter (`AddSimpleAuthDefaultAuthorization`), so an unmarked action requires sign-in. Every repo got the reflection and admin-role tests. No new test failures anywhere; pre-existing ones: `sawgrass-v2` 11, `open-mic-night` 1.
+- `pmo-app` has one action the reference lacks (`RefreshTokenPost`, public by necessity) and no `UnlockUser`. No other repo has app-specific `AuthController` actions.
+- No client calls a newly protected action before login in any repo.
+- Other class-level `[AllowAnonymous]` controllers exist (webhooks, public payment pages, API-key send) but none sits above an `[Authorize]` action. Three items queued for T5.
+- `paymentz` and `open-mic-night` trees show the backslash-named TypeGen output again after building (item H, M7).
+- **M8 drift audit** (`core-drift-audit.md` in this repo, uncommitted until Mike has seen it): 69 files, no reverts; 23 upstream verdicts grouped into 14 items (U1 to U5 are L1). Headlines: the template's error interceptor logs the user out on any 401 (`ping` and `lymetimer` fixed it locally); `AuthService.log()`/`error()` recurse infinitely in the template and here; LymeSend returns 200 on a failed send and only `ping` checks the body; a broken spec import stops Karma in the template.
+- **M5** dispatched: `sawgrass-v2` (Opus) and `qc-sod-ordering` (Sonnet).
 
 **2026-10-01 17:57** - T1 complete (17:50 to 17:54; `7da6c02`, `bd4dd98`; orchestrator re-ran `dotnet test`: 28 passed). Wave 2 dispatched.
 
