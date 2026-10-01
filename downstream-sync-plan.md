@@ -289,7 +289,7 @@ Resolved in [M1](#m1--decisions-gate). The **default** is what the plan assumes 
 
 | # | Decision | Default |
 |---|---|---|
-| D1 | `pmo-app`: port A + C now, or keep waiting for the rebuild? | Port A now (small); keep C deferred |
+| D1 | `pmo-app`: port A + C now, or keep waiting for the rebuild? | Port A now (small); keep C deferred. **Decided 2026-10-01: default** |
 | D2 | `atcc-app` (client repo, ng18/net8, 725-line AuthController drift): bring into the fleet? | Register it in the inventory; port A only; assess C separately with the client's schedule |
 | D3 | Item I (older L1 features) in SimpleAuth-lineage apps: port, or accept as permanent drift? | Port `ISimpleAuthEmailSender` + `IPostRegistrationHandler` (small, shrinks future merges); skip SSO modes |
 | D4 | `sawgrass-v2`: its Argon2id port was held back on 2026-08-26. Release it? | Yes, in M5. **Decided 2026-10-01: yes.** The hold was only that Mike did not want to touch `sawgrass-v2` at the time; no technical blocker |
