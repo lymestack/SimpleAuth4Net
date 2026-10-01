@@ -33,7 +33,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymesend` and `qc-sod-ordering` (Opus, F UI), `paymentz`, `open-mic-night`, `sawgrass-v2` (Sonnet). LymeStarter-lineage repos wait on M9; `pmo-app` held for Mike (see T5) |
-| [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | — | Analysis started early (2026-10-01 17:53): intake classification and core drift audit, read-only. Porting still waits on T2 and Mike's review |
+| [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymetimer`, `lymedeploy`, `ping`, `lymestats`. `lymebooks` follows the intake triage |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
@@ -514,12 +514,12 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 *Workers must complete all items below.*
 
-- [ ] Move the 52 design-pass entries in LymeBooks `lymestack-todos.md` from Pending to Completed (ported 2026-09-25).
-- [ ] Classify each remaining Pending entry: **port** (generic framework fix), **app-specific** (stays in LymeBooks — everything under `lymestack-invoicing/` and `LymeStackInvoicing/`, which the template does not have), **already upstream**, or **needs Mike**. Write the classification to `~/git/lymestarter/lymebooks-intake.md`.
-- [ ] Pause for Mike's review of `~/git/lymestarter/lymebooks-intake.md` before porting anything.
+- [x] Move the 52 design-pass entries in LymeBooks `lymestack-todos.md` from Pending to Completed (ported 2026-09-25).
+- [x] Classify each remaining Pending entry: **port** (generic framework fix), **app-specific** (stays in LymeBooks — everything under `lymestack-invoicing/` and `LymeStackInvoicing/`, which the template does not have), **already upstream**, or **needs Mike**. Write the classification to `~/git/lymestarter/lymebooks-intake.md`.
+- [ ] Pause for Mike's review of `~/git/lymestarter/lymebooks-intake.md` before porting anything. **Waiting on Mike** (non-blocking; the file is written, uncommitted, with 8 port groups and 6 questions at the top).
 - [ ] Port the approved entries to `lymestarter`, grouped into coherent commits (e.g. tenant-context incident fixes; shell loading-pill self-heal; modal-host dialog; dark-mode `color-scheme`; quick-launch Recents; ConfigSetting cache). Shell and shared-component work must hold to `docs/design-system.md` — tokens only, no fixed colours, light/dark parity.
 - [ ] Entries that touch `SimpleAuthNet/`, `AuthController.cs`, or `account/` are L1: port them to `SimpleAuth4Net` first, then the template.
-- [ ] Audit the untracked core drift in [1.7](#17-raw-drift-against-each-template) for `lymetimer` (LymeStackCore 3 files, shared 4, shell 4), `ping` (`account/` 26 files, lymestack-core 2 + 2 new) and `lymecrm` / `lymedeploy` (shell): for each differing file, upstream it, revert it, or record it as an intentional app divergence.
+- [ ] Audit the untracked core drift in [1.7](#17-raw-drift-against-each-template) for `lymetimer` (LymeStackCore 3 files, shared 4, shell 4), `ping` (`account/` 26 files, lymestack-core 2 + 2 new) and `lymecrm` / `lymedeploy` (shell): for each differing file, upstream it, revert it, or record it as an intentional app divergence. *(Verdicts written to `core-drift-audit.md` in this repo on 2026-10-01: 69 files, no reverts, 14 upstream items. Acting on them waits on Mike's review.)*
 - [ ] `dotnet test` and `ng build` green in `lymestarter`; commit locally; add `core-fix-log.md` sections for each ported group.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -696,6 +696,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:12** - M8 intake classification complete (17:53 to 18:00); M10 done in three repos.
+
+- **Intake (`~/git/lymestarter/lymebooks-intake.md`, uncommitted; LymeBooks `34175437` moves the 52 design-pass entries to Completed):** of 189 pending entries, 20 to port, 2 in progress (N, O), 5 need Mike, 74 already upstream, 88 app-specific. Eight port groups: G1 SimpleAuthNet DI fixes (L1), G2 register clears the previous session (L1), G3 shell session and loading, G4 RelyingApp client and host, G5 modal-host dialog, G6 dark mode and styling, G7 quick-launch Recents, G8 nav visibility hook. Six questions for Mike with recommended answers.
+- **Corrections to this plan's assumptions:** the template has no multi-tenancy, so the "tenant-context incident fixes" group mostly does not apply; the "ConfigSetting cache" group is already upstream; the template already has the invite-token overload and `RegisterModel.InviteToken` (only SimpleAuth4Net lacks them). About 10 generic fixes filed as Completed in LymeBooks never reached the template (question 6).
+- **For M3, sent to the worker mid-flight:** the template's anonymous `AppConfigController` returns every `ConfigSetting`; LymeBooks `a9452db9` filters secret-looking names. Without it, N alone leaves the leak open.
+- **M10:** `lymestats` K `1aee758` (107 tests pass); `lymetimer` K `55a5b9d`, L `b5003db` (419 pass; deployed hostnames resolve exactly as before, the manual `useIIS` toggle is replaced by the template's `document.baseURI` logic; `ng build` not run, only `tsc`); `ping` K `38b0858` (LymeStack.Tests 110, Ping.Tests 354; its `success`-flag check kept). `lymedeploy` and `lymebooks` still running.
+- **Noted:** building `ping` rewrites three committed `_api` files (its committed TypeGen output is stale); the orchestrator restored them. K assumes the LymeSend API accepts `attachments[]`; `lymesend`'s `SendEmailRequest` has the field.
 
 **2026-10-01 18:08** - M5 complete; M7 and M10 started early on idle repos.
 
