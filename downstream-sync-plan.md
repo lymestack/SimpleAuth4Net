@@ -31,11 +31,11 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half waits on T2 |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
-| [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
+| [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymesend` and `qc-sod-ordering` (Opus, F UI), `paymentz`, `open-mic-night`, `sawgrass-v2` (Sonnet). LymeStarter-lineage repos wait on M9; `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
-| [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymetimer`, `lymedeploy`, `ping`, `lymestats`. `lymebooks` follows the intake triage |
+| [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
@@ -482,9 +482,9 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 *Workers must complete all items below. Branch deletion and any force-push need Mike's explicit confirmation per branch.*
 
 - [x] `lymecrm`: merge `origin/main`'s G19 into `develop`; confirm `main` and `develop` then differ only by intended unreleased work. Done 2026-10-01: both at `4dd7811`, pushed.
-- [ ] `ping`: same.
+- [ ] `ping`: same. (In progress 2026-10-01: merging `origin/main`'s G19 into `develop`.)
 - [ ] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both.
-- [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level.
+- [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level. (In progress 2026-10-01: G19 port onto `develop`. Bringing `main` level is done last, after the remaining work has landed on `develop`.)
 - [x] `playmusiconline`: Mike's call 2026-10-01 — leave `main` alone. No merge, no report needed. (The D1 authorization fix on `develop` in M4 still stands.)
 - [x] `lymesend`, `paymentz`: stale `origin/develop` branches deleted 2026-10-01 on Mike's go-ahead (tips `82c3f43` and `b6fedd5`; both were strict ancestors of `main`, and TeamCity builds from `main`). `lymesend`'s local `develop` deleted too.
 - [x] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. All 29 deleted 2026-10-01 (see Progress Log).
@@ -545,12 +545,12 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 *Workers must complete all items below.*
 
-- [ ] **K** — LymeSend attachments to `lymebooks`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`, with the template's `LymeSendEmailTransportTests`.
-- [ ] **L** — AppConfig bootstrap to `lymebooks` and `lymetimer`. Both are in production with a working bootstrap, so first read how each resolves its API URL today and keep any explicit hostname cases.
-- [ ] **M** — DbUp `--check` to `lymedeploy`'s own `WebApi/DbUp`.
-- [ ] **P** — transport consolidation in `lymebooks` (remove `UseSmtpPickup`; settings under `LymeStackCore:Email`). Check the deployed config substitution before changing key names.
-- [ ] Fan out whatever M8 ported to the template, to the LymeStarter-lineage apps that lack it.
-- [ ] Each worker builds, tests and commits locally.
+- [x] **K** — LymeSend attachments to `lymebooks`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`, with the template's `LymeSendEmailTransportTests`.
+- [x] **L** — AppConfig bootstrap to `lymebooks` and `lymetimer`. Both are in production with a working bootstrap, so first read how each resolves its API URL today and keep any explicit hostname cases.
+- [x] **M** — DbUp `--check` to `lymedeploy`'s own `WebApi/DbUp`.
+- [x] **P** — transport consolidation in `lymebooks` (remove `UseSmtpPickup`; settings under `LymeStackCore:Email`). Check the deployed config substitution before changing key names.
+- [ ] Fan out whatever M8 ported to the template, to the LymeStarter-lineage apps that lack it. **Open:** nothing is ported from M8 until Mike has reviewed the intake.
+- [x] Each worker builds, tests and commits locally.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,11 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - **M10 `lymebooks`, item P: must be handled before that code is deployed (M11).** The email settings moved from `EmailSettings:*` to `LymeStackCore:Email:*`. LymeDeploy's variables must be renamed first (`Transport`, `LymeSend:ApiUrl`, `LymeSend:SubjectPrefix`, `LymeSend:ApiKey`), or the app silently falls back to SMTP pickup and delivers nothing. The worker could only read the onboarding doc, not the live variable table.
+  - M7 `sawgrass-v2`: the Angular build fails before and after today's work, because TypeGen's post-build step fails for the WebApi project (`WebApi.TypeScriptExports` not found) and `_api/` is stale; so the new form markup was reviewed, not compiled. Also a stray tracked `WebApi/WebApi/ng-app/` directory.
+  - M7 `qc-sod-ordering`: it deploys through TeamCity and Octopus, not LymeDeploy; whether Octopus overrides `ASPNETCORE_ENVIRONMENT` could not be checked. Its `web.config` now says Production.
+  - M7, item I (`sawgrass-v2`, `qc-sod-ordering`, `open-mic-night`): `Register` now writes every registration to the audit log, as the reference does; `paymentz` kept first-user-only.
+  - M10 `lymebooks`: `ng build --configuration development` fails on stale gitignored `_api` models, before and after; `LymeStack.Tests` has 6 to 13 SQL-backed failures that vary run to run on the unmodified baseline.
   - **Reviews waiting on Mike (nothing from them is ported until answered):** `/Users/michaeljosephwork/git/lymestarter/lymebooks-intake.md` (8 port groups, 6 questions) and `/Users/michaeljosephwork/git/SimpleAuth4Net/core-drift-audit.md` (14 upstream items, 2 questions).
   - M3: the always-registered `IAuthLogger` fix is now in the template (`18304c0`) but not in `SimpleAuth4Net`, which still cannot build `AuthController` with audit logging off. It is intake group G1 (L1); port it upstream once the intake is approved.
   - M3: the template has global error middleware, yet `AppUserController.Post` and `AuthController.Register` keep a `try/catch (DbUpdateException)` that maps unique-index races to `EMAIL_EXISTS` / `USERNAME_EXISTS`. Remove (race becomes a 500) or keep?
@@ -705,6 +710,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:16** - M10 items K, L, M, P complete; M7 done in the five SimpleAuth-lineage repos; M6 part a dispatched.
+
+- **M10 `lymebooks`:** K `95ad666d`, L `4cd746bc` (deployed hostnames resolve as before), P `21ab84fa` (binder reads `LymeStackCore:Email`; `UseSmtpPickup` removed from core). `WebApi.Tests` 825 pass. **P needs LymeDeploy variables renamed before deploy** (T5 list, M11).
+- **M7 `sawgrass-v2`:** F `60461d8`, G `d824692`, H `3e8ee33`, I `ea6d59f`, project-instructions corrections `1cba91e`. 447 pass, the same 11 pre-existing failures. Angular build fails before and after (TypeGen broken there).
+- **M7 `qc-sod-ordering` (`develop`):** upstream tag `9cbe315`, F `6f50903` (PrimeNG idiom), G `d4382c7`, I `c2e401d`. `WebApi.Tests` 118 pass; `ng build` green.
+- The orchestrator reworded two unpushed commit subjects that named the instructions file (`sawgrass-v2` `4412078` → `1cba91e`; `qc-sod-ordering` `96863fb` → `9cbe315`, which also changed the three SHAs after it: F `51bb1b3` → `6f50903`, G `3aeec41` → `d4382c7`, I `fb115db` → `c2e401d`). Content unchanged.
+- **Dispatched:** M7 item F in `lymebooks` (Opus; tenancy-aware), M6 part a in `ping` and `lymestats` (G19 onto `develop`). M7 for the other LymeStarter-lineage repos rides with M9, because the template's user form they adopt already contains F. T3 prompt is ready and goes out after the L2 half of M4.
 
 **2026-10-01 18:10** - M3 complete (17:55 to 18:03) and merged into `lymestarter` `main`; T2 dispatched; more M7 and M10 results.
 
