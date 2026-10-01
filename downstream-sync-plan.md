@@ -725,6 +725,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
 
+**2026-10-01 19:40** - T4 gap-fill done in six of seven repos; T5 checklist drafted.
+
+- **`lymecrm`:** logger `d4b26e0` with test `aeb7c20`, cookies `f6764eb`. LymeStack.Tests 2833, NasRemoteApi.Tests 128.
+- **`lymestats` (18:47 to 19:10):** logger `ac05cb1`, `Register` handler `dc76393`, cookies `e55d7b6`. LymeStack.Tests 149. Local `main` moved up to `develop` again.
+- Both workers found that the older mode tests in these repos set `AuthSettings:Mode` too late to take effect (they exercise Standalone), and that RelyingApp mode fails at startup because `UseRateLimiter` runs without a registered limiter; the template has the same shape (intake group G4).
+- `lymedeploy` gap-fill still running.
+- **T5 checklist** written to `t5-checklist.md` in this repo (uncommitted): 11 decisions with recommendations, the two reviews, the hands-on checks with start commands, the push table for 14 repos, and the items to carry into M11.
+
 **2026-10-01 19:25** - M12 gap-fill complete (about 10 minutes); T4 gap-fill done in four of seven repos.
 
 - **Trackers, corrected and verified by the orchestrator:** `lymestarter` `9f9e896` (inventory: the 2026-07 hardening rows restored with their real commits and pushed state; `ping` and `lymestats` rows added as scaffolded from the already-hardened template, migrations "not verified"), `6b62ae1` (`core-fix-log.md`: A/B, G, K, L, N/O, F filled; new sections H, I, M, P, J, C/D/E and today's template commits), `0a64478` (`security-port-plan.md` header). `claude-shared-settings` `8a227d2` (product note reworded; the skill's new fetch step had ahead and behind swapped, fixed; `lymestats` added to its branch list).
