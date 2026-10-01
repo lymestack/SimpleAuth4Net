@@ -39,7 +39,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | — | Build/tests, drift re-measure, and the 401 checks carried over from T3. Dispatched 2026-10-01 18:52. Visual sign-off is at T5 |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
-| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | — | The parts that need no push state dispatched 2026-10-01 18:58 (inventory, ledger, skill lists, product notes, stale project-instructions lines). Final push state, D6 to D9 backlog items and closing this document wait for Mike |
+| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 (first pass) | First pass (Haiku) finished with errors; a corrective gap-fill on Sonnet was dispatched 2026-10-01 19:05. Final push state, D6 to D9 backlog items and closing this document wait for Mike |
 
 Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual minutes in **Duration** when a milestone closes.
 
@@ -724,6 +724,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 19:05** - M12 first pass (Haiku, 18:39 to 18:54) came back partial and partly wrong; gap-fill dispatched on Sonnet.
+
+- **Done correctly:** `lymestats` and the `atcc-app` exclusion in the `port-core-fix` skill (`claude-shared-settings` `de26a31`); the `[AllowAnonymous]` wording in `paymentz` and `qc-sod-ordering`; the inventory's "How to stay in sync" note and per-repo quirks (`lymestarter` `c96ecd4`).
+- **Wrong:** it treated the 2026-07 hardening port and today's work as one thing. In `downstream-inventory.md` it overwrote the hardening tracker's real commit SHAs with milestone labels and rewrote the status counts; in four repos' project instructions and in `products/lymestack.md` it wrote that the hardening port was "ported locally as of 2026-10-01 (unpushed)", which is false where that port was pushed in August.
+- **Incomplete:** `core-fix-log.md` was edited but never committed, with errors (already-pushed rows flipped to unpushed; `sawgrass-v2`'s pre-rebase SHAs), and the H, I, M, P, J and C/D/E sections were not added.
+- **Gap-fill** (Sonnet, not the plan's Haiku, because the task needs each SHA and push state checked against the repos): repair the inventory table, redo the ledger from the orchestrator's consolidated data, correct the five wrong statements. Model change is the orchestrator's call.
+- 41 finished worker agents stopped at Mike's request. T4 is still running.
 
 **2026-10-01 18:52** - M9 complete in all five repos; T4 dispatched.
 
