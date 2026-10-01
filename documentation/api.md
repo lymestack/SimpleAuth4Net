@@ -2,7 +2,7 @@
 
 >NOTE: This documentation is evolving. We eventually hope to have this wired up using automated doc generation using something like Swagger or DocFx, where API parameters and POST input models are more detailed. This page is just intended to describe the endpoints. For now, you'll need to open up the project in Visual Studio to see more details.
 
-The API is built using ASP.NET 9 WebApi technology and resides in the `WebApi/WebApi/Controllers` directory. It offers the following endpoints:
+The API is built using ASP.NET Core 8 WebApi technology and resides in the `WebApi/WebApi/Controllers` directory. It offers the following endpoints:
 
 ## Configuration Endpoint
 
@@ -53,7 +53,9 @@ Here's a breakdown on the meaning of the information in this response can be fou
 
 ## Auth Endpoints
 
- The `AuthController` contains a series of anonymously accessible API endpoints that are used for authentication, registration and password resets.
+The `AuthController` holds the endpoints used for authentication, registration and password resets. Most of them are anonymous, but there is no controller-wide `[AllowAnonymous]`: each public endpoint is marked `[AllowAnonymous]` individually, and everything else requires a signed-in user (the API applies `[Authorize]` to every controller by default). Endpoints marked **[Admin Only]** require the `Admin` role, and **[Signed In]** requires any authenticated user.
+
+> A controller-level `[AllowAnonymous]` overrides every `[Authorize]` on its actions, which is how the admin endpoints below were once callable without a token. If you add an endpoint to `AuthController`, give it exactly one of `[AllowAnonymous]` or `[Authorize...]`.
 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
@@ -62,21 +64,23 @@ Here's a breakdown on the meaning of the information in this response can be fou
 | LoginWithFacebook | POST | `/Auth/LoginWithFacebook` | This endpoint accepts credentials obtained from Facebook when using the "Sign in with Facebook" button on the login page of the client application. This endpoint verifies the credentials submitted with Facebook to make sure they are authentic and if they are An `Ok` 200 HTTP response containing expiration dates for the access and refresh tokens will be returned. Invalid credentials will return a `BadRequest` 400 HTTP error response. Users with inactive accounts or that have not been verified will receive an `Unauthorized` 401 error response. If Facebook SSO is disabled in the [App Settings](app-settings.md) file, a `NotFound` 404 response will be returned. |
 | LoginWithGoogle | POST | `/Auth/LoginWithGoogle` | This endpoint accepts credentials obtained from Google when using the "Sign in with Google" button on the login page of the client application. This endpoint verifies the credentials submitted with Google to make sure they are authentic and if they are An `Ok` 200 HTTP response containing expiration dates for the access and refresh tokens will be returned. Invalid credentials will return a `BadRequest` 400 HTTP error response. Users with inactive accounts or that have not been verified will receive an `Unauthorized` 401 error response. If Google SSO is disabled in the [App Settings](app-settings.md) file, a `NotFound` 404 response will be returned. |
 | LoginWithMicrosoft | POST | `/Auth/LoginWithMicrosoft` | This endpoint accepts credentials obtained from Microsoft when using the "Sign in with Microsoft" button on the login page of the client application. This endpoint verifies the credentials submitted with Microsoft to make sure they are authentic and if they are An `Ok` 200 HTTP response containing expiration dates for the access and refresh tokens will be returned. Invalid credentials will return a `BadRequest` 400 HTTP error response. Users with inactive accounts or that have not been verified will receive an `Unauthorized` 401 error response. If Microsoft SSO is disabled in the [App Settings](app-settings.md) file, a `NotFound` 404 response will be returned. |
-| Logout | GET | `/Auth/Logout` | Logs the user out by setting the auth cookie values to empty string values. |
+| Logout | DELETE | `/Auth/Logout` | Logs the user out by setting the auth cookie values to empty string values. |
 | ForgotPassword | POST | `/Auth/ForgotPassword` | This endpoint is used to initiate the password verification process by sending the user a code to be used to reset their password. In the local development environment, the code can be seen in the response body so that email is not needed for testing. Emails are also saved to the `C:\SmtpPickup` (configurable via the [App Settings](app-settings.md)) directory in the local environment as well. In development, the verification code will be visible in the API response. |
 | ResetPassword | POST | `/Auth/ResetPassword` | This endpoint accepts the password reset token that was emailed to the user from the ForgotPassword endpoint, or can be used by Admin users to reset any user's password without a token. Admin users bypass token validation. If the password reset has expired or already been redeemed a `BadRequest` 400 HTTP error response will be returned. If local accounts are disabled in the [App Settings](app-settings.md) file, a `NotFound` 404 response will be returned. When a password is reset, any locked account will be automatically unlocked. |
 | UserVerified | GET | `/Auth/UserVerified?username=email@domain.com` | Returns a true or false value as to whether a user has been verified. |
 | UserExists | GET | `/Auth/UserExists?username=email@domain.com` | Returns a true or false value as to whether a user username is available when registering. |
+| EmailExists | GET | `/Auth/EmailExists?email=email@domain.com&userId=123` | **[Admin Only]** Returns `{ "exists": true }` when another user already has the email address (compared case-insensitively). Pass `userId` when editing a user so their own address is not reported as taken. Used by the admin user form; it is not anonymous because an open lookup would reveal which email addresses have accounts. |
 | RefreshToken | GET | `/Auth/RefreshToken?deviceId=12345` | Refreshes the JWT Access and Refresh token cookie values |
 | CheckPasswordComplexity | GET | `/Auth/CheckPasswordComplexity?password=MySecretP@$$word` | Checks a password to verify that it meets complexity requirements dicated by rules set in the [Auth Settings](./app-settings.md#authsettings-section) section of the API's App Settings file. |
 | VerifyAccount | POST | `/Auth/VerifyAccount` | The endpoint to use when verifying the account email address. |
 | VerifyMfa | POST | `/Auth/VerifyMfa` | The endpoint to use when entering a verification code for multi-factor authentication using email or SMS. |
 | SendNewCode | POST | `/Auth/SendNewCode` | The endpoint to use to send a new MFA code in case initial delivery failed when using email or SMS multi-factor authentication.  In development, the verification code will be visible in the API response. |
-| SetupAuthenticator | POST | `/Auth/SetupAuthenticator?username=user@domain.com` | This endpoint generates a OTP secret for a user and returns a Base-64 encoded QR code graphic to use when registering it with a OTP Authenticator app. Note: A user must be authorized as the user being passed in as a querystring parameter of must be authorized as a user in the "Admin" role to use this endpoint. |
-| VerifyAuthenticatorCode | POST | `/Auth/VerifyMfa` | The endpoint to use when entering a verification code for multi-factor authentication using OTP. |
+| SetupAuthenticator | POST | `/Auth/SetupAuthenticator?username=user@domain.com` | **[Signed In]** This endpoint generates a OTP secret for a user and returns a Base-64 encoded QR code graphic to use when registering it with a OTP Authenticator app. Note: A user must be authorized as the user being passed in as a querystring parameter of must be authorized as a user in the "Admin" role to use this endpoint. |
+| VerifyAuthenticatorCode | POST | `/Auth/VerifyAuthenticatorCode` | The endpoint to use when entering a verification code for multi-factor authentication using OTP. Only accepted after a successful password login has started a pending MFA login for the account. |
 | WhoAmI | GET | `/Auth/WhoAmI` | This endpoint returns the name of the authenticated user. |
-| RevokeAllSessionsForUser | DELETE | `/Auth/RevokeAllSessionsForUser?username=user@domain.com` | **[Admin Only]** Revokes all refresh tokens associated with the specified user, effectively logging them out from all devices. |
-| RevokeAllSessions | DELETE | `/Auth/RevokeAllSessions` | **[Admin Only]** Revokes all refresh tokens for all users in the system, logging everyone out of all active sessions. |
+| RevokeAllSessionsForUser | POST | `/Auth/RevokeAllSessionsForUser?username=user@domain.com` | **[Admin Only]** Revokes all refresh tokens associated with the specified user, effectively logging them out from all devices. |
+| UnlockUser | POST | `/Auth/UnlockUser?username=user@domain.com` | **[Admin Only]** Unlocks a locked account: clears the lock flag, the lockout end time and the failed login and verification counters. Returns `NotFound` 404 if the user does not exist. |
+| RevokeAllSessions | POST | `/Auth/RevokeAllSessions` | **[Admin Only]** Revokes all refresh tokens for all users in the system, logging everyone out of all active sessions. |
 
 ## Administrative Endpoints
 
@@ -87,7 +91,7 @@ Administrative endpoints are all locked down to be accessible by users with the 
 | Route | HTTP Verb | Example | Description |
 | ----- | --------- | ------- | ----------- |
 | {id} | GET | `/AppUser/123` | Gets a single record from the database |
-| {id} | POST | `/AppUser/123` | Saves a single record from the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppUser object as the body of the HTTP request. When creating new users, the system enforces unique username and email constraints. |
+| (none) | POST | `/AppUser` | Saves a single record to the database. Note that this endpoint will both Create (Insert) and Update (Modify) a record depending on the value of the incoming entity's `Id` key field value. Submit the AppUser object as the body of the HTTP request. When creating a user, a non-empty `newPassword` is checked against the password complexity rules (`INVALID_PASSWORD` on failure), stored as the user's password, and the account is marked verified. Existing users' passwords are never changed here; use `Auth/ResetPassword`. Usernames and email addresses must be unique: a duplicate returns `BadRequest` 400 with `error` set to `USERNAME_EXISTS` or `EMAIL_EXISTS`. The email check is case-insensitive, applies to edits as well as creates, and ignores the user's own current address. |
 | {id} | DELETE | `/AppUser/123` | Deletes a record from the database. |
 | Search | POST | `/AppUser/Search?pageSize=10&pageIndex=0` | Search the AppUser database table. Submit the AppUserSearchOptions object to indicate what fields are to be searched. The `pageSize` and `pageIndex` query parameters handle pagination |
 | Me | GET | `/AppUser/Me` | Anonymous endpoint - Allows the current user to get their own AppUser record. If the user is not authenticated, this endpoint will return a `null` value. |

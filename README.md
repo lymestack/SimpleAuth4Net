@@ -189,7 +189,7 @@ SimpleAuth is built to be simple and functional while supporting core identity m
 | --- | --- |
 | Quick Integration | Integrate into an existing WebAPI project with minimal effort. The API serves authenticated users with JWT access tokens for use when using authorization credentials. |
 | Core Workflows Included | Out-of-the-box support for login, logout, user registration and password recovery. |
-| User and Role Management | Manage users and roles without the need to build extensive UI components from scratch. |
+| User and Role Management | Manage users and roles without the need to build extensive UI components from scratch. Admins can set a new user's initial password, and usernames and email addresses are kept unique. |
 | SSO Support | Single Sign-On support for [Google](./documentation/google-sso.md), [Microsoft Entra ID](./documentation/microsoft-sso.md) and [Facebook](./documentation/facebook-sso.md) OAuth providers with plans to add more providers in the future. |
 | HTTP-only Access Tokens | By default, JWT access tokens are stored in HTTP-only cookies, which are inaccessible to Javascript, making it secure against cross-site scripting (XSS) that attempt to intercept access tokens. |
 | Refresh Tokens | A refresh token improves security by limiting how often sensitive login details are sent over the internet, reducing the risk of them being exposed if an attacker intercepts a session.  |
@@ -204,7 +204,7 @@ SimpleAuth's "Local Accounts" support several features to make them more secure.
 | [Multi-Factor Authentication (MFA) Support](./documentation/mfa-support.md) | User accounts can be protected using MFA via e-mail, SMS or a OTP (Authenticator) App like Microsoft Authenticator or Google Authenticator. |
 | Public Registration with Email Verification | Allow for users to create an account using a standard registration page. This option can be easily disabled if you want to control the creation of new user accounts.  |
 | Configurable Password Complexity | Specify complexity options for users when they are creating their passwords. These options include `RequiredLength`, `RequiredUniqueChars`, `RequireDigit`, `RequireNonAlphanumeric` and so on. |
-| Automatic Account Lock / Unlock | Automatically lock a user account after a configurable number of attempts. You can configure your API to automatically unlock an account after a certain number of minutes or require administrative intervention. |
+| Automatic Account Lock / Unlock | Automatically lock a user account after a configurable number of attempts. You can configure your API to automatically unlock an account after a certain number of minutes or require administrative intervention, which an Admin performs through the unlock endpoint. |
 | Prevent Password Reuse | Optionally disallow users from re-using a previously used password. |
 
 ---
@@ -331,7 +331,7 @@ The IdentityProvider issues the identity (who you are). Each RelyingApp decides 
 
 [The API](./documentation/api.md) is organized into two primary categories:
 
-- **[Auth (Public) Endpoints](./documentation/api.md#auth-endpoints):** Support workflows like authentication, registration, and password recovery.
+- **[Auth Endpoints](./documentation/api.md#auth-endpoints):** Support workflows like authentication, registration, and password recovery. Each public endpoint is marked anonymous individually; session revocation, account unlock and the email lookup require the "Admin" role.
 - **[Administrative (Private) Endpoints](./documentation/api.md#administrative-endpoints):** Administrative endpoints for user and role management, protected by the "Admin" role.
 
 ---
