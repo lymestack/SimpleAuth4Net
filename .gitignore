@@ -373,3 +373,6 @@ ng-app/package-lock.json
 # Local dev-only secrets (DB credentials, etc.) — never commit
 appsettings.Development.local.json
 **/appsettings.Development.local.json
+
+# Orchestrator session state
+.orchestrator/
