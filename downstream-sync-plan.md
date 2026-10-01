@@ -39,7 +39,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | — | Build/tests, drift re-measure, and the 401 checks carried over from T3. Dispatched 2026-10-01 18:52. Visual sign-off is at T5 |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
-| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | ⬜ Not Started | — | Inventory rows, skill lists, tags, docs |
+| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | — | The parts that need no push state dispatched 2026-10-01 18:58 (inventory, ledger, skill lists, product notes, stale project-instructions lines). Final push state, D6 to D9 backlog items and closing this document wait for Mike |
 
 Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual minutes in **Duration** when a milestone closes.
 
