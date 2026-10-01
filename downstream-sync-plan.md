@@ -27,8 +27,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ✅ Complete | 6 | `8417557..ced452a`, 12 local commits. F uses the existing `EMAIL_EXISTS` code; prod `ng build` budget failure is pre-existing |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ✅ Complete | 8 | 10 commits `404a8f0..36f3416`, merged with the sample features as `b60d1b3` on `lymestarter` `main` (ahead of origin by 14, unpushed). 138 tests pass; dev and production `ng build` green |
-| [T2 — Test the template](#t2--test-the-template) | Sonnet | 🔄 In Progress | — | Unit/integration + build. Dispatched 2026-10-01 18:10 |
-| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half waits on T2 |
+| [T2 — Test the template](#t2--test-the-template) | Sonnet | ✅ Complete | 1 | `283405f`: 161 tests pass; production and development `ng build` green. Hands-on pass and push carried to T5 |
+| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half dispatched 2026-10-01 18:20 to 5 repos |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
@@ -407,9 +407,9 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 
 **Model:** Sonnet · **Mode:** unit/integration + build · **Depends on:** M3
 
-- [ ] Write tests: anonymous `GET ConfigSetting` is refused; a non-admin cannot read another tenant's feedback; `EMAIL_TAKEN` cases as in T1.
-- [ ] `cd WebApi && dotnet test` green (baseline before M3: 103+ tests).
-- [ ] `npx ng build` green.
+- [x] Write tests: anonymous `GET ConfigSetting` is refused; a non-admin cannot read another tenant's feedback; `EMAIL_TAKEN` cases as in T1.
+- [x] `cd WebApi && dotnet test` green (baseline before M3: 103+ tests).
+- [x] `npx ng build` green.
 - [ ] **Deferred to T5 — do not pause here.** Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
 - [ ] **Deferred to T5 — do not pause here.** Mike approves pushing `lymestarter` (includes `b8ec996`).
 
@@ -482,9 +482,9 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 *Workers must complete all items below. Branch deletion and any force-push need Mike's explicit confirmation per branch.*
 
 - [x] `lymecrm`: merge `origin/main`'s G19 into `develop`; confirm `main` and `develop` then differ only by intended unreleased work. Done 2026-10-01: both at `4dd7811`, pushed.
-- [ ] `ping`: same. (In progress 2026-10-01: merging `origin/main`'s G19 into `develop`.)
+- [x] `ping`: same. Done 2026-10-01: merge `87f14f7` on `develop` (only G19 came in; no conflicts); `develop..origin/main` is empty. Not pushed.
 - [ ] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both.
-- [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level. (In progress 2026-10-01: G19 port onto `develop`. Bringing `main` level is done last, after the remaining work has landed on `develop`.)
+- [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level. (G19 ported onto `develop` as `be15a68` on 2026-10-01; the form half was already there. Bringing `main` level is done last, after the remaining work has landed on `develop`.)
 - [x] `playmusiconline`: Mike's call 2026-10-01 — leave `main` alone. No merge, no report needed. (The D1 authorization fix on `develop` in M4 still stands.)
 - [x] `lymesend`, `paymentz`: stale `origin/develop` branches deleted 2026-10-01 on Mike's go-ahead (tips `82c3f43` and `b6fedd5`; both were strict ancestors of `main`, and TeamCity builds from `main`). `lymesend`'s local `develop` deleted too.
 - [x] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. All 29 deleted 2026-10-01 (see Progress Log).
@@ -710,6 +710,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:20** - T2 complete (18:05 to 18:06); M6 part a complete; M4 L2 half dispatched.
+
+- **T2 (`283405f`):** 23 new tests (161 pass in total): `ConfigSetting` and `UserFeedback` refuse anonymous (401) and non-admin (403) callers; the anonymous feedback POST with an existing id creates a new row and leaves the original alone; anonymous `/AppConfig` omits secret-looking settings; `Register` calls `IPostRegistrationHandler` for first and later users. No M3 defects found. Production `ng build` green with budget warnings only. `lymestarter` `main` fast-forwarded to `283405f` (ahead of origin by 15, unpushed).
+- **M6a `ping`:** `origin/main` merged into `develop` as `87f14f7`. LymeStack.Tests 113, Ping.Tests 354, `ng build` green.
+- **M6a `lymestats`:** G19 API half ported as `be15a68` (LymeStack.Tests 110, Api.Tests 113, Ingest.Tests 156). `LymeStats.Integration.Tests` fails 6 of 18 before and after (needs a SQL Server).
+- **M4 L2 half** dispatched (Sonnet): `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`. References: N `404a8f0`, O `c235db9`. M9 follows in each repo as its L2 worker finishes.
+- The other orchestrator has a worker back in `~/git/lymestarter`; this plan writes nothing more to that tree until it is free.
 
 **2026-10-01 18:16** - M10 items K, L, M, P complete; M7 done in the five SimpleAuth-lineage repos; M6 part a dispatched.
 
