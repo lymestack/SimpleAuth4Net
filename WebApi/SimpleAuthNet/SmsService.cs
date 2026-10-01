@@ -74,7 +74,10 @@ public class SmsService
             Timestamp = DateTime.UtcNow
         };
 
-        var logFileName = Path.Combine(_logDirectory, $"{DateTime.UtcNow:yyyyMMdd_HHmmssfff}.json");
+        var monthDir = Path.Combine(_logDirectory, DateTime.UtcNow.ToString("yyyy-MM"));
+        Directory.CreateDirectory(monthDir);
+
+        var logFileName = Path.Combine(monthDir, $"{DateTime.UtcNow:yyyyMMdd_HHmmssfff}.json");
         var logContent = JsonConvert.SerializeObject(logEntry, Formatting.Indented);
 
         File.WriteAllText(logFileName, logContent);
