@@ -36,7 +36,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ✅ Complete | 22 (longest; 5 in parallel) | All five repos done, builds and tests green (see log). `ping`'s brand pages and `lymecrm`'s POS register, pos-count and customer portal kept by design. Visual sign-off at T5 |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
-| [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | — | Build/tests, drift re-measure, and the 401 checks carried over from T3. Dispatched 2026-10-01 18:52. Visual sign-off is at T5 |
+| [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | 10 | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill running (19:12) for three template fixes that were never fanned out. Visual sign-off is at T5 |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
 | [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 (first pass) | First pass (Haiku) finished with errors; a corrective gap-fill on Sonnet was dispatched 2026-10-01 19:05. Final push state, D6 to D9 backlog items and closing this document wait for Mike |
@@ -558,9 +558,9 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 **Model:** Sonnet · **Mode:** unit/integration + hands-on visual sign-off · **Depends on:** M9, M10
 
-- [ ] Re-run the appendix probe: columns J–P ✅ for all LymeStarter-lineage repos.
-- [ ] `dotnet test` + `ng build` per repo; results table.
-- [ ] Re-run the [1.7](#17-raw-drift-against-each-template) drift measurement; every remaining differing framework file is either gone or listed as an intentional divergence.
+- [x] Re-run the appendix probe: columns J–P ✅ for all LymeStarter-lineage repos.
+- [x] `dotnet test` + `ng build` per repo; results table.
+- [ ] Re-run the [1.7](#17-raw-drift-against-each-template) drift measurement; every remaining differing framework file is either gone or listed as an intentional divergence. **Open:** measured 2026-10-01 (`lymestack-admin` drift is 0 in five apps). Not yet true for three template fixes from M3 that had no fan-out milestone (`537daf5`, `18304c0`, `2fa0dd2`): gap-fill in progress. `lymebooks`' 79 differing files have no per-file classification; they map to the intake groups waiting on Mike.
 - [ ] **Deferred to T5 — do not pause here.** **Hands-on visual sign-off by Mike** (no screenshots — the look is judged live, one repo at a time). For each of `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`: `cd WebApi/WebApi && dotnet watch run`, `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin, and walk: app home → Admin home (`/admin`) → Security → Users → open a user → toggle dark mode on each. Expected: `.ls-*` cards, tables and page headers throughout; no fixed-light surfaces in dark mode; app-specific pages visually consistent with the admin pages.
 - [ ] The orchestrator does **not** pause for sign-off here. T4 closes on the automated checks above; the per-repo sign-off happens in T5.
 
@@ -713,7 +713,7 @@ How each cell in 1.3 and 1.4 was decided. Probe by `git ls-tree` / `git show <re
 | K | `Attachments` in `LymeSendEmailTransport.cs` |
 | L | `document.baseURI` in `ng-app/src/main.ts` |
 | M | `--check` in `WebApi/DbUp/Program.cs` |
-| N | count of `AllowAnonymous` in `ConfigSettingController.cs` (template has 2) |
+| N | count of `AllowAnonymous` in `ConfigSettingController.cs` (template had 2 before N; after M3 it has 1, in a comment, and the class is Admin-only) |
 | O | count of `Authorize(Roles = "Admin")` in `UserFeedbackController.cs` (template 2, LymeBooks 4) |
 | P | `UseSmtpPickup` absent from `LymeStackCoreOptions.cs` |
 
@@ -724,6 +724,17 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 19:12** - T4 automated checks complete (about 10 minutes); gap-fill dispatched.
+
+- **Probe:** J, K, L, M, N, O, P (and F, G) ✅ at HEAD in `lymecrm`, `lymebooks`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
+- **Builds and tests:** no new failures. Pre-existing, unchanged: `lymedeploy` Cli.Tests 4 and LymeStack.Tests 5; `lymestats` Integration.Tests 6 of 18; `lymebooks` 7 SQL-backed failures this run. Karma was not part of this pass (`lymedeploy` and `lymetimer` suites do not compile, pre-existing).
+- **Tokenless calls (carried over from T3):** all 30 requests returned 401 (three admin Auth endpoints plus `GET ConfigSetting` and `ConfigSetting/1`, in each of the six repos), each API started against an unreachable database address.
+- **Drift against template `283405f`:** `lymestack-admin` is down from 55 differing files per repo to 0 (`lymetimer` 2, both intentional). Every remaining difference in the five apps is intentional, a pending audit item (U1 to U14), or one of the three items below.
+- **Found, no owning milestone:** three template fixes from M3 never reached the apps: `Secure` cookies with `CookieDomain` (`537daf5`, missing in all six); always-registered `IAuthLogger` (`18304c0`, missing in `lymecrm`, `lymetimer`, `lymestats`, and upstream in `SimpleAuth4Net`); `Register` calls `IPostRegistrationHandler` (`2fa0dd2`, missing in `lymedeploy`, `ping`, `lymestats`). **Gap-fill dispatched** (Sonnet, one worker per repo, seven repos including `SimpleAuth4Net` for the logger fix). The SimpleAuth-lineage apps get the logger fix with the intake's group G1.
+- **Hygiene scan of the M9 diffs:** 0 banned classes and 0 inline `style` attributes in app pages in all five repos; the remaining raw colours are print rules, modal backdrops, chart series palettes and the kept-by-design surfaces.
+- **Push state:** nothing pushed; 0 attribution hits in 87 unpushed commits.
+- Appendix marker N corrected (the template now has 1 `AllowAnonymous` mention, not 2).
 
 **2026-10-01 19:05** - M12 first pass (Haiku, 18:39 to 18:54) came back partial and partly wrong; gap-fill dispatched on Sonnet.
 
