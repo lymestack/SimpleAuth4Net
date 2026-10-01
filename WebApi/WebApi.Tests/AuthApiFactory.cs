@@ -28,11 +28,10 @@ public class AuthApiFactory : WebApplicationFactory<WebApi.Controllers.AuthContr
         _connection.Open();
 
         builder.UseEnvironment("Testing");
-        // Keep the fixed-window limiter out of the way. AuthController needs an IAuthLogger, so audit
-        // logging stays on; with no LogFolder it uses the default logger rather than writing files.
+        // Keep the fixed-window limiter out of the way. Audit logging is off, which also proves
+        // AuthController resolves an IAuthLogger (the default no-op) without it being enabled.
         builder.UseSetting("AuthSettings:RateLimit:PermitLimit", "100000");
-        builder.UseSetting("AuthSettings:AuditLogging:Enabled", "true");
-        builder.UseSetting("AuthSettings:AuditLogging:LogFolder", "");
+        builder.UseSetting("AuthSettings:AuditLogging:Enabled", "false");
 
         builder.ConfigureServices(services =>
         {

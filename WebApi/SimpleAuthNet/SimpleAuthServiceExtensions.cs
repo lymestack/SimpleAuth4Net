@@ -137,13 +137,18 @@ public static class SimpleAuthServiceExtensions
 
     public static IServiceCollection AddSimpleAuthLogging(this IServiceCollection services, IConfiguration configuration)
     {
+        // AuthController always depends on IAuthLogger, so register one regardless of
+        // whether AuditLogging is enabled. DefaultAuthLogger is a no-op when disabled.
         var auditLogging = configuration.GetSection("AuthSettings:AuditLogging").Get<AuditLoggingOptions>();
-        if (auditLogging?.Enabled == true)
+        if (auditLogging?.Enabled == true
+            && !string.IsNullOrWhiteSpace(auditLogging.LogFolder)
+            && Directory.Exists(auditLogging.LogFolder))
         {
-            if (!string.IsNullOrWhiteSpace(auditLogging.LogFolder) && Directory.Exists(auditLogging.LogFolder))
-                services.AddScoped<IAuthLogger, FileAuthLogger>();
-            else
-                services.AddScoped<IAuthLogger, DefaultAuthLogger>();
+            services.AddScoped<IAuthLogger, FileAuthLogger>();
+        }
+        else
+        {
+            services.AddScoped<IAuthLogger, DefaultAuthLogger>();
         }
         return services;
     }
@@ -288,6 +293,7 @@ public static class SimpleAuthServiceExtensions
                 logger.LogInformation("IdentityProvider: {Url}", settings.IdentityProviderUrl);
                 services.AddSimpleAuthDbContext();
                 services.AddSimpleAuthLocalRoles<SimpleAuthContext>();
+                services.AddSimpleAuthLogging(configuration);
                 break;
 
             case SimpleAuthMode.IdentityProvider:
