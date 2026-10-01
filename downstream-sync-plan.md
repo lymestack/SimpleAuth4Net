@@ -293,7 +293,7 @@ Resolved in [M1](#m1--decisions-gate). The **default** is what the plan assumes 
 | D2 | `atcc-app` (client repo, ng18/net8, 725-line AuthController drift): bring into the fleet? | Register it in the inventory; port A only; assess C separately with the client's schedule |
 | D3 | Item I (older L1 features) in SimpleAuth-lineage apps: port, or accept as permanent drift? | Port `ISimpleAuthEmailSender` + `IPostRegistrationHandler` (small, shrinks future merges); skip SSO modes |
 | D4 | `sawgrass-v2`: its Argon2id port was held back on 2026-08-26. Release it? | Yes, in M5. **Decided 2026-10-01: yes.** The hold was only that Mike did not want to touch `sawgrass-v2` at the time; no technical blocker |
-| D5 | `qc-sod-ordering`: which branch deploys? | `develop` is the working branch; merge to `main` in M6 |
+| D5 | `qc-sod-ordering`: which branch deploys? | `develop` is the working branch; merge to `main` in M6. **Decided 2026-10-01: confirmed as the default** |
 | D6 | Rewrite pushed history to strip AI trailers in 11 repos? | No action in this plan; Mike decides separately |
 | D7 | Replace vendoring with NuGet/npm packages (the structural fix)? | Out of scope; revisit after M12 |
 | D8 | .NET 8/9 end of support 2026-11-10: upgrade to net10 as part of this plan? | Separate plan, sequenced after M7 |
