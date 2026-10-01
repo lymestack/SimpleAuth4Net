@@ -25,15 +25,15 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ✅ Complete | 6 | `8417557..ced452a`, 12 local commits. F uses the existing `EMAIL_EXISTS` code; prod `ng build` budget failure is pre-existing |
-| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | 🔄 In Progress | — | Unit/integration. Dispatched 2026-10-01 17:52 |
-| [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
+| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
+| [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | 🔄 In Progress | — | Template is the L2 diff base. Dispatched 2026-10-01 17:56 in a detached worktree (main tree is in use by the lymetools plan) |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
-| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ⬜ Not Started | — | 7 repos (L1) + 5 repos (L2) |
+| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | — | L1 half dispatched 2026-10-01 17:56: 6 repos on Sonnet, `pmo-app` on Opus. L2 half waits on T2 |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ⬜ Not Started | — | sawgrass-v2, qc-sod-ordering (pmo-app deferred per D1; atcc-app excluded per D2) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | ⬜ Not Started | — | Email check, publish env, TypeGen, G19 gaps |
-| [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | ⬜ Not Started | — | 189 pending entries to triage |
+| [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | — | Analysis started early (2026-10-01 17:53): intake classification and core drift audit, read-only. Porting still waits on T2 and Mike's review |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | ⬜ Not Started | — | Attachments, bootstrap, `--check`, transport |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
@@ -376,12 +376,12 @@ Make this repo the true L1 source again. *Workers must complete all items below.
 
 **Model:** Sonnet · **Mode:** unit/integration · **Depends on:** M2
 
-- [ ] Write a reflection test: `AuthController` has no class-level `[AllowAnonymous]`, and every action carries exactly one of `[Authorize]` / `[AllowAnonymous]`.
-- [ ] Write a test that `UnlockUser`, `RevokeAllSessionsForUser` and `RevokeAllSessions` require the `Admin` role.
-- [ ] Write tests for `EMAIL_TAKEN` on create, on edit to another user's address, and no false positive when editing a user without changing their own address (case-insensitive).
-- [ ] Run the suite green: `cd WebApi && dotnet test`.
-- [ ] Start the API locally (`cd WebApi/WebApi && dotnet run`) and confirm with `curl -X POST` and no token that the three admin endpoints return 401, while `Login`, `ForgotPassword` and `RefreshToken` remain reachable.
-- [ ] `cd ng-app && npm run build` succeeds.
+- [x] Write a reflection test: `AuthController` has no class-level `[AllowAnonymous]`, and every action carries exactly one of `[Authorize]` / `[AllowAnonymous]`.
+- [x] Write a test that `UnlockUser`, `RevokeAllSessionsForUser` and `RevokeAllSessions` require the `Admin` role.
+- [x] Write tests for `EMAIL_TAKEN` on create, on edit to another user's address, and no false positive when editing a user without changing their own address (case-insensitive).
+- [x] Run the suite green: `cd WebApi && dotnet test`.
+- [x] Start the API locally (`cd WebApi/WebApi && dotnet run`) and confirm with `curl -X POST` and no token that the three admin endpoints return 401, while `Login`, `ForgotPassword` and `RefreshToken` remain reachable.
+- [ ] `cd ng-app && npm run build` succeeds. **Open:** fails on the bundle budget only (1.42 MB against 1.00 MB), unchanged from before M2; no compile errors, and the development build succeeds. Decision queued for T5.
 - [ ] **Deferred to T5 — do not pause here.** Push approval: this is the first push of `ea622c8`, and it must go together with A. Downstream workers read this repo's local clone, so nothing waits on the push.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -689,6 +689,16 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 17:57** - T1 complete (17:50 to 17:54; `7da6c02`, `bd4dd98`; orchestrator re-ran `dotnet test`: 28 passed). Wave 2 dispatched.
+
+- **T1:** reflection test, admin-role tests (anonymous 401, non-admin 403), `EMAIL_EXISTS` tests including a mutation check. Live check on port 5299 with no token: `UnlockUser`, `RevokeAllSessionsForUser`, `RevokeAllSessions`, `SetupAuthenticator`, `EmailExists` all 401; `Login`, `ForgotPassword`, `RefreshToken` reachable. No defects found in M2's work.
+- **Test seam `7da6c02` (production code):** `SimpleAuthContext` now takes `DbContextOptions` and only configures SQL Server when none are supplied; the two raw role queries use `ExecuteSqlInterpolated`. Behaviour-neutral on SQL Server. The template needs the same seam for the tests (M3).
+- **T1 observation:** `AuthController` cannot be constructed when `AuthSettings:AuditLogging:Enabled` is false (`IAuthLogger` is only registered when enabled). LymeBooks already fixed this; handed to M3 and the M8 intake.
+- **Open in T1:** the production `npm run build` budget failure (pre-existing) and the push, both at T5.
+- **M3** dispatched (Opus) in a detached worktree of `lymestarter` at `b8ec996`, because the main tree holds uncommitted sample-feature work from the `lymetools-port-plan` session. No branch is created; the orchestrator merges M3's commits into `main` once that tree is clean. This session is also registered in `~/git/lymetools/.orchestrator/active-sessions.json` so the other orchestrator sees the overlap.
+- **M4 L1 half** dispatched: `lymetimer`, `lymesend`, `paymentz`, `sawgrass-v2`, `open-mic-night`, `qc-sod-ordering` (Sonnet), `pmo-app` (Opus). `lymetimer` gets a second worker for N/O after T2 rather than one worker for both, so the L1 half does not wait on the template.
+- **M8 started early, analysis only** (17:53, two Opus workers, on Mike's instruction to fan out): the LymeBooks intake classification (writes `~/git/lymestarter/lymebooks-intake.md`, uncommitted, and moves the 52 design-pass entries in LymeBooks) and the core drift audit (writes `core-drift-audit.md` in this repo). Nothing is ported until T2 is green and Mike has reviewed the intake.
 
 **2026-10-01 17:50** - M2 complete (17:42 to 17:48, 12 local commits `8417557..ced452a`, nothing pushed; `origin/master` still `4d61814`). Verified by the orchestrator: no class-level `[AllowAnonymous]`, all 22 `AuthController` actions carry exactly one attribute, the three admin actions and the new `EmailExists` require `Admin`, markers B/G/F present, test project in the solution, obsolete documents removed.
 
