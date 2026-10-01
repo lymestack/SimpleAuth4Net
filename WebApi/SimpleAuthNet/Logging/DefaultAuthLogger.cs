@@ -13,13 +13,13 @@ public class DefaultAuthLogger(ILogger<DefaultAuthLogger> logger, IOptions<AuthS
     {
         if (!(_settings.AuditLogging?.Enabled ?? false)) return Task.CompletedTask;
         var loggingOptions = _settings.AuditLogging;
-        if (loggingOptions.Enabled) WriteLog(LogLevel.Information, username, data);
+        if (loggingOptions.Enabled) WriteLog(LogLevel.Information, eventType, username, data);
         return Task.CompletedTask;
     }
 
-    private Task WriteLog(LogLevel level, string username, object? data)
+    private Task WriteLog(LogLevel level, AuthLogEventType eventType, string username, object? data)
     {
-        logger.Log(level, "{Label}: Username={Username}, Data={@Data}", username, data);
+        logger.Log(level, "{Label}: Username={Username}, Data={@Data}", eventType, username, data);
         return Task.CompletedTask;
     }
 }
