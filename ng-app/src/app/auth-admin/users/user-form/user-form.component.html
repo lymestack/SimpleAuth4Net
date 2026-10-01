@@ -80,12 +80,36 @@
                 <mat-label>Email Address</mat-label>
                 <input
                   matInput
-                  #nameFiled="ngModel"
+                  #emailField="ngModel"
                   name="emailAddress"
                   required
+                  email
                   type="email"
                   [(ngModel)]="model.emailAddress"
+                  (blur)="onEmailFieldChanged(model.emailAddress)"
                 />
+
+                <mat-error *ngIf="emailField.invalid">
+                  <i class="fa fa-exclamation-triangle"></i> Enter a valid email
+                  address.
+                </mat-error>
+
+                <mat-hint *ngIf="checkingEmailAddress">
+                  <i class="fa fa-spin fa-spinner"></i> Checking
+                </mat-hint>
+
+                <mat-hint
+                  *ngIf="
+                    checkedEmailAddress &&
+                    !checkingEmailAddress &&
+                    !emailAddressAvailable
+                  "
+                >
+                  <div class="validation-message">
+                    <i class="fa fa-exclamation-triangle"></i> The email address
+                    is already in use.
+                  </div>
+                </mat-hint>
                 <!-- Future - Enable if SMTP is enabled via the API Config -->
                 <!-- <mat-hint
                   ><a
@@ -180,6 +204,8 @@
         [disabled]="
           saving ||
           (model.id === 0 && !usernameAvailable) ||
+          checkingEmailAddress ||
+          !emailAddressAvailable ||
           !userForm.valid ||
           !rolesSelected()
         "

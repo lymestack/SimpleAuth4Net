@@ -26,6 +26,12 @@ export class UserFormComponent implements OnInit {
   checkedUsername: boolean;
   usernameAvailable: boolean;
 
+  checkingEmailAddress = false;
+  checkedEmailAddress = false;
+  emailAddressAvailable = true;
+  private originalEmailAddress = '';
+  private lastCheckedEmailAddress = '';
+
   constructor(
     private clipboard: Clipboard,
     private logger: LoggerService,
@@ -43,6 +49,7 @@ export class UserFormComponent implements OnInit {
     if (AppUserId) {
       this.rest.getResource('AppUser', AppUserId).subscribe((data) => {
         this.model = data;
+        this.originalEmailAddress = data.emailAddress || '';
       });
     }
 
@@ -61,6 +68,9 @@ export class UserFormComponent implements OnInit {
         if (error.error?.error === 'USERNAME_EXISTS') {
           this.logger.error('Username already exists. Please choose a different username.');
         } else if (error.error?.error === 'EMAIL_EXISTS') {
+          this.emailAddressAvailable = false;
+          this.checkedEmailAddress = true;
+          this.lastCheckedEmailAddress = (this.model.emailAddress || '').trim().toLowerCase();
           this.logger.error('Email address already exists. Please use a different email.');
         } else if (error.error?.message) {
           this.logger.error(error.error.message);
@@ -123,6 +133,44 @@ export class UserFormComponent implements OnInit {
         /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(String(email).toLowerCase());
     }
+  }
+
+  onEmailFieldChanged(emailAddress: string) {
+    const normalized = (emailAddress || '').trim().toLowerCase();
+
+    // Nothing to check for a blank address, or for an existing user keeping their own address.
+    if (
+      !normalized ||
+      (this.model.id && normalized === this.originalEmailAddress.toLowerCase())
+    ) {
+      this.checkingEmailAddress = false;
+      this.checkedEmailAddress = false;
+      this.emailAddressAvailable = true;
+      this.lastCheckedEmailAddress = '';
+      return;
+    }
+
+    if (normalized === this.lastCheckedEmailAddress) return;
+
+    this.checkingEmailAddress = true;
+    this.checkedEmailAddress = false;
+    let url = 'Auth/EmailExists?email=' + encodeURIComponent(normalized);
+    if (this.model.id) url += '&userId=' + this.model.id;
+
+    this.rest.getResource(url).subscribe({
+      next: (data: any) => {
+        this.lastCheckedEmailAddress = normalized;
+        this.checkingEmailAddress = false;
+        this.checkedEmailAddress = true;
+        this.emailAddressAvailable = !data.exists;
+      },
+      error: () => {
+        // The server repeats this check on save, so a failed lookup does not block the form.
+        this.checkingEmailAddress = false;
+        this.checkedEmailAddress = false;
+        this.emailAddressAvailable = true;
+      },
+    });
   }
 
   rolesSelected(): boolean {
