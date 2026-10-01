@@ -31,7 +31,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ✅ Complete | 8 + 4 | Both halves done: A + B in 7 repos, N + O in 5 repos (see log). No new test failures anywhere |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ✅ Complete | 7 | Nothing failed: A, B in 14 repos; N, O in 7; 401 over HTTP in 8 repos; all 50 port commits on their branches. Open: ledger update (tree in use), and HTTP checks for the 6 repos that had workers in them (moved to T4) |
-| [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
+| [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ✅ Complete | 7 + 4 | `ping` G19 merged into `develop`; `lymestats` G19 ported and local `main` level; `qc-sod-ordering` local `main` = `develop` = `788b3bf`. All local, unpushed. Table in the log |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Done in `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering`, `lymebooks`. F (and G, tag) for the five M9 repos rides with M9. `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | 🔄 In Progress | — | Dispatched per repo as its L2 worker finished (18:22 to 18:27): `lymetimer`, `ping`, `lymestats`, `lymedeploy`, `lymecrm`. Each also ports F; `lymecrm`, `lymetimer`, `lymedeploy` also G |
@@ -483,13 +483,13 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 - [x] `lymecrm`: merge `origin/main`'s G19 into `develop`; confirm `main` and `develop` then differ only by intended unreleased work. Done 2026-10-01: both at `4dd7811`, pushed.
 - [x] `ping`: same. Done 2026-10-01: merge `87f14f7` on `develop` (only G19 came in; no conflicts); `develop..origin/main` is empty. Not pushed.
-- [ ] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both.
-- [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level. (G19 ported onto `develop` as `be15a68` on 2026-10-01; the form half was already there. Bringing `main` level is done last, after the remaining work has landed on `develop`.)
+- [x] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both. Done 2026-10-01 locally: merge `788b3bf` (conflicts in `AppUserController.cs` and its tests resolved to the `develop` side); `develop` fast-forwarded to the same commit. `WebApi.Tests` 118 pass on `main`.
+- [x] `lymestats`: port G19 (it is on neither branch), then bring `main` level. Done 2026-10-01 locally: G19 `be15a68` on `develop`; local `main` fast-forwarded to `develop` (`191cbd1`) after the design-system work landed.
 - [x] `playmusiconline`: Mike's call 2026-10-01 — leave `main` alone. No merge, no report needed. (The D1 authorization fix on `develop` in M4 still stands.)
 - [x] `lymesend`, `paymentz`: stale `origin/develop` branches deleted 2026-10-01 on Mike's go-ahead (tips `82c3f43` and `b6fedd5`; both were strict ancestors of `main`, and TeamCity builds from `main`). `lymesend`'s local `develop` deleted too.
 - [x] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. All 29 deleted 2026-10-01 (see Progress Log).
 - [x] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`. Both local branches deleted 2026-10-01 (`origin/accounting-remediation` still exists).
-- [ ] Produce a table: repo · working branch · deploy branch · commits apart.
+- [x] Produce a table: repo · working branch · deploy branch · commits apart. In the Progress Log, 2026-10-01 18:45.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,10 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - M9: the template has no global `.tnum` rule, so tabular figures in its own admin pages do nothing; `lymetimer` and `lymestats` each added one locally. Also `bootstrap-icons` only became a template dependency with the samples commit. Both belong in the template.
+  - M9 `lymetimer`, visible changes to judge: user tags render as uppercase pills; the duplicate Archived badge on Projects is gone and deleted rows are muted, not red; Save and Return to Timer moved into page headers; team member row actions are always visible; team modals are no longer vertically centred; "Clean Up Empty Teams" is an outline button. Its Karma specs do not compile (pre-existing, `team-context.service.spec.ts`).
+  - M9 `lymestats`: `appsettings.json` points at the shared LymeStats database on `192.168.50.42` and there is no Development override; point it at a scratch database before running the visual check. New page titles "Analytics", "Live", "Search paths"; form footers reordered to Cancel then Save.
+  - M6: `lymebooks` local `main` is 499 commits behind local `develop` (stale local branch; `origin/main` equals `origin/develop`). `qc-sod-ordering` local branches are level but `origin/main` and `origin/develop` still differ until pushed.
   - T3: `lymestarter` commit `ff2df33` (the lymetools plan's samples commit, unpushed) names the root instructions file in its body. It is a file reference, not attribution, and it now sits under this plan's merge `b60d1b3`, so rewording it means rewriting later commits. Left alone; Mike's call before the push.
   - T3: `pmo-app` still writes password hashes with inline HMAC (expected: Argon2id is deferred there, D1). Its Development config pins Kestrel to port 5218.
   - M9 `ping`: home's module menu sits in a plain Bootstrap card, which now picks up the framework's soft shadow.
@@ -716,6 +720,32 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:45** - M6 complete; M9 complete in `lymetimer` and `lymestats`.
+
+- **M6 part b (18:26 to 18:30):** `qc-sod-ordering` local `main` and `develop` both at merge `788b3bf` (`git diff main develop` empty; 118 tests pass on `main`; no inline HMAC write). `lymestats` local `main` fast-forwarded to `191cbd1`. Nothing pushed; no branch created or deleted. `playmusiconline`, `ping` and `lymecrm` `main` untouched.
+- **Branch table (read 18:26; ahead/behind):**
+
+| Repo | Working | Deploy | Local working vs origin | Local deploy vs local working | origin deploy vs origin working |
+|---|---|---|---|---|---|
+| `SimpleAuth4Net` | master | master | 40/0 | same branch | same branch |
+| `lymestarter` | main | main | 16/0 | same branch | same branch |
+| `lymecrm` | develop | main | 9/0 (still moving) | 0/9 | 0/0 |
+| `lymebooks` | develop | main | 6/0 | 0/499 (stale local `main`) | 0/0 |
+| `lymetimer` | main | main | 19/0 | same branch | same branch |
+| `lymedeploy` | main | main | 9/0 (still moving) | same branch | same branch |
+| `ping` | develop | main | 14/0 | 0/14 | 1/0 |
+| `lymestats` | develop | main | 14/0 | 0/0 | 0/0 |
+| `lymesend` | main | main | 4/0 | same branch | same branch |
+| `sawgrass-v2` | main | main | 10/0 | same branch | same branch |
+| `paymentz` | main | main | 5/0 | same branch | same branch |
+| `open-mic-night` | main | main | 6/0 | same branch | same branch |
+| `qc-sod-ordering` | develop | main | 11/0 | 0/0 | 3/8 |
+| `playmusiconline` | develop | main | 2/0 | 0/55 | 0/89 (left alone) |
+
+- **M9 `lymetimer` (18:10 to 18:24), 11 commits `4e46521..7942c06`:** tokens and components `4e46521`, 57 `lymestack-admin` files `2017dd6` (App Health keeps the app's Send Test Email card), F `44456ef` + tests `9029a57`, global `.tnum` `ca7fba2`, app pages `9242140` `3e06ca6` `c17a774` `8eda66e` (14 of 16 routes thoroughly), docs and project-instructions pointer `85f889c`, G `7942c06` (only `web.config` needed flipping). 452 tests pass; development and production `ng build` green.
+- **M9 `lymestats` (18:10 to 18:25), 8 commits `5b1ac46..191cbd1`:** tokens `5b1ac46`, 57 admin files `fabc2cc`, F `b258d12`, chart tokens and `.tnum` `065400d`, analytics pages `d6ccc7f` `2a2e86e`, home and about `1f24175`, docs `191cbd1`. LymeStack.Tests 145, Api 113, Ingest 156, Karma 164; both `ng build`s green. No root project instructions file; none created.
+- Still running: M9 in `lymecrm` and `lymedeploy`.
 
 **2026-10-01 18:38** - T3 complete (about 7 minutes): nothing failed. M9 complete in `ping`.
 
