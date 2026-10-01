@@ -4,7 +4,24 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Force Production by default so a publish that forgets to set ASPNETCORE_ENVIRONMENT
+         explicitly never ships as Development. Local dev still resolves to Development via
+         launchSettings.json / the ASPNETCORE_ENVIRONMENT env var, both of which take
+         precedence over this at run time. Note this only affects a web.config the SDK
+         generates itself during publish - it has no effect on a web.config already committed
+         to source control (see WebApi/WebApi/web.config), which must be kept correct by hand. -->
+    <EnvironmentName>Production</EnvironmentName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Never ship developer settings in a publish output - these files only exist to override
+         appsettings.json on a dev machine and must not land next to the deployed app. Use
+         CopyToPublishDirectory (not Content Remove) so they're still copied to bin/ for local
+         `dotnet build` / `dotnet run`, where ASPNETCORE_ENVIRONMENT=Development still needs them.
+         appsettings.Development.local.json is gitignored and holds dev database credentials. -->
+    <Content Update="appsettings.Development.json" CopyToPublishDirectory="Never" />
+    <Content Update="appsettings.Development.local.json" CopyToPublishDirectory="Never" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
