@@ -74,7 +74,7 @@ Found by scanning `~/git/` at any depth for a `WebApi/SimpleAuthNet` directory. 
 |---|---|---|---|---|---|
 | `SimpleAuth4Net` | L1 template | `master` | net8 · ng19 | open source (GitHub) | — |
 | `lymestarter` | L2 template | `main` | net10 · ng19 | — | — |
-| `lymecrm` | LS | `develop` | net10 · ng19 | UAT confirmed; prod unconfirmed | ✅ |
+| `lymecrm` | LS | `develop` | net10 · ng19 | yes — UAT and Production both on release `2.0.0.22` (2026-10-01); no active users | ✅ |
 | `lymebooks` | LS | `develop` | net10 · ng19 | yes, lymebooks.com | ✅ |
 | `lymetimer` | LS | `main` | net10 · ng19 | yes, timer.lymestack.com | ✅ |
 | `lymedeploy` | LS | `main` | net10 · ng19 | yes, deploys the fleet | ✅ |
@@ -139,7 +139,7 @@ State at each repo's origin tip. ✅ present · ❌ missing · ⚠️ partial (s
 |---|---|---|---|---|---|---|---|---|---|
 | `SimpleAuth4Net` | ❌ | ❌ | ✅ | ⚠️¹ | ✅ | ❌ | ❌ | ✅ | ✅ |
 | `lymestarter` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| `lymecrm` | ✅ | ✅ | ✅ | ✅ | ⚠️² | ❌ | ❌ | ✅ | ✅ |
+| `lymecrm` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
 | `lymebooks` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `lymetimer` | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
 | `lymedeploy` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
@@ -225,7 +225,7 @@ Fixes that exist downstream and have not reached the layer that owns the code.
 
 | Repo | Gap |
 |---|---|
-| `lymecrm` | G19 (`6017be8`) is on `origin/main` only; `develop` lacks it |
+| `lymecrm` | ~~G19 (`6017be8`) is on `origin/main` only; `develop` lacks it~~ Closed 2026-10-01: `develop` = `main` = `4dd7811` |
 | `ping` | G19 (`7e13de8`) is on `origin/main` only; `develop` lacks it |
 | `qc-sod-ordering` | **Split.** `develop` has the Argon2id port and unlock but no G19. `main` has G19 (inline HMAC) and the CLAUDE.md upstream tag but no Argon2id. 8 vs 3 commits apart |
 | `lymestats` | `origin/main` is 1 commit behind `develop`; G19 on neither |
@@ -478,7 +478,7 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 *Workers must complete all items below. Branch deletion and any force-push need Mike's explicit confirmation per branch.*
 
-- [ ] `lymecrm`: merge `origin/main`'s G19 into `develop`; confirm `main` and `develop` then differ only by intended unreleased work.
+- [x] `lymecrm`: merge `origin/main`'s G19 into `develop`; confirm `main` and `develop` then differ only by intended unreleased work. Done 2026-10-01: both at `4dd7811`, pushed.
 - [ ] `ping`: same.
 - [ ] `qc-sod-ordering`: merge `develop` into `main` so the Argon2id port, unlock, G19 and the CLAUDE.md tag are on both.
 - [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level.
@@ -656,11 +656,18 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
 
-**2026-10-01 17:20** - `lymecrm` branch cleanup (Mike's go-ahead). Deleted 24 local `worktree-agent-*` branches whose commits are patch-identical to `develop`, and removed their 12 worktrees (all clean, no uncommitted files). No remote copies existed. Tips, for recovery before `git gc`: `3ff1fc7 d06554b eead3db 4bd985f 79fa2e5 5cea73c 5c413d1 7cac728 d2a8388 2294d2c a888b3c a553569 ada6b5e 0d0f4f1 57ef23c 28e8013 4e3c09b f558681 9d7b97b e8b10f6 9a8d9e1 7541080 d568829 0f09da4`.
+**2026-10-01 17:14** - `lymecrm` pushed, branches reconciled, and deployed to Production (Mike's instruction; no active users).
+
+- Merged `origin/main` (G19 `6017be8`) into `develop` as `4dd7811`; pushed `develop`; fast-forwarded `main` to the same commit and pushed. `develop`, `main` and both origin refs are all `4dd7811`. The merged tree differs from the previous `origin/main` only in `BACKLOG.md`, so no code reached `main` that was not already there.
+- **Deploy state, from LymeDeploy:** release `2.0.0.22` (built 2026-09-26, minutes after the G19 commit) was already on UAT. Production was on `2.0.0.21` (2026-09-04). Promoted `2.0.0.22` UAT → Production with `lymedeploy promote`; it finished `succeeded` at 17:13. Not verified by signing in; Mike to spot-check.
+- The push did not produce a new TeamCity build (no `2.0.0.23` minutes later). Expected: the VCS root's checkout rules are `+:ng-app`, `+:WebApi`, and the push changed only `BACKLOG.md`.
+- `lymecrm` does have a LymeDeploy Production environment, which the roster had listed as unconfirmed.
+
+**2026-10-01 ~17:08** - `lymecrm` branch cleanup (Mike's go-ahead). Deleted 24 local `worktree-agent-*` branches whose commits are patch-identical to `develop`, and removed their 12 worktrees (all clean, no uncommitted files). No remote copies existed. Tips, for recovery before `git gc`: `3ff1fc7 d06554b eead3db 4bd985f 79fa2e5 5cea73c 5c413d1 7cac728 d2a8388 2294d2c a888b3c a553569 ada6b5e 0d0f4f1 57ef23c 28e8013 4e3c09b f558681 9d7b97b e8b10f6 9a8d9e1 7541080 d568829 0f09da4`.
 
 - **5 branches held for Mike's confirmation.** M0 reported them as carrying work `develop` lacks; on inspection none does. Each feature commit has a same-subject twin on `develop`: J2-2 `958413e` → `46ba2dc`, P9 `da780f9` → `64a5a19`, P12 `44abe37` → `e9a2ffe`, P29 `67fc01e` → `f9c67cf`. Of 5,840 substantive added lines, 60 are absent from `develop` HEAD, all constructor/signature lines later refactored. The only content that exists nowhere else is two throwaway files: `worker-summary-p7-reference-mappers.md` (`0958e99`) and `worker-summary-p12-tender-capture.md` (in `44abe37`).
 - Held: `worktree-agent-a27f245…` (has worktree), `-a35471c…`, `-a3760b3…`, `-a4054db…`, `-ab0bf01…` (has worktree).
-- **17:30 — Mike confirmed; the 5 held branches and their 2 worktrees are deleted.** Tips: `958413e 0958e99 da780f9 44abe37 67fc01e`. `lymecrm` now has no `worktree-agent-*` branches and no extra worktrees.
+- **Minutes later, Mike confirmed; the 5 held branches and their 2 worktrees are deleted.** Tips: `958413e 0958e99 da780f9 44abe37 67fc01e`. `lymecrm` now has no `worktree-agent-*` branches and no extra worktrees.
 
 **2026-10-01 17:01** - M0 complete. Nothing pushed, no branches created or deleted, no conflicts, no dirty repos.
 
