@@ -39,7 +39,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | 10 | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill running (19:12) for three template fixes that were never fanned out. Visual sign-off is at T5 |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
-| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 (first pass) | First pass (Haiku) finished with errors; a corrective gap-fill on Sonnet was dispatched 2026-10-01 19:05. Final push state, D6 to D9 backlog items and closing this document wait for Mike |
+| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Open until after T5: final push state and the T4 gap-fill SHAs in the ledger, D6 to D9 backlog items, closing this document |
 
 Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual minutes in **Duration** when a milestone closes.
 
@@ -273,13 +273,13 @@ SimpleAuth-lineage Angular counts are inflated by UI-kit rewrites (Bootstrap, Pr
 
 ## 1.8 Tracker and documentation drift
 
-- [ ] `lymestarter/downstream-inventory.md` has no rows for `lymestats` or `md-ccrs-dev/atcc-app`.
-- [ ] Its 2026-09-26 note says `qc-sod-ordering` and `sawgrass-v2` are unported for Argon2id. Both ports exist — on `develop`, and unpushed on this machine, respectively. The other machine never saw them.
-- [ ] `lymestarter/core-fix-log.md` has no entries for `8c201de` (A, B), `3751db1` (G), `9ce88cd` (L), `b8ec996` (K) or `18a9108` (backslash TypeGen files), so none of them has ever had a tracked fan-out.
-- [ ] `lymestarter/security-port-plan.md` status header still reads "MED batch next".
-- [ ] The `port-core-fix` skill's member lists omit `lymestats` and `atcc-app`.
+- [x] `lymestarter/downstream-inventory.md` has no rows for `lymestats` or `md-ccrs-dev/atcc-app`. *(2026-10-01: `lymestats` added; `atcc-app` recorded as excluded.)*
+- [x] Its 2026-09-26 note says `qc-sod-ordering` and `sawgrass-v2` are unported for Argon2id. Both ports exist — on `develop`, and unpushed on this machine, respectively. The other machine never saw them. *(Corrected 2026-10-01.)*
+- [x] `lymestarter/core-fix-log.md` has no entries for `8c201de` (A, B), `3751db1` (G), `9ce88cd` (L), `b8ec996` (K) or `18a9108` (backslash TypeGen files), so none of them has ever had a tracked fan-out. *(Sections added 2026-10-01.)*
+- [x] `lymestarter/security-port-plan.md` status header still reads "MED batch next". *(Updated 2026-10-01.)*
+- [x] The `port-core-fix` skill's member lists omit `lymestats` and `atcc-app`. *(`lymestats` added, `atcc-app` listed as excluded, 2026-10-01.)*
 - [ ] `> **Upstream:**` tag missing from `CLAUDE.md` in `lymecrm`, `qc-sod-ordering` (`develop`), `playmusiconline`, `md-ccrs-dev`. `ping` and `lymestats` have no root `CLAUDE.md` at all.
-- [ ] LymeBooks `lymestack-todos.md`: 52 design-pass entries are ported but still under Pending.
+- [x] LymeBooks `lymestack-todos.md`: 52 design-pass entries are ported but still under Pending. *(Moved 2026-10-01, `34175437`.)*
 - [ ] Pushed history still carries AI co-author trailers in 11 repos: `lymetimer` 58, `sawgrass-v2` 44, `lymesend` 43, `playmusiconline` 38, `qc-sod-ordering` 15, `lymestarter` 7, `open-mic-night` 7, `paymentz` 5, `SimpleAuth4Net` 3, `lymedeploy` 1, `md-ccrs-dev` 1 (decision D6).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -642,12 +642,12 @@ If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-
 
 *Workers must complete all items below.*
 
-- [ ] Add a `lymestats` row (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`, plus a one-line note that `md-ccrs-dev/atcc-app` exists but is deliberately not a fleet member (D2: not Mike's project, SimpleAuth v1.0, never port to it); correct the 2026-09-26 "still unported" note.
-- [ ] Add `lymestats` to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
-- [ ] Update `security-port-plan.md`'s status header, or retire the file.
-- [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state.
-- [ ] Update `~/.claude/claude-md-sections/products/lymestack.md` ("roughly half rolled out" is no longer true).
-- [ ] Write a short "how to stay in sync" note at the top of `downstream-inventory.md`: fetch first, one working branch per repo, `lymestack-todos.md` in every LymeStarter-lineage repo.
+- [x] Add a `lymestats` row (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`, plus a one-line note that `md-ccrs-dev/atcc-app` exists but is deliberately not a fleet member (D2: not Mike's project, SimpleAuth v1.0, never port to it); correct the 2026-09-26 "still unported" note.
+- [x] Add `lymestats` to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
+- [x] Update `security-port-plan.md`'s status header, or retire the file.
+- [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state. **Open:** tables filled with today's SHAs and sections added for H, I, M, P, J and the C/D/E completions (`lymestarter` `6b62ae1`). Still to add after T5: push state, and the T4 gap-fill commits (`Secure` cookies, `IAuthLogger`, `Register` handler).
+- [x] Update `~/.claude/claude-md-sections/products/lymestack.md` ("roughly half rolled out" is no longer true).
+- [x] Write a short "how to stay in sync" note at the top of `downstream-inventory.md`: fetch first, one working branch per repo, `lymestack-todos.md` in every LymeStarter-lineage repo.
 - [ ] Record D6, D7, D8, D9 outcomes as backlog items where Mike wants them.
 - [ ] Mark this document complete and move it to `documentation/` only when Mike says he is done with it.
 
@@ -724,6 +724,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 19:25** - M12 gap-fill complete (about 10 minutes); T4 gap-fill done in four of seven repos.
+
+- **Trackers, corrected and verified by the orchestrator:** `lymestarter` `9f9e896` (inventory: the 2026-07 hardening rows restored with their real commits and pushed state; `ping` and `lymestats` rows added as scaffolded from the already-hardened template, migrations "not verified"), `6b62ae1` (`core-fix-log.md`: A/B, G, K, L, N/O, F filled; new sections H, I, M, P, J, C/D/E and today's template commits), `0a64478` (`security-port-plan.md` header). `claude-shared-settings` `8a227d2` (product note reworded; the skill's new fetch step had ahead and behind swapped, fixed; `lymestats` added to its branch list).
+- **Project instructions** amended in `lymesend` `b4c0fbe`, `paymentz` `35f7d2a`, `open-mic-night` `80c3f95`, `qc-sod-ordering` `4e29380`: the hardening port "has been in place since 2026-08-26"; `[AllowAnonymous]` goes on the action. `playmusiconline` has a root file and a `pmo-app/` file; neither was edited (its hardening is still outstanding).
+- **Pushed state of the 2026-07 hardening:** on origin everywhere except `sawgrass-v2` (`27096d3`, local only).
+- `qc-sod-ordering` local `main` moved up to `develop` again (`4e29380`) after the amended commit.
+- **T4 gap-fill so far:** `SimpleAuth4Net` `3ff1542` (logger; 28 tests, 7 fail without it); `lymetimer` `49dc74a` (logger), `1582f71` (cookies), 452 pass; `ping` `1f67577` (cookies), `3d39ac6` (`Register` handler), 148 + 354 pass; `lymebooks` `5bf34763` (cookies), 836 pass. Still running: `lymecrm`, `lymestats`, `lymedeploy`.
 
 **2026-10-01 19:12** - T4 automated checks complete (about 10 minutes); gap-fill dispatched.
 
