@@ -28,13 +28,13 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ✅ Complete | 8 | 10 commits `404a8f0..36f3416`, merged with the sample features as `b60d1b3` on `lymestarter` `main` (ahead of origin by 14, unpushed). 138 tests pass; dev and production `ng build` green |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ✅ Complete | 1 | `283405f`: 161 tests pass; production and development `ng build` green. Hands-on pass and push carried to T5 |
-| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half dispatched 2026-10-01 18:20 to 5 repos |
+| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ✅ Complete | 8 + 4 | Both halves done: A + B in 7 repos, N + O in 5 repos (see log). No new test failures anywhere |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
-| [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
+| [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | 🔄 In Progress | — | Probe + build + anonymous-call checks. Dispatched 2026-10-01 18:27 |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymesend` and `qc-sod-ordering` (Opus, F UI), `paymentz`, `open-mic-night`, `sawgrass-v2` (Sonnet). LymeStarter-lineage repos wait on M9; `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
-| [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
+| [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | 🔄 In Progress | — | Dispatched per repo as its L2 worker finished (18:22 to 18:27): `lymetimer`, `ping`, `lymestats`, `lymedeploy`, `lymecrm`. Each also ports F; `lymecrm`, `lymetimer`, `lymedeploy` also G |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
@@ -436,15 +436,15 @@ For each: enumerate that repo's own actions before deciding which are public —
 
 **L2 half — items N + O**, reference lymestarter's M3 commit:
 
-- [ ] `lymecrm`
-- [ ] `lymetimer`
-- [ ] `lymedeploy`
-- [ ] `ping`
-- [ ] `lymestats`
+- [x] `lymecrm` — `84cc373`, `8c83115`, tests `8f255e3`; 2817 + 128 tests pass
+- [x] `lymetimer` — `9b0a18d`, `4f88fa9`, tests `c83f95e`; 429 pass
+- [x] `lymedeploy` — `cb46e00`, `e636e95`, tests `355734c`; pre-existing failures unchanged (9)
+- [x] `ping` — `9ab26d4`, `a5c6621`; 134 + 354 pass
+- [x] `lymestats` — `559ad1f`, `4338526`, tests `eb620ee`; 131 pass
 
 For each: confirm the app does not read `ConfigSetting` anonymously somewhere app-specific before removing access.
 
-- [ ] Each worker builds, runs that repo's tests, commits locally, and reports pre-existing failures separately from new ones.
+- [x] Each worker builds, runs that repo's tests, commits locally, and reports pre-existing failures separately from new ones.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,9 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - **M9 `ping`: brand pages left alone.** PinG's own pages and its account screens use a deliberate, client-approved `--ping-*` design that does not inherit the framework theme. The orchestrator told the worker not to restyle them to `.ls-*`; only the framework parts get the design system. Confirm or overrule.
+  - M4 `lymedeploy`: the Settings page reads `Deployment.Mode` from `GET /ConfigSetting`, now Admin-only; a non-admin silently saw the default. The M9 worker was asked to make the page say the value is unavailable. Stale comments about the "full" AppConfig settings list remain in `CliContracts.cs`, `LymeDeployApiClient.cs` and `deploy-api.service.ts`.
+  - M4 `lymestats` (and likely other LymeStarter-lineage apps): still has the audit-logger registration defect the template fixed in `18304c0`; fan-out waits on the intake review (group G1).
   - **M10 `lymebooks`, item P: must be handled before that code is deployed (M11).** The email settings moved from `EmailSettings:*` to `LymeStackCore:Email:*`. LymeDeploy's variables must be renamed first (`Transport`, `LymeSend:ApiUrl`, `LymeSend:SubjectPrefix`, `LymeSend:ApiKey`), or the app silently falls back to SMTP pickup and delivers nothing. The worker could only read the onboarding doc, not the live variable table.
   - M7 `sawgrass-v2`: the Angular build fails before and after today's work, because TypeGen's post-build step fails for the WebApi project (`WebApi.TypeScriptExports` not found) and `_api/` is stale; so the new form markup was reviewed, not compiled. Also a stray tracked `WebApi/WebApi/ng-app/` directory.
   - M7 `qc-sod-ordering`: it deploys through TeamCity and Octopus, not LymeDeploy; whether Octopus overrides `ASPNETCORE_ENVIRONMENT` could not be checked. Its `web.config` now says Production.
@@ -710,6 +713,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:27** - M4 complete (L2 half 18:08 to 18:12); M9 and T3 dispatched.
+
+- **N, O commits (plus tests):** `lymecrm` `84cc373` `8c83115` `8f255e3` · `lymetimer` `9b0a18d` `4f88fa9` `c83f95e` · `lymedeploy` `cb46e00` `e636e95` `355734c` · `ping` `9ab26d4` `a5c6621` · `lymestats` `559ad1f` `4338526` `eb620ee`. Each repo also got the `AppConfigController` secret-name filter.
+- **Same finding in all five:** the pre-login bootstrap reads only `GET /AppConfig`; nothing reads `/ConfigSetting` before login or without a user token (checked per app: `NasRemoteApi` and device/portal controllers in `lymecrm`; agents and the CLI in `lymedeploy`, whose `doctor` keeps working through the filtered `/AppConfig`; ingest in `lymestats`). The feedback submit POST stays anonymous and can no longer overwrite a row.
+- No new test failures. HTTP-level 403 tests were ported where the repo could host them (`ping`, `lymedeploy`); elsewhere attribute and direct-controller tests pin the same behaviour.
+- **M9** dispatched (Opus, one worker per repo), template reference `283405f`. Each M9 worker also ports F (the template user form it adopts calls `Auth/EmailExists`); G rides along in `lymecrm`, `lymetimer`, `lymedeploy`; the upstream tag in `lymecrm`. `ping`'s brand pages are left alone by design (T5 list).
+- **T3** dispatched (Sonnet). It verifies committed state only in the six repos with active workers and builds for real in the other eight; ledger updates come back in its summary because the `lymestarter` tree is in use by the other orchestrator.
 
 **2026-10-01 18:20** - T2 complete (18:05 to 18:06); M6 part a complete; M4 L2 half dispatched.
 
