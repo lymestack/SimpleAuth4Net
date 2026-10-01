@@ -36,8 +36,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ✅ Complete | 22 (longest; 5 in parallel) | All five repos done, builds and tests green (see log). `ping`'s brand pages and `lymecrm`'s POS register, pos-count and customer portal kept by design. Visual sign-off at T5 |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
-| [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | 10 | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill running (19:12) for three template fixes that were never fanned out. Visual sign-off is at T5 |
-| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
+| [T4 — L2 verification](#t4--l2-verification) | Sonnet | ✅ Complete | 10 + 23 (gap-fill) | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill ported the three missed template fixes to all seven repos. Visual sign-off is at T5 |
+| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | 🔄 Ready for Mike | — | Checklist prepared: `t5-checklist.md` in this repo. Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
 | [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Open until after T5: final push state and the T4 gap-fill SHAs in the ledger, D6 to D9 backlog items, closing this document |
 
@@ -560,7 +560,7 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 - [x] Re-run the appendix probe: columns J–P ✅ for all LymeStarter-lineage repos.
 - [x] `dotnet test` + `ng build` per repo; results table.
-- [ ] Re-run the [1.7](#17-raw-drift-against-each-template) drift measurement; every remaining differing framework file is either gone or listed as an intentional divergence. **Open:** measured 2026-10-01 (`lymestack-admin` drift is 0 in five apps). Not yet true for three template fixes from M3 that had no fan-out milestone (`537daf5`, `18304c0`, `2fa0dd2`): gap-fill in progress. `lymebooks`' 79 differing files have no per-file classification; they map to the intake groups waiting on Mike.
+- [x] Re-run the [1.7](#17-raw-drift-against-each-template) drift measurement; every remaining differing framework file is either gone or listed as an intentional divergence. *(Measured 2026-10-01: `lymestack-admin` drift is 0 in five apps; the three template fixes from M3 that had no fan-out milestone (`537daf5`, `18304c0`, `2fa0dd2`) were ported by the gap-fill. Remaining differences in the five apps are intentional or pending audit items U1 to U14. `lymebooks`' 79 differing files have no per-file classification; they map to the intake groups waiting on Mike.)*
 - [ ] **Deferred to T5 — do not pause here.** **Hands-on visual sign-off by Mike** (no screenshots — the look is judged live, one repo at a time). For each of `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`: `cd WebApi/WebApi && dotnet watch run`, `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin, and walk: app home → Admin home (`/admin`) → Security → Users → open a user → toggle dark mode on each. Expected: `.ls-*` cards, tables and page headers throughout; no fixed-light surfaces in dark mode; app-specific pages visually consistent with the admin pages.
 - [ ] The orchestrator does **not** pause for sign-off here. T4 closes on the automated checks above; the per-repo sign-off happens in T5.
 
@@ -724,6 +724,12 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 19:50** - T4 complete with its gap-fill; the run is at the T5 gate.
+
+- **`lymedeploy` gap-fill:** `Register` calls the post-registration handler for every user `ba375cf`, test `3ee8e81`. Its cookies already hardcode `Secure = true`, so no cookie change. Tests: the same 4 Cli.Tests and 5 LymeStack.Tests failures as before, nothing new.
+- **State at the gate:** M2 through M10 and T1 through T4 are done, except M7 for `pmo-app` (held for Mike's scope answer), the M8 ports (waiting on Mike's review of the intake and the drift audit) and M12's final pass (push state in the ledger, D6 to D9 backlog items, closing this document). Every commit is local. Nothing was pushed or deployed. No worker entered `md-ccrs-dev`.
+- **Not done, by design:** hands-on checks, visual sign-off, the `lymecrm` production spot check and all push approvals: `t5-checklist.md`.
 
 **2026-10-01 19:40** - T4 gap-fill done in six of seven repos; T5 checklist drafted.
 
