@@ -447,6 +447,7 @@ public class AuthController(
             // previously-rotated (consumed) token, this is a replay of a stolen token — revoke the
             // entire token family for that user and reject.
             var consumed = await db.AppRefreshTokens
+                .Include(x => x.AppUser)
                 .FirstOrDefaultAsync(x => x.PreviousToken == hashedInput && x.DeviceId == deviceId);
 
             if (consumed != null)
