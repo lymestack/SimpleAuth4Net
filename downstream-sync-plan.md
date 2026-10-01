@@ -24,7 +24,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 |---|---|---|---|---|
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
-| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | 🔄 In Progress | — | Auth hole, logger, publish env, email check. Worker prompt issued 2026-10-01 |
+| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | 🔄 In Progress | — | Auth hole, logger, publish env, email check. Dispatched by the orchestrator 2026-10-01 17:45 (the earlier hand-issued prompt was never run) |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
@@ -686,6 +686,8 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 17:45** - Orchestrator session started (state in `.orchestrator/downstream-sync-plan/`, gitignored). Checked before dispatch: no M2 commits after `9e75a85` (only two commits to this document), working tree clean, class-level `[AllowAnonymous]` still present, and the only other context open in this repo is the idle planning session. M2 dispatched to an Opus worker. Noted for M3: `~/git/lymestarter` has uncommitted work from the separate `lymetools-port-plan` session (sample features); re-check before sending a worker there.
 
 **2026-10-01 (evening)** - M1 closed. All eleven decisions recorded in 1.9. `lymebooks` local branches `accounting-remediation` (`f85aeb15`, still on origin at the same commit) and `backup/pre-rewrite` (`d51c299a`, local only) deleted on Mike's go-ahead: every `accounting-remediation` commit has a patch-identical twin in `develop`'s history, and `backup/pre-rewrite`'s one unique commit (unlock + Reset Password modal) was redone on `develop` as `e701d906`. Mike will run the rest of the plan through `/iadev:orchestrator` in a new context, with hands-on gates deferred to the new T5.
 
