@@ -7,11 +7,13 @@ using SimpleAuthNet.Models;
 
 namespace SimpleAuthNet.Data;
 
-public class SimpleAuthContext(IConfiguration configuration) : DbContext, IRoleDbContext
+public class SimpleAuthContext(IConfiguration configuration, DbContextOptions<SimpleAuthContext> contextOptions) : DbContext(contextOptions), IRoleDbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder options)
     {
+        // Honor a provider already configured through DbContextOptions (e.g. tests); otherwise
         // connect to sql server with connection string from app settings
+        if (options.IsConfigured) return;
         options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
     }
 
@@ -36,15 +38,12 @@ public class SimpleAuthContext(IConfiguration configuration) : DbContext, IRoleD
 
     public void DeleteRolesForUser(int userId)
     {
-        var idParam = new SqlParameter("@userId", userId);
-        Database.ExecuteSqlRaw("DELETE FROM AppUserRole WHERE AppUserId = @userId", @idParam);
+        Database.ExecuteSqlInterpolated($"DELETE FROM AppUserRole WHERE AppUserId = {userId}");
     }
 
     public void AddRoleForUser(int userId, string role)
     {
-        var idParam = new SqlParameter("@userId", userId);
-        var roleParam = new SqlParameter("@role", role);
-        Database.ExecuteSqlRaw("INSERT INTO AppUserRole (AppUserId, AppRoleId) VALUES (@userId, (SELECT Id FROM AppRole WHERE Name = @role))", @idParam, roleParam);
+        Database.ExecuteSqlInterpolated($"INSERT INTO AppUserRole (AppUserId, AppRoleId) VALUES ({userId}, (SELECT Id FROM AppRole WHERE Name = {role}))");
     }
 
     #endregion
