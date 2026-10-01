@@ -14,7 +14,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 4. **This machine's clones are stale.** 10 of 15 repos are behind origin; 5 of those have diverged. The trackers in `~/git/lymestarter` read here are a week old.
 5. **Ports landed on the wrong branch.** The G19 fix went to `main` in `lymecrm`, `ping` and `qc-sod-ordering` while their working branch is `develop`.
 6. **A large upstream-bound backlog.** LymeBooks' `lymestack-todos.md` holds 189 pending non-design entries for the template; the `.ls-*` design system has reached the template but none of the other five apps.
-7. **Two scaffolds are missing from every tracker:** `lymestats` and `md-ccrs-dev/atcc-app`.
+7. **Two scaffolds are missing from every tracker:** `lymestats` and `md-ccrs-dev/atcc-app`. (`atcc-app` has since been excluded from this plan — decision D2.)
 
 **Critical success factors:** upstream before downstream, always; pull before porting; every port verified on the repo's deploy branch, not merely committed; nothing pushed or deployed without Mike's say-so; no testing against production.
 
@@ -23,13 +23,13 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | Milestone | Model | Status | Duration (min) | Notes |
 |---|---|---|---|---|
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
-| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ⬜ Not Started | — | 11 decisions; defaults proposed |
+| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | 🔄 In Progress | — | D1, D2, D4, D5 decided 2026-10-01; D3, D6–D11 open |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ⬜ Not Started | — | Auth hole, logger, publish env, email check |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
-| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ⬜ Not Started | — | 8 repos (L1) + 5 repos (L2) |
-| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ⬜ Not Started | — | sawgrass-v2, qc-sod-ordering, pmo-app, atcc-app |
+| [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ⬜ Not Started | — | 7 repos (L1) + 5 repos (L2) |
+| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ⬜ Not Started | — | sawgrass-v2, qc-sod-ordering (pmo-app deferred per D1; atcc-app excluded per D2) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | ⬜ Not Started | — | Email check, publish env, TypeGen, G19 gaps |
@@ -86,7 +86,7 @@ Found by scanning `~/git/` at any depth for a `WebApi/SimpleAuthNet` directory. 
 | `open-mic-night` | SA | `main` | net9 · ng19 | no (confirmed 2026-08-26) | ✅ |
 | `qc-sod-ordering` | SA | `develop` | net9 · ng19 | unconfirmed (client) | ✅ |
 | `playmusiconline/pmo-app` | SA | `develop` | net8 · ng18 | deployed; being rebuilt | ✅ (skipped by decision) |
-| `md-ccrs-dev/atcc-app` | SA | `develop` | net8 · ng18 | client app (MD CCRS) | ❌ **missing** |
+| `md-ccrs-dev/atcc-app` | SA | `develop` | net8 · ng18 | client app (MD CCRS) | ❌ **excluded (D2) — not Mike's project, do not touch** |
 
 Retired and excluded: `lymeauth`, `lymecrm-v1`.
 
@@ -112,7 +112,7 @@ After `git fetch` on 2026-10-01. "Behind" work was done and pushed from another 
 | `playmusiconline` | 18 | 0 | — | Fast-forward |
 | `lymecrm` | 0 | 2 | two doc commits | Push when approved. 25 stale `worktree-agent-*` branches, each 1–2 commits ahead of `develop` |
 | `lymestats` | 0 | 1 | RESUME only | Push when approved |
-| `md-ccrs-dev` | 0 | 29 | 29 commits on `develop` (2026-08) | Mike decides; `origin/main` also has 14 commits `develop` lacks |
+| `md-ccrs-dev` | 0 | 29 | 29 commits on `develop` (2026-08) | Leave untouched (D2); `origin/main` also has 14 commits `develop` lacks |
 | `ping`, `qc-sod-ordering` | 0 | 0 | — | Current |
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -210,7 +210,7 @@ Fixes that exist downstream and have not reached the layer that owns the code.
 |---|---|---|---|
 | `lymestarter` `8c201de` | `SimpleAuth4Net` | Items A and B | Small, **urgent** |
 | `lymestarter` `3751db1` | `SimpleAuth4Net` | Item G | Small |
-| `md-ccrs-dev/atcc-app` | `SimpleAuth4Net` | Item F (email duplicate validation) | Medium; spec already written |
+| `md-ccrs-dev/atcc-app` | `SimpleAuth4Net` | Item F (email duplicate validation) | Medium; spec already written — implement from `simple-auth-email-check-fix.md`, not from the `atcc-app` repo (D2) |
 | `lymebooks` `lymestack-todos.md` | `lymestarter` | 241 "Pending" entries: 52 design-pass entries already ported on 2026-09-25 but never moved to Completed, plus **189 others** | Large |
 | `lymebooks` (subset of the above) | `lymestarter` | Items N and O | Small, **urgent** |
 | `lymebooks` (subset) | `SimpleAuth4Net` | Entries touching `SimpleAuthNet/` and `AuthController.cs`: `IPostRegistrationHandler` invite-token overload, `RegisterModel.InviteToken`, `AddSimpleAuthLogging` always registering an `IAuthLogger`, explicit Bearer-header read in `OnMessageReceived`, `register.component.ts` fix (2026-09-26), admin support access (2026-09-30) | Triage in M8 |
@@ -231,7 +231,7 @@ Fixes that exist downstream and have not reached the layer that owns the code.
 | `lymestats` | `origin/main` is 1 commit behind `develop`; G19 on neither |
 | `playmusiconline` | `origin/main` is 71 commits behind `develop` |
 | `lymesend`, `paymentz` | Stale `origin/develop` branches (19 and 74 commits behind `main`) |
-| `md-ccrs-dev` | 29 unpushed commits on `develop`; `origin/main` has 14 that `develop` lacks |
+| `md-ccrs-dev` | 29 unpushed commits on `develop`; `origin/main` has 14 that `develop` lacks. Left as is (D2) |
 | `lymebooks` | Local leftover branches from before the history rewrite |
 | `lymecrm` | 29 `worktree-agent-*` branches (M0 count): 24 are patch-identical to `develop`; 5 carry commits `develop` lacks (4 POS feature commits, 1 worker summary) — the same pattern that hid LymeBooks' lost unlock port |
 
@@ -290,7 +290,7 @@ Resolved in [M1](#m1--decisions-gate). The **default** is what the plan assumes 
 | # | Decision | Default |
 |---|---|---|
 | D1 | `pmo-app`: port A + C now, or keep waiting for the rebuild? | Port A now (small); keep C deferred. **Decided 2026-10-01: default** |
-| D2 | `atcc-app` (client repo, ng18/net8, 725-line AuthController drift): bring into the fleet? | Register it in the inventory; port A only; assess C separately with the client's schedule |
+| D2 | `atcc-app` (client repo, ng18/net8, 725-line AuthController drift): bring into the fleet? | Register it in the inventory; port A only; assess C separately with the client's schedule. **Decided 2026-10-01: no — excluded entirely.** It is not Mike's project; it was built on SimpleAuth v1.0 and is far behind. No worker enters `md-ccrs-dev`: no ports, no pushes (the 29 local commits stay as they are), no `CLAUDE.md` tag, no inventory or skill registration. Its rows in the Part 1 tables remain as a record of the scan only |
 | D3 | Item I (older L1 features) in SimpleAuth-lineage apps: port, or accept as permanent drift? | Port `ISimpleAuthEmailSender` + `IPostRegistrationHandler` (small, shrinks future merges); skip SSO modes |
 | D4 | `sawgrass-v2`: its Argon2id port was held back on 2026-08-26. Release it? | Yes, in M5. **Decided 2026-10-01: yes.** The hold was only that Mike did not want to touch `sawgrass-v2` at the time; no technical blocker |
 | D5 | `qc-sod-ordering`: which branch deploys? | `develop` is the working branch; merge to `main` in M6. **Decided 2026-10-01: confirmed as the default** |
@@ -345,7 +345,7 @@ Bring this machine's clones level with origin so every later milestone works fro
 
 - [ ] Answer D1–D11 in [1.9](#19-open-decisions), or accept the defaults.
 - [ ] Review M0's stale-branch report and say which branches may be deleted.
-- [ ] Say whether `md-ccrs-dev`'s 29 unpushed commits should be pushed.
+- [x] Say whether `md-ccrs-dev`'s 29 unpushed commits should be pushed. No: the repo is not to be touched (D2).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -426,8 +426,8 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 - [ ] `sawgrass-v2` — apply on top of the local unpushed commits; do not resolve the origin divergence here (M5)
 - [ ] `open-mic-night`
 - [ ] `qc-sod-ordering` — on `develop`
-- [ ] `playmusiconline/pmo-app` — per D1
-- [ ] `md-ccrs-dev/atcc-app` — per D2 (item B is ➖: no `DefaultAuthLogger`)
+- [ ] `playmusiconline/pmo-app` — in scope per D1
+- [x] ~~`md-ccrs-dev/atcc-app`~~ — excluded per D2; do not open the repo
 
 For each: enumerate that repo's own actions before deciding which are public — several have app-specific endpoints the reference knows nothing about. Add the reflection test where a test project exists.
 
@@ -453,8 +453,8 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 - [ ] **`sawgrass-v2` (D4):** rebase local `3491a28` + `b229593` + M4's commit onto `origin/main`. Resolve the G19 conflict by replacing origin's inline-HMAC hashing in `AppUserController.Post` with `SimpleAuthPasswordHasher`. Confirm `Services/UserMigrationService.cs` also uses the hasher.
 - [ ] **`qc-sod-ordering` (D5):** bring G19 (`0363f69`) onto `develop` and convert it from inline HMAC to the hasher. Leave the `main` merge to M6.
-- [ ] **`pmo-app` (D1):** if C is approved, port the 2026-07 changeset per `~/git/lymestarter/security-port-plan.md`, convert its G19 to the hasher, and write the migration. If still deferred, record that in the Progress Log and do nothing.
-- [ ] **`atcc-app` (D2):** if approved, same as above; additionally it lacks the audit logger entirely. If not, record and do nothing.
+- [x] **`pmo-app` (D1):** deferred to the rebuild (decided 2026-10-01). Nothing to do here.
+- [x] **`atcc-app` (D2):** excluded (decided 2026-10-01). Nothing to do; do not open the repo.
 - [ ] For every repo touched: legacy HMAC verify is **retained** (removing it locks out every user); rehash-on-login present; migration written in that repo's own DbUp convention and applied to its **dev** database only.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -497,10 +497,10 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 *Workers must complete all items below.*
 
 - [ ] **F** — email duplicate validation to the 12 scaffolds other than `atcc-app` (which already has it). Probe the user form's actual UI kit before writing markup; express the feedback in that kit's idiom so it reads as native to the form (matching the adjacent username-availability hint), not pasted in.
-- [ ] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`, `atcc-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary.
-- [ ] **H** — forward-slash TypeGen `outputPath` in `sawgrass-v2`, `paymentz`, `open-mic-night`, `atcc-app`; clean-rebuild (`rm -rf bin obj`) and confirm `_api/` is populated in the right place. In `open-mic-night`, `git rm` the 18 tracked backslash-named files and add the `.gitignore` rule from lymestarter `18a9108`.
-- [ ] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` / `atcc-app` per D1/D2).
-- [ ] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline`, `md-ccrs-dev` `CLAUDE.md`. Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`.
+- [ ] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary.
+- [ ] **H** — forward-slash TypeGen `outputPath` in `sawgrass-v2`, `paymentz`, `open-mic-night`; clean-rebuild (`rm -rf bin obj`) and confirm `_api/` is populated in the right place. In `open-mic-night`, `git rm` the 18 tracked backslash-named files and add the `.gitignore` rule from lymestarter `18a9108`.
+- [ ] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` per D1; `atcc-app` is excluded per D2).
+- [ ] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline` `CLAUDE.md` (not `md-ccrs-dev`: excluded per D2). Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`.
 - [ ] Each worker builds, tests and commits locally.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -585,8 +585,8 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 *Workers must complete all items below.*
 
-- [ ] Add `lymestats` and `md-ccrs-dev/atcc-app` rows (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`; correct the 2026-09-26 "still unported" note.
-- [ ] Add both repos to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
+- [ ] Add a `lymestats` row (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`, plus a one-line note that `md-ccrs-dev/atcc-app` exists but is deliberately not a fleet member (D2: not Mike's project, SimpleAuth v1.0, never port to it); correct the 2026-09-26 "still unported" note.
+- [ ] Add `lymestats` to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
 - [ ] Update `security-port-plan.md`'s status header, or retire the file.
 - [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state.
 - [ ] Update `~/.claude/claude-md-sections/products/lymestack.md` ("roughly half rolled out" is no longer true).
@@ -605,9 +605,9 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 | Group | Milestones | Can run together because |
 |---|---|---|
 | **A** | M0, M1 | M1 is Mike reading; M0 is mechanical |
-| **B** | M4 L1 half (8 workers, one per repo) | One repo each; starts after T1. `lymetimer` is in both halves — give it one worker for both |
+| **B** | M4 L1 half (7 workers, one per repo) | One repo each; starts after T1. `lymetimer` is in both halves — give it one worker for both |
 | **C** | M4 L2 half (5 workers) | One repo each; starts after T2 |
-| **D** | M5's four repos | Independent repos; after M4 |
+| **D** | M5's two repos (`sawgrass-v2`, `qc-sod-ordering`) | Independent repos; after M4 |
 | **E** | M8, M9, M10 (K/L/M/P items) | M8 writes only `lymestarter`; M9 and M10 touch different files in the same repos — run M9 and M10 **sequentially per repo** (M9 first), in parallel across repos |
 | **F** | M7 per repo | One worker per repo; after M6 so each has a single working branch |
 
