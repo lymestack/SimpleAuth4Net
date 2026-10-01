@@ -26,8 +26,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ✅ Complete | 6 | `8417557..ced452a`, 12 local commits. F uses the existing `EMAIL_EXISTS` code; prod `ng build` budget failure is pre-existing |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
-| [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | 🔄 In Progress | — | Template is the L2 diff base. Dispatched 2026-10-01 17:56 in a detached worktree (main tree is in use by the lymetools plan) |
-| [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
+| [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ✅ Complete | 8 | 10 commits `404a8f0..36f3416`, merged with the sample features as `b60d1b3` on `lymestarter` `main` (ahead of origin by 14, unpushed). 138 tests pass; dev and production `ng build` green |
+| [T2 — Test the template](#t2--test-the-template) | Sonnet | 🔄 In Progress | — | Unit/integration + build. Dispatched 2026-10-01 18:10 |
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half waits on T2 |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
@@ -392,14 +392,14 @@ Make this repo the true L1 source again. *Workers must complete all items below.
 
 The template is the diff base for every LymeStarter-lineage worker. *Workers must complete all items below.*
 
-- [ ] **N:** port LymeBooks' `ConfigSettingController` change. First establish what the pre-login Angular bootstrap actually reads from it, so removing anonymous access does not break startup; follow LymeBooks' working implementation.
-- [ ] **O:** port LymeBooks' `UserFeedbackController` change.
-- [ ] **F:** port email duplicate validation from M2 (column is `EmailAddress`; user form lives under `lymestack-admin/security/users/` and uses the `.ls-*` design system — follow `docs/design-system.md`, `.ls-inset--danger` / form-hint patterns, no bespoke SCSS).
-- [ ] Port anything M2's triage upstreamed that the template lacks.
-- [ ] **J:** finish the design-system port's "Built" box — `npm ci`, fix the esbuild arch issue if present (`npm install @esbuild/darwin-arm64 --no-save`), `npx ng build --configuration development`.
-- [ ] Add the T1 reflection test to `WebApi/LymeStack.Tests`.
-- [ ] Open `core-fix-log.md` sections for A/B, G, K, L, N/O and F with per-repo tables seeded from [1.3](#13-l1-backlog--simpleauth4net-owned-code) and [1.4](#14-l2-backlog--lymestarter-owned-code).
-- [ ] Commit locally.
+- [x] **N:** port LymeBooks' `ConfigSettingController` change. First establish what the pre-login Angular bootstrap actually reads from it, so removing anonymous access does not break startup; follow LymeBooks' working implementation.
+- [x] **O:** port LymeBooks' `UserFeedbackController` change.
+- [x] **F:** port email duplicate validation from M2 (column is `EmailAddress`; user form lives under `lymestack-admin/security/users/` and uses the `.ls-*` design system — follow `docs/design-system.md`, `.ls-inset--danger` / form-hint patterns, no bespoke SCSS).
+- [x] Port anything M2's triage upstreamed that the template lacks.
+- [x] **J:** finish the design-system port's "Built" box — `npm ci`, fix the esbuild arch issue if present (`npm install @esbuild/darwin-arm64 --no-save`), `npx ng build --configuration development`.
+- [x] Add the T1 reflection test to `WebApi/LymeStack.Tests`.
+- [x] Open `core-fix-log.md` sections for A/B, G, K, L, N/O and F with per-repo tables seeded from [1.3](#13-l1-backlog--simpleauth4net-owned-code) and [1.4](#14-l2-backlog--lymestarter-owned-code).
+- [x] Commit locally.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,15 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - **Reviews waiting on Mike (nothing from them is ported until answered):** `/Users/michaeljosephwork/git/lymestarter/lymebooks-intake.md` (8 port groups, 6 questions) and `/Users/michaeljosephwork/git/SimpleAuth4Net/core-drift-audit.md` (14 upstream items, 2 questions).
+  - M3: the always-registered `IAuthLogger` fix is now in the template (`18304c0`) but not in `SimpleAuth4Net`, which still cannot build `AuthController` with audit logging off. It is intake group G1 (L1); port it upstream once the intake is approved.
+  - M3: the template has global error middleware, yet `AppUserController.Post` and `AuthController.Register` keep a `try/catch (DbUpdateException)` that maps unique-index races to `EMAIL_EXISTS` / `USERNAME_EXISTS`. Remove (race becomes a 500) or keep?
+  - M3: anonymous `GET /AppConfig` still returns every `ConfigSetting` whose name does not contain `ApiKey`, `Secret`, `Password`, `Token` or `ConnectionString` (LymeBooks' filter). Angular does not read them from there. Good enough, or stop sending settings anonymously at all?
+  - M7 `paymentz` vs `open-mic-night`: after item I, `open-mic-night` writes every registration to the audit log (as the reference does); `paymentz` kept its first-user-only logging. Pick one.
+  - M7 `paymentz`: source `web.config` still says `Development` on purpose (its own `paymentz-production-environment-fix.md`: the file drives local IIS and the SDK rewrites it at publish). The deployed production `web.config` stays `Development` until a new package ships.
+  - M7 `open-mic-night`: fixing the TypeGen path exposed that TypeGen wiped hand-added types in `_api/`; the worker turned off `clearOutputDirectory` and `createIndexFile`, so `index.ts` is hand-maintained there. Also a stale `processPath` in `web.config`.
+  - M10 `lymedeploy`: `--check` works on the standalone DbUp exe only; `LymeDeploy.Tools dbup` still migrates for real. Should the Tools subcommand honour it?
+  - M10 `lymetimer`: the new bootstrap guard needs `/api/AppConfig` to return a JSON content type on UAT and production; check after deploy.
   - **`pmo-app` scope for M7:** the run policy says `pmo-app` gets the authorization fix only (D1), but M7 lists it for F, G, I and the upstream tag. Held; nothing beyond A and B has been ported there. Say whether M7 applies to `pmo-app`.
   - M5 `qc-sod-ordering`: `WebApi.IntegrationTests` fails 19 of 19 before and after today's work (EF service provider resolution); the DbUp journal is out of sync with the database.
   - M4 `lymesend`: `SendController` is class-level `[AllowAnonymous]` by design; `ApiKeyAuthMiddleware` is its only gate. Also, `CLAUDE.md` there carries a plaintext DB credential.
@@ -678,7 +687,7 @@ How each cell in 1.3 and 1.4 was decided. Probe by `git ls-tree` / `git show <re
 | D | `UnlockUser` in `AuthController.cs` |
 | E | `NewPassword` / `INVALID_PASSWORD` in `AppUserController.cs` |
 | F | `EmailExists` in `AuthController.cs` |
-| G | `<EnvironmentName>Production` in `WebApi.csproj`; `ASPNETCORE_ENVIRONMENT" value="Development"` in `web.config` |
+| G | `<EnvironmentName` … `Production` in `WebApi.csproj` (the element may carry a `Condition` attribute: the literal `<EnvironmentName>Production` probe misread `lymesend` and `paymentz`, which already had G); `ASPNETCORE_ENVIRONMENT" value="Development"` in `web.config` |
 | H | no `\\` in any `tgconfig.json`; `git ls-files` shows no backslash-named paths |
 | I | `IPostRegistrationHandler.cs`, `ISimpleAuthEmailSender.cs`, `Models/Config/SimpleAuthMode.cs` exist |
 | J | `ng-app/src/scss/_components.scss` exists |
@@ -696,6 +705,17 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:10** - M3 complete (17:55 to 18:03) and merged into `lymestarter` `main`; T2 dispatched; more M7 and M10 results.
+
+- **M3 commits:** N `404a8f0` (both `ConfigSetting` GETs Admin-only; `AppConfigController` drops secret-looking setting names, added mid-flight from the intake finding), O `c235db9` (GETs Admin-only; the anonymous POST can no longer overwrite a row by id), F `32827b9` + `b648b3e`, J build fix `3ef72e2` (the design-system port had taken `nav-menu-form`'s html without its `.ts`), `Register` calls `IPostRegistrationHandler` again `2fa0dd2`, `Secure` cookies with `CookieDomain` `537daf5`, always-registered `IAuthLogger` `18304c0`, tests `6c6127c`, `core-fix-log.md` sections `36f3416`. No test seam was needed in the template.
+- **N finding:** the pre-login bootstrap reads only `GET /AppConfig`; nothing calls `/ConfigSetting` before login; Angular reads it only on admin pages.
+- **Merge:** the other session had committed its samples to `main` (`1ce8193`, `ff2df33`). The orchestrator merged `main` into the worktree as `b60d1b3` (clean, no conflicts), rebuilt (138 tests pass, dev `ng build` green), then fast-forwarded `main` to `b60d1b3`. No branch was created. T2 continues in the worktree.
+- **M7 `lymesend`:** F `d01b5e6` (111 tests). G was already there since `5ad96e9`; the probe missed it because the csproj element has a `Condition` attribute (appendix corrected). LymeDeploy does not override the environment for any app; TeamCity passes `-p:EnvironmentName=Production`.
+- **M7 `paymentz`:** F `45ce697`, H `23f539e`, I `74e9303`; G already present (`e2768fe`). 271 tests pass.
+- **M7 `open-mic-night`:** H `744ab29` (18 backslash-named files removed, ignore rule added), G `f6b4a1c`, F `a7c1011`, I `913dd2a`. 88 of 89 pass (the same 1 pre-existing failure).
+- **M10 `lymedeploy`:** K `df464f6`, M `a825192`. Pre-existing failures unchanged (Cli.Tests 4, LymeStack.Tests 5). DbUp was not run.
+- Still running: M7 in `sawgrass-v2` and `qc-sod-ordering`, M10 in `lymebooks`.
 
 **2026-10-01 18:12** - M8 intake classification complete (17:53 to 18:00); M10 done in three repos.
 
