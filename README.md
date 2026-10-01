@@ -17,7 +17,7 @@ The goal of this project is to provide small to medium-sized businesses and orga
   - [General Features](#general-features) - Features applicable to both local account and SSO authentication methods.
   - ["Local Accounts" Security Features](#local-accounts-security-features) - Security features built into local accounts.
 - [Screenshots](#screenshots) - Look at some screenshots from one of the client apps.
-- [Frontend Support](#frontend-support) - Sample apps provided for Angular, React and VueJS
+- [Frontend Support](#frontend-support) - A maintained Angular client app, plus unmaintained React and VueJS samples
 
 To get a sample app with authentication / authorization up and running on your local computer in less than 10 minutes, follow the **[Getting Started Guide](./documentation/getting-started.md)**. Just curious? Have a look at [some screenshots](./documentation/angular-app.md) or check out the [the documentation](./documentation/README.md) to read more.
 
@@ -338,11 +338,11 @@ The IdentityProvider issues the identity (who you are). Each RelyingApp decides 
 
 ### Frontend Support
 
-SimpleAuth currently supports three client frameworks:
+SimpleAuth ships three client apps, but only the Angular app is maintained:
 
-- [**Angular v18**](./documentation/angular-app.md) – The most polished implementation, ready to integrate.
-- [**React v18**](./documentation/react-app.md) – Functional, but less refined.
-- [**Vue v3**](./documentation/vue-app.md) – Functional, but early-stage.
+- [**Angular v19**](./documentation/angular-app.md) – The maintained implementation, ready to integrate.
+- [**React v18**](./documentation/react-app.md) – **Unmaintained.** Last updated June 2025 and never run against the hardened API (server-driven MFA routing, the pending-login gate on authenticator codes). Treat it as a starting point only.
+- [**Vue v3**](./documentation/vue-app.md) – **Unmaintained.** Same status as the React app.
 
 Contributions to improve the existing front-ends or add support for other frameworks are welcome and encouraged.
 
