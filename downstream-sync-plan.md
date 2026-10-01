@@ -29,13 +29,13 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | 🔄 In Progress | — | Template is the L2 diff base. Dispatched 2026-10-01 17:56 in a detached worktree (main tree is in use by the lymetools plan) |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | 🔄 In Progress | 8 (L1 half) | L1 half done in all 7 repos (see log). L2 half waits on T2 |
-| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | 🔄 In Progress | — | Dispatched 2026-10-01 18:04: sawgrass-v2 (Opus), qc-sod-ordering (Sonnet). pmo-app deferred per D1; atcc-app excluded per D2 |
+| [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ⬜ Not Started | — | Probe + build + anonymous-call checks |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ⬜ Not Started | — | develop ↔ main, stale branches |
-| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | ⬜ Not Started | — | Email check, publish env, TypeGen, G19 gaps |
+| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymesend` and `qc-sod-ordering` (Opus, F UI), `paymentz`, `open-mic-night`, `sawgrass-v2` (Sonnet). LymeStarter-lineage repos wait on M9; `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | — | Analysis started early (2026-10-01 17:53): intake classification and core drift audit, read-only. Porting still waits on T2 and Mike's review |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
-| [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | ⬜ Not Started | — | Attachments, bootstrap, `--check`, transport |
+| [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymetimer`, `lymedeploy`, `ping`, `lymestats`. `lymebooks` follows the intake triage |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
@@ -454,11 +454,11 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 *Workers must complete all items below.*
 
-- [ ] **`sawgrass-v2` (D4):** rebase local `3491a28` + `b229593` + M4's commit onto `origin/main`. Resolve the G19 conflict by replacing origin's inline-HMAC hashing in `AppUserController.Post` with `SimpleAuthPasswordHasher`. Confirm `Services/UserMigrationService.cs` also uses the hasher.
-- [ ] **`qc-sod-ordering` (D5):** bring G19 (`0363f69`) onto `develop` and convert it from inline HMAC to the hasher. Leave the `main` merge to M6.
+- [x] **`sawgrass-v2` (D4):** rebase local `3491a28` + `b229593` + M4's commit onto `origin/main`. Resolve the G19 conflict by replacing origin's inline-HMAC hashing in `AppUserController.Post` with `SimpleAuthPasswordHasher`. Confirm `Services/UserMigrationService.cs` also uses the hasher.
+- [x] **`qc-sod-ordering` (D5):** bring G19 (`0363f69`) onto `develop` and convert it from inline HMAC to the hasher. Leave the `main` merge to M6.
 - [x] **`pmo-app` (D1):** deferred to the rebuild (decided 2026-10-01). Nothing to do here.
 - [x] **`atcc-app` (D2):** excluded (decided 2026-10-01). Nothing to do; do not open the repo.
-- [ ] For every repo touched: legacy HMAC verify is **retained** (removing it locks out every user); rehash-on-login present; migration written in that repo's own DbUp convention and applied to its **dev** database only.
+- [x] For every repo touched: legacy HMAC verify is **retained** (removing it locks out every user); rehash-on-login present; migration written in that repo's own DbUp convention and applied to its **dev** database only. (Both migrations exist as `2026-08-26 - Security hardening.sql`. Neither was applied today: `sawgrass-v2`'s only database is the unreachable Azure dev DB (M11); `qc-sod-ordering` is recorded as already migrated and its DbUp journal is out of sync, so the worker left it alone.)
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,8 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - **`pmo-app` scope for M7:** the run policy says `pmo-app` gets the authorization fix only (D1), but M7 lists it for F, G, I and the upstream tag. Held; nothing beyond A and B has been ported there. Say whether M7 applies to `pmo-app`.
+  - M5 `qc-sod-ordering`: `WebApi.IntegrationTests` fails 19 of 19 before and after today's work (EF service provider resolution); the DbUp journal is out of sync with the database.
   - M4 `lymesend`: `SendController` is class-level `[AllowAnonymous]` by design; `ApiKeyAuthMiddleware` is its only gate. Also, `CLAUDE.md` there carries a plaintext DB credential.
   - M4 `qc-sod-ordering`: `MockQcApiController` is class-level `[AllowAnonymous]` with its own service JWT; confirm it is not reachable in production.
   - M4 `pmo-app`: `RoomHub` has `[Authorize]` commented out ("temporarily removed to debug SignalR authentication") and checks auth per method.
@@ -694,6 +696,15 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:08** - M5 complete; M7 and M10 started early on idle repos.
+
+- **`sawgrass-v2`:** rebased cleanly onto `origin/main` (pre-rebase HEAD `512462f`, kept in the reflog). SHA mapping: unlock `b229593` → `cf87cb3`; Argon2id `3491a28` → `27096d3`; M4 fix A `37194ed` → `6216eb3`; M4 fix B `512462f` → `c3237b2`. New `ddc4fec` converts origin's G19 from inline HMAC to `SimpleAuthPasswordHasher`. Ahead 5, behind 0. Tests: 438 pass, the same 11 pre-existing failures. `UserMigrationService` already used the hasher. Migration `2026-08-26 - Security hardening.sql` exists, unapplied (Azure firewall; M11).
+- **`qc-sod-ordering` (`develop`):** G19 cherry-picked from `0363f69` and converted to the hasher as `c3331ae`. `WebApi.Tests` 110 pass. For M6: expect a conflict in `AppUserController.cs` and `AppUserControllerTests.cs` when merging `develop` into `main`; take the `develop` side.
+- Verified in both: `HMACSHA512` appears only in `SimpleAuthPasswordHasher.cs` (legacy verify), nothing pushed.
+- **Early starts (Mike asked for more fan-out; these repos were idle and the references are already tested):** M7 in `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering` (items F, G, H, I as applicable, from the SimpleAuth4Net reference T1 tested); M10 in `lymetimer`, `lymedeploy`, `ping`, `lymestats` (items K, L, M from template commits already on `main`). T3 still sweeps every repo afterwards. M7 for the LymeStarter-lineage repos waits for the design system (M9), since F's form feedback uses it.
+- **Held:** M7 for `pmo-app`, pending Mike (run policy and M7 disagree on scope).
+- `lymestarter` `main` moved to `ff2df33` (the other session committed its samples), so M3's worktree commits will be merged in rather than fast-forwarded.
 
 **2026-10-01 18:04** - M4 L1 half complete in all 7 repos (17:55 to 18:03); M8 drift audit complete; M5 dispatched.
 
