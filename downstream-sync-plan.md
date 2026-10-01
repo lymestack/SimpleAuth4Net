@@ -23,8 +23,8 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | Milestone | Model | Status | Duration (min) | Notes |
 |---|---|---|---|---|
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
-| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | 🔄 In Progress | — | D1, D2, D4, D5 decided 2026-10-01; D3, D6–D11 open |
-| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ⬜ Not Started | — | Auth hole, logger, publish env, email check |
+| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | 🔄 In Progress | — | All 11 decisions made 2026-10-01. Only open item: which `lymebooks` stale branches may be deleted |
+| [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | 🔄 In Progress | — | Auth hole, logger, publish env, email check. Worker prompt issued 2026-10-01 |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ⬜ Not Started | — | Unit/integration + build |
@@ -301,6 +301,8 @@ Resolved in [M1](#m1--decisions-gate). The **default** is what the plan assumes 
 | D10 | `react-app` / `vue-app` in this repo: maintain or mark unmaintained? | Mark unmaintained in the README |
 | D11 | Add a small xUnit project to this repo for auth regression tests? | Yes — M2/T1 assume it |
 
+**2026-10-01: all eleven decided.** D1, D2, D4, D5 as annotated above; D3, D6, D7, D8, D9, D10 and D11 accepted as their defaults. D8's separate .NET 10 plan must start soon: support ends 2026-11-10.
+
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
 ---
@@ -343,8 +345,8 @@ Bring this machine's clones level with origin so every later milestone works fro
 
 **Owner:** Mike · **Depends on:** nothing (can run alongside M0) · **Blocks:** M5, M6, M7 scope
 
-- [ ] Answer D1–D11 in [1.9](#19-open-decisions), or accept the defaults.
-- [ ] Review M0's stale-branch report and say which branches may be deleted.
+- [x] Answer D1–D11 in [1.9](#19-open-decisions), or accept the defaults. All decided 2026-10-01.
+- [ ] Review M0's stale-branch report and say which branches may be deleted. `lymecrm`: all 29 deleted 2026-10-01. `lymebooks` `accounting-remediation` and `backup/pre-rewrite`: still to decide.
 - [x] Say whether `md-ccrs-dev`'s 29 unpushed commits should be pushed. No: the repo is not to be touched (D2).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
