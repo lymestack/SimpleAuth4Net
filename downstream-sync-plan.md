@@ -30,7 +30,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [T2 — Test the template](#t2--test-the-template) | Sonnet | ✅ Complete | 1 | `283405f`: 161 tests pass; production and development `ng build` green. Hands-on pass and push carried to T5 |
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ✅ Complete | 8 + 4 | Both halves done: A + B in 7 repos, N + O in 5 repos (see log). No new test failures anywhere |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
-| [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | 🔄 In Progress | — | Probe + build + anonymous-call checks. Dispatched 2026-10-01 18:27 |
+| [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ✅ Complete | 7 | Nothing failed: A, B in 14 repos; N, O in 7; 401 over HTTP in 8 repos; all 50 port commits on their branches. Open: ledger update (tree in use), and HTTP checks for the 6 repos that had workers in them (moved to T4) |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
 | [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Done in `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering`, `lymebooks`. F (and G, tag) for the five M9 repos rides with M9. `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
@@ -466,12 +466,12 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 **Model:** Sonnet · **Mode:** unit/integration + scripted probe · **Depends on:** M4, M5
 
-- [ ] Re-run the appendix probe at each repo's working tree: columns A, B, N, O read ✅ for every in-scope repo; C/D/E read ✅ with no ⚠️ for `sawgrass-v2` and `qc-sod-ordering`.
-- [ ] `grep` every ported repo for remaining inline `HMACSHA512` **hash writes** outside `SimpleAuthPasswordHasher` (verify-only legacy paths are expected).
-- [ ] `dotnet build` + `dotnet test` per repo; table of results with pre-existing failures called out (`sawgrass-v2`, `lymedeploy`, `open-mic-night` have known ones).
-- [ ] For each repo that can run locally, start the API and `curl -X POST` the three admin endpoints without a token: expect 401.
-- [ ] `git merge-base --is-ancestor <sha> HEAD` for every port commit on its working branch.
-- [ ] Update the `core-fix-log.md` tables. Push approvals are deferred to T5; do not pause here.
+- [x] Re-run the appendix probe at each repo's working tree: columns A, B, N, O read ✅ for every in-scope repo; C/D/E read ✅ with no ⚠️ for `sawgrass-v2` and `qc-sod-ordering`.
+- [x] `grep` every ported repo for remaining inline `HMACSHA512` **hash writes** outside `SimpleAuthPasswordHasher` (verify-only legacy paths are expected).
+- [x] `dotnet build` + `dotnet test` per repo; table of results with pre-existing failures called out (`sawgrass-v2`, `lymedeploy`, `open-mic-night` have known ones). (Built fresh in 8 repos; the 6 repos with design-system workers in them carry worker-reported results and are rebuilt in T4.)
+- [x] For each repo that can run locally, start the API and `curl -X POST` the three admin endpoints without a token: expect 401. (401 in `SimpleAuth4Net`, `lymestarter`, `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering`, `pmo-app`, each started with an unreachable database override. The other 6 are checked in T4.)
+- [x] `git merge-base --is-ancestor <sha> HEAD` for every port commit on its working branch.
+- [ ] Update the `core-fix-log.md` tables. Push approvals are deferred to T5; do not pause here. **Open:** the table updates are written (in the T3 summary) but not applied, because the other orchestrator has a worker in the `lymestarter` tree; applied with M12.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,9 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - T3: `lymestarter` commit `ff2df33` (the lymetools plan's samples commit, unpushed) names the root instructions file in its body. It is a file reference, not attribution, and it now sits under this plan's merge `b60d1b3`, so rewording it means rewriting later commits. Left alone; Mike's call before the push.
+  - T3: `pmo-app` still writes password hashes with inline HMAC (expected: Argon2id is deferred there, D1). Its Development config pins Kestrel to port 5218.
+  - M9 `ping`: home's module menu sits in a plain Bootstrap card, which now picks up the framework's soft shadow.
   - **M9 `ping`: brand pages left alone.** PinG's own pages and its account screens use a deliberate, client-approved `--ping-*` design that does not inherit the framework theme. The orchestrator told the worker not to restyle them to `.ls-*`; only the framework parts get the design system. Confirm or overrule.
   - M4 `lymedeploy`: the Settings page reads `Deployment.Mode` from `GET /ConfigSetting`, now Admin-only; a non-admin silently saw the default. The M9 worker was asked to make the page say the value is unavailable. Stale comments about the "full" AppConfig settings list remain in `CliContracts.cs`, `LymeDeployApiClient.cs` and `deploy-api.service.ts`.
   - M4 `lymestats` (and likely other LymeStarter-lineage apps): still has the audit-logger registration defect the template fixed in `18304c0`; fan-out waits on the intake review (group G1).
@@ -713,6 +716,16 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:38** - T3 complete (about 7 minutes): nothing failed. M9 complete in `ping`.
+
+- **T3 probe:** A and B ✅ in all 14 repos; C, D, E ✅ wherever in scope, with no ⚠️ left for `sawgrass-v2` or `qc-sod-ordering`; N and O ✅ in all seven LymeStarter-lineage repos (the two controllers are byte-identical to the template's in all six apps). Every `AuthController` action carries exactly one attribute; no controller has a class-level `[AllowAnonymous]` above an `[Authorize]` action.
+- **HMAC:** the only `HMACSHA512` in the 13 ported repos is the legacy verify path in `SimpleAuthPasswordHasher`. `pmo-app` still writes inline (expected, D1).
+- **Builds and tests (fresh, 8 repos):** all build; every failure is on the known list (`sawgrass-v2` 11, `open-mic-night` 1, `qc-sod-ordering` integration 19).
+- **Anonymous calls over HTTP:** the three admin endpoints return 401 in the 8 repos that could be run (`pmo-app` has no `UnlockUser`: 404). Each API was started against an unreachable database address, so no database was touched.
+- **Ancestry and push state:** all 50 port commits are ancestors of their working-branch HEAD; nothing is pushed anywhere; no attribution in any commit message.
+- **Not re-run:** `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`, `lymebooks` had workers in them, so their builds and 401 checks move to T4.
+- **M9 `ping` (18:10 to 18:18):** tokens and components `9046c95`, 57 `lymestack-admin` files `365038c`, always-registered `IAuthLogger` `840d3ed` (the F tests need it), F `5418400`, About restyled `e09351a`, docs `4f02c76`. Two brand-page edits were backed out after the orchestrator's ruling (`d6684ca`, `7007277`): PinG's own pages and account screens are unchanged by design. LymeStack.Tests 146, Ping.Tests 354; development and production `ng build` green. `ping` has no root project instructions file; none was created, and the design-system pointer is in `docs/README.md`.
 
 **2026-10-01 18:30** - M7 item F complete in `lymebooks` (18:07 to 18:13): `00816ca8` (API, tests, `lymestack-todos.md` entry) and `c98d10ce` (user form). `WebApi.Tests` 836 pass.
 
