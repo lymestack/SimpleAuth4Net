@@ -32,11 +32,11 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ✅ Complete | 7 | Nothing failed: A, B in 14 repos; N, O in 7; 401 over HTTP in 8 repos; all 50 port commits on their branches. Open: ledger update (tree in use), and HTTP checks for the 6 repos that had workers in them (moved to T4) |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ✅ Complete | 7 + 4 | `ping` G19 merged into `develop`; `lymestats` G19 ported and local `main` level; `qc-sod-ordering` local `main` = `develop` = `788b3bf`. All local, unpushed. Table in the log |
-| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Done in `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering`, `lymebooks`. F (and G, tag) for the five M9 repos rides with M9. `pmo-app` held for Mike (see T5) |
+| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | 6 (longest) | Done in all 11 repos except `pmo-app`, which is held for Mike's scope answer (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
-| [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | 🔄 In Progress | — | Dispatched per repo as its L2 worker finished (18:22 to 18:27): `lymetimer`, `ping`, `lymestats`, `lymedeploy`, `lymecrm`. Each also ports F; `lymecrm`, `lymetimer`, `lymedeploy` also G |
+| [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ✅ Complete | 22 (longest; 5 in parallel) | All five repos done, builds and tests green (see log). `ping`'s brand pages and `lymecrm`'s POS register, pos-count and customer portal kept by design. Visual sign-off at T5 |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
-| [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
+| [T4 — L2 verification](#t4--l2-verification) | Sonnet | 🔄 In Progress | — | Build/tests, drift re-measure, and the 401 checks carried over from T3. Dispatched 2026-10-01 18:52. Visual sign-off is at T5 |
 | [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
 | [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | ⬜ Not Started | — | Inventory rows, skill lists, tags, docs |
@@ -499,12 +499,12 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 *Workers must complete all items below.*
 
-- [ ] **F** — email duplicate validation to the 12 scaffolds other than `atcc-app` (which already has it). Probe the user form's actual UI kit before writing markup; express the feedback in that kit's idiom so it reads as native to the form (matching the adjacent username-availability hint), not pasted in.
-- [ ] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary.
-- [ ] **H** — forward-slash TypeGen `outputPath` in `sawgrass-v2`, `paymentz`, `open-mic-night`; clean-rebuild (`rm -rf bin obj`) and confirm `_api/` is populated in the right place. In `open-mic-night`, `git rm` the 18 tracked backslash-named files and add the `.gitignore` rule from lymestarter `18a9108`.
-- [ ] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` per D1; `atcc-app` is excluded per D2).
-- [ ] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline` `CLAUDE.md` (not `md-ccrs-dev`: excluded per D2). Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`.
-- [ ] Each worker builds, tests and commits locally.
+- [ ] **F** — email duplicate validation to the 12 scaffolds other than `atcc-app` (which already has it). Probe the user form's actual UI kit before writing markup; express the feedback in that kit's idiom so it reads as native to the form (matching the adjacent username-availability hint), not pasted in. **Status 2026-10-01:** done in 11 scaffolds; `pmo-app` held for Mike's scope answer.
+- [ ] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary. **Status 2026-10-01:** done or already present in all listed repos except `pmo-app` (held). LymeDeploy does not override the environment for any app; TeamCity passes `-p:EnvironmentName=Production` where a pipeline exists; `qc-sod-ordering` deploys through Octopus (not checked).
+- [x] **H** — forward-slash TypeGen `outputPath` in `sawgrass-v2`, `paymentz`, `open-mic-night`; clean-rebuild (`rm -rf bin obj`) and confirm `_api/` is populated in the right place. In `open-mic-night`, `git rm` the 18 tracked backslash-named files and add the `.gitignore` rule from lymestarter `18a9108`. Done 2026-10-01 in all three.
+- [ ] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` per D1; `atcc-app` is excluded per D2). **Status 2026-10-01:** done in `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`; `pmo-app` held.
+- [ ] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline` `CLAUDE.md` (not `md-ccrs-dev`: excluded per D2). Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`. **Status 2026-10-01:** added in `lymecrm` (`63121f4`) and `qc-sod-ordering` (`9cbe315`); `playmusiconline` held with the rest of `pmo-app`. `ping` and `lymestats` have no root file (flagged, not created).
+- [x] Each worker builds, tests and commits locally. 
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -530,12 +530,12 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `develop` is the fullest implementation. *Workers must complete all items below.*
 
-- [ ] Adopt `_components.scss` wholesale; **merge** (never overwrite) token additions into each repo's `_variables.scss`, `_themes.scss` and `_bootstrap-overrides.scss` where the repo carries its own overrides.
-- [ ] Bring the 55 `lymestack-admin/**` files to the template versions. Where the repo has modified one (see drift counts — `lymetimer` 56), merge by hand and keep the app's behaviour.
-- [ ] Apply the design system to the app's **own** pages with real craft: consistent spacing rhythm, a clear visual hierarchy with one primary action per view, hairline dividers and small-caps section labels, tabular figures in numeric columns, restrained hover/focus transitions, and full light/dark parity through `--ls-*` tokens only. The result should feel deliberately designed — closer to Linear or Notion than to stock Bootstrap — and every page should look like it belongs to the same product as LymeBooks.
-- [ ] Remove banned classes listed in `docs/design-system.md`; replace Font Awesome with Bootstrap Icons where the template did.
-- [ ] Copy `docs/design-system.md` and add the CLAUDE.md pointer.
-- [ ] `ng build` green; commit locally.
+- [x] Adopt `_components.scss` wholesale; **merge** (never overwrite) token additions into each repo's `_variables.scss`, `_themes.scss` and `_bootstrap-overrides.scss` where the repo carries its own overrides.
+- [x] Bring the 55 `lymestack-admin/**` files to the template versions. Where the repo has modified one (see drift counts — `lymetimer` 56), merge by hand and keep the app's behaviour.
+- [x] Apply the design system to the app's **own** pages with real craft: consistent spacing rhythm, a clear visual hierarchy with one primary action per view, hairline dividers and small-caps section labels, tabular figures in numeric columns, restrained hover/focus transitions, and full light/dark parity through `--ls-*` tokens only. The result should feel deliberately designed — closer to Linear or Notion than to stock Bootstrap — and every page should look like it belongs to the same product as LymeBooks. *(Exceptions kept by design, for Mike to confirm at T5: `ping`'s own brand pages and account screens; `lymecrm`'s POS register surface, `/crm/pos-count` and the customer portal.)*
+- [x] Remove banned classes listed in `docs/design-system.md`; replace Font Awesome with Bootstrap Icons where the template did.
+- [x] Copy `docs/design-system.md` and add the CLAUDE.md pointer. *(`ping` and `lymestats` have no root file; none was created. `ping`'s pointer is in `docs/README.md`.)*
+- [x] `ng build` green; commit locally.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -577,6 +577,10 @@ Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testin
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
+  - **M9 `lymecrm`: deployed environment.** LymeDeploy does not set the environment and this repo has no CI pipeline, so deployed `lymecrm` (UAT and Production) has probably been running as `Development` unless it was set on the server. Check both. The `web.config` files now say Production (local commit `119e6a1`).
+  - M9 `lymecrm`: the e2e contrast probe (`e2e/tests/crm-contrast-probe.spec.ts`) was tuned to the old chip and banner colours and needs a re-run, with `crm-customer-tabs.spec.ts` and `crm-lead-inline-customer.spec.ts` (two selectors changed). Kept by design: POS register surface, `/crm/pos-count`, customer portal. Some views keep more than one primary button on purpose; POS keycaps now render in Roboto.
+  - M9 `lymedeploy`: its emerald, amber and red status colours now come from the shared tokens and shift slightly. Its Karma suite does not compile on `main` (`dashboard.component.spec.ts:240`, pre-existing).
+  - M9: `ping` and `lymedeploy` picked up the template's always-registered `IAuthLogger` fix because the email-check tests need it. `SimpleAuth4Net`, `lymetimer`, `lymestats` and others still lack it (intake group G1).
   - M9: the template has no global `.tnum` rule, so tabular figures in its own admin pages do nothing; `lymetimer` and `lymestats` each added one locally. Also `bootstrap-icons` only became a template dependency with the samples commit. Both belong in the template.
   - M9 `lymetimer`, visible changes to judge: user tags render as uppercase pills; the duplicate Archived badge on Projects is gone and deleted rows are muted, not red; Save and Return to Timer moved into page headers; team member row actions are always visible; team modals are no longer vertically centred; "Clean Up Empty Teams" is an outline button. Its Karma specs do not compile (pre-existing, `team-context.service.spec.ts`).
   - M9 `lymestats`: `appsettings.json` points at the shared LymeStats database on `192.168.50.42` and there is no Development override; point it at a scratch database before running the visual check. New page titles "Analytics", "Live", "Search paths"; form footers reordered to Cancel then Save.
@@ -720,6 +724,14 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:52** - M9 complete in all five repos; T4 dispatched.
+
+- **M9 `lymedeploy` (18:14 to 18:33), 12 commits `497f19b..e7a60f5`:** tokens `497f19b`, 57 admin files `64ff1de`, `IAuthLogger` fix `7bfc18b`, F `8f70777` (28 tests), design layer onto `.ls-*` `6beddd0`, app pages `cc040fd` `0abbba2` `1a38b5e` `d0d9367` (9 pages and the quick-view drawer thoroughly), Settings note for non-admins `6912cd1`, docs `1b66ea9`, G `e7a60f5`. LymeStack.Tests 874 pass with the same 5 known failures; Cli.Tests the same 4. Production `ng build` green.
+- **M9 `lymecrm` (18:13 to 18:35), 14 commits `83963bd..63121f4`:** tokens `83963bd`, 57 admin files `ea7b547`, bootstrap-icons `9909402`, F `b6ca9c7` (14 tests), Font Awesome to Bootstrap Icons in app pages `e0bab28` (about 1,080 usages), the app's `crm-*` page layer rebased onto `.ls-*` with class names kept for the e2e specs `36c4e54`, docs `7c0414e`, page passes `ef4fe13` `d1707f7` `80cf543` `fc3467d` `5160532`, G `119e6a1` (both `web.config` files), upstream tag `63121f4`. LymeStack.Tests 2831, NasRemoteApi.Tests 128, Karma 1002 of 1002; development and production `ng build` green.
+- **M7 status:** every item is done in every listed repo except `pmo-app`, which waits for Mike's scope answer.
+- **T4** dispatched (Sonnet): probe J to P, fresh builds and tests in the six LymeStarter-lineage apps, the drift re-measure against template `283405f`, a hygiene scan of the M9 diffs, and the tokenless 401 checks T3 could not run in those six repos.
+- `lymestarter` `main` has moved on to `e24d5e8` (the other orchestrator's sample-marker commits on top of `283405f`).
 
 **2026-10-01 18:45** - M6 complete; M9 complete in `lymetimer` and `lymestats`.
 
