@@ -154,6 +154,26 @@ public class AuthController(
 
     #endregion
 
+    #region EmailExists
+
+    // Admin only: the user form is the sole caller, and an anonymous version would let anyone probe
+    // which email addresses have accounts. Pass userId when editing so the user's own address is
+    // not reported as taken.
+    [HttpGet("EmailExists")]
+    [Authorize(Roles = "Admin")]
+    [EnableRateLimiting("fixed")]
+    public async Task<IActionResult> EmailExists([FromQuery] string email, [FromQuery] int? userId = null)
+    {
+        if (string.IsNullOrWhiteSpace(email)) return BadRequest("Email must be provided.");
+        var normalized = email.Trim().ToLower();
+        var exists = await db.AppUsers.AnyAsync(x =>
+            x.EmailAddress != null && x.EmailAddress.ToLower() == normalized &&
+            (userId == null || x.Id != userId));
+        return Ok(new { exists });
+    }
+
+    #endregion
+
     #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook / LoginWithMicrosoft
 
     [HttpPost("Login")]

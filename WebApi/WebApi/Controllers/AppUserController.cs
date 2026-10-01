@@ -103,13 +103,9 @@ public class AppUserController(SimpleAuthContext db, IConfiguration configuratio
             }
 
             // Check for duplicate email if provided
-            if (!string.IsNullOrEmpty(value.EmailAddress))
+            if (await EmailTakenByAnotherUser(value.EmailAddress, null))
             {
-                var existingEmail = await db.AppUsers.AnyAsync(x => x.EmailAddress == value.EmailAddress);
-                if (existingEmail)
-                {
-                    return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
-                }
+                return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
             }
 
             dbItem = new AppUser
@@ -132,14 +128,11 @@ public class AppUserController(SimpleAuthContext db, IConfiguration configuratio
                 }
             }
 
-            // Check for duplicate email if it's being changed
-            if (!string.IsNullOrEmpty(value.EmailAddress) && dbItem.EmailAddress != value.EmailAddress)
+            // Check for duplicate email. The user's own row is excluded, so keeping (or re-casing)
+            // their current address is never reported as taken.
+            if (await EmailTakenByAnotherUser(value.EmailAddress, dbItem.Id))
             {
-                var existingEmail = await db.AppUsers.AnyAsync(x => x.EmailAddress == value.EmailAddress && x.Id != value.Id);
-                if (existingEmail)
-                {
-                    return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
-                }
+                return BadRequest(new { error = "EMAIL_EXISTS", message = "A user with this email address already exists." });
             }
         }
 
@@ -192,6 +185,17 @@ public class AppUserController(SimpleAuthContext db, IConfiguration configuratio
         db.ChangeTracker.Clear();
         dbItem.AppUserCredential = null;
         return Ok(dbItem);
+    }
+
+    // Case-insensitive to match the IX_AppUser_Email unique index under SQL Server's default
+    // collation, and so SQLite (case-sensitive by default) behaves the same way.
+    private Task<bool> EmailTakenByAnotherUser(string? emailAddress, int? excludeUserId)
+    {
+        if (string.IsNullOrWhiteSpace(emailAddress)) return Task.FromResult(false);
+        var normalized = emailAddress.Trim().ToLower();
+        return db.AppUsers.AnyAsync(x =>
+            x.EmailAddress != null && x.EmailAddress.ToLower() == normalized &&
+            (excludeUserId == null || x.Id != excludeUserId));
     }
 
     private void SaveRoles(AppUser value, AppUser dbItem, bool inserting)
