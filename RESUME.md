@@ -85,6 +85,24 @@ e5e706c Close M9 and record the L2 verification dispatch in the downstream sync 
 
 `master` is 49 commits ahead of `origin/master`, deliberately unpushed (the admin unlock `ea622c8` must go out together with the authorization fix).
 
+## Session Usage (2026-10-01 orchestrator run)
+
+| | |
+|---|---|
+| Total cost | \$145.01 |
+| Wall time | 1h 17m |
+| API time (all agents) | 4h 3m 36s |
+| Code changes | 6,752 lines added, 4,247 removed |
+
+| Model | Cost | Output tokens | Used for |
+|---|---|---|---|
+| Opus 5.5 | \$84.38 | 1.0m | M2, M3, the five M9 design-system ports, intake and drift analysis, F in non-Material kits |
+| Fable 5.1 | \$39.00 | 254.5k | The orchestrator itself |
+| Sonnet 5.5 | \$20.62 | 424.6k | Security fan-outs, tests, verification sweeps, gap-fills |
+| Haiku 4.5 | \$1.01 | 29.5k | The first M12 tracker pass (had to be redone on Sonnet) |
+
+About 49 worker agents in total. Opus was 58% of the cost; the five M9 ports are most of that.
+
 ## Any Other Notes
 
 - `dotnet` on this Mac: `export DOTNET_ROOT=/usr/local/share/dotnet PATH="/usr/local/share/dotnet:$PATH"` (the brew one is x86_64 and breaks TypeGen).

@@ -725,6 +725,8 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
 
+**2026-10-01 19:55** - Usage for the orchestrated run up to the T5 gate (from Mike's session report): total cost \$145.01; wall time 1h 17m; API time across all agents 4h 3m 36s; 6,752 lines added and 4,247 removed. By model: Opus 5.5 \$84.38 (M2, M3, the five M9 ports, the intake and drift analysis), Fable 5.1 \$39.00 (the orchestrator), Sonnet 5.5 \$20.62 (fan-outs, tests, sweeps, gap-fills), Haiku 4.5 \$1.01 (the first M12 pass, redone on Sonnet). About 49 worker agents. A resume prompt is in `RESUME.md`.
+
 **2026-10-01 19:50** - T4 complete with its gap-fill; the run is at the T5 gate.
 
 - **`lymedeploy` gap-fill:** `Register` calls the post-registration handler for every user `ba375cf`, test `3ee8e81`. Its cookies already hardcode `Secure = true`, so no cookie change. Tests: the same 4 Cli.Tests and 5 LymeStack.Tests failures as before, nothing new.
