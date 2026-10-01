@@ -32,7 +32,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | 🔄 In Progress | — | Probe + build + anonymous-call checks. Dispatched 2026-10-01 18:27 |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | 🔄 In Progress | — | Part a (G19 onto `develop` in `ping` and `lymestats`) dispatched 2026-10-01 18:12. Part b (bring `main` level in `qc-sod-ordering` and `lymestats`, comparison table) runs last, after the other work lands on `develop` |
-| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Started early on idle repos (2026-10-01 18:08): `lymesend` and `qc-sod-ordering` (Opus, F UI), `paymentz`, `open-mic-night`, `sawgrass-v2` (Sonnet). LymeStarter-lineage repos wait on M9; `pmo-app` held for Mike (see T5) |
+| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | — | Done in `lymesend`, `paymentz`, `open-mic-night`, `sawgrass-v2`, `qc-sod-ordering`, `lymebooks`. F (and G, tag) for the five M9 repos rides with M9. `pmo-app` held for Mike (see T5) |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | 🔄 In Progress | — | Dispatched per repo as its L2 worker finished (18:22 to 18:27): `lymetimer`, `ping`, `lymestats`, `lymedeploy`, `lymecrm`. Each also ports F; `lymecrm`, `lymetimer`, `lymedeploy` also G |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
@@ -713,6 +713,11 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 18:30** - M7 item F complete in `lymebooks` (18:07 to 18:13): `00816ca8` (API, tests, `lymestack-todos.md` entry) and `c98d10ce` (user form). `WebApi.Tests` 836 pass.
+
+- **Tenancy decision:** email uniqueness is installation-wide (`AppUser` has no `TenantId`; `IX_AppUser_Email` is unique on the address alone), so no schema change. `Auth/EmailExists` requires AppRole `Admin`, which only installation staff hold; tenant Owners and Bookkeepers get 403, and support sessions are denied the route.
+- **Angular build fixed as a side effect:** TypeGen had been loading a stale `WebApi/WebApi/bin/Release/net10.0/WebApi.dll` from August and generating 97 of about 270 `_api` files. The worker moved that gitignored folder aside; the development `ng build` is now green. Other clones that ever did a Release build may have the same trap (note for M12's inventory update).
 
 **2026-10-01 18:27** - M4 complete (L2 half 18:08 to 18:12); M9 and T3 dispatched.
 
