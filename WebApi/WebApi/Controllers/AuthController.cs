@@ -26,7 +26,6 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-[AllowAnonymous]
 public class AuthController(
     IConfiguration configuration,
     SimpleAuthContext db,
@@ -45,6 +44,7 @@ public class AuthController(
     #region Register
 
     [HttpPost("Register")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
@@ -142,6 +142,7 @@ public class AuthController(
     #region UserExists
 
     [HttpGet("UserExists")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> UserExists([FromQuery] string username)
     {
@@ -156,6 +157,7 @@ public class AuthController(
     #region Login Endpoints - Login / LoginWithGoogle / LoginWithFacebook / LoginWithMicrosoft
 
     [HttpPost("Login")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> Login([FromBody] LoginModel model)
     {
@@ -278,6 +280,7 @@ public class AuthController(
     }
 
     [HttpPost("LoginWithGoogle")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithGoogle([FromBody] LoginWithSsoModel model)
     {
@@ -309,6 +312,7 @@ public class AuthController(
     }
 
     [HttpPost("LoginWithFacebook")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithFacebook([FromBody] LoginWithSsoModel model)
     {
@@ -336,6 +340,7 @@ public class AuthController(
     }
 
     [HttpPost("LoginWithMicrosoft")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> LoginWithMicrosoft([FromBody] LoginWithSsoModel model)
     {
@@ -378,6 +383,7 @@ public class AuthController(
     #region Logout
 
     [HttpDelete("Logout")]
+    [AllowAnonymous]
     public async Task<IActionResult> Logout()
     {
         if (User.Identity is { IsAuthenticated: true })
@@ -396,6 +402,7 @@ public class AuthController(
     #region RefreshToken
 
     [HttpGet("RefreshToken")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<ActionResult<string>> RefreshToken(string deviceId)
     {
@@ -475,6 +482,7 @@ public class AuthController(
     #region CheckPasswordComplexity
 
     [HttpGet("CheckPasswordComplexity")]
+    [AllowAnonymous]
     public IActionResult CheckPasswordComplexity([FromQuery] string password)
     {
         if (string.IsNullOrWhiteSpace(password))
@@ -498,6 +506,7 @@ public class AuthController(
     #region ForgotPassword / ResetPassword / VerifyAccount / VerifyMfa / SendNewCode
 
     [HttpPost("ForgotPassword")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordModel model)
     {
@@ -525,6 +534,7 @@ public class AuthController(
     }
 
     [HttpPost("ResetPassword")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordModel model)
     {
@@ -638,6 +648,7 @@ public class AuthController(
     }
 
     [HttpPost("VerifyAccount")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyAccount([FromBody] VerifyIdentityModel model)
     {
@@ -658,6 +669,7 @@ public class AuthController(
     }
 
     [HttpPost("VerifyMfa")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyMfa([FromBody] VerifyIdentityModel model)
     {
@@ -690,12 +702,13 @@ public class AuthController(
         var jwt = await JwtGenerator(user, model.DeviceId);
         await db.SaveChangesAsync();
 
-        var data = new { Type = model is VerifyOtpModel ? "OTP" : "Email/SMS", model.DeviceId };
+        var data = new { Type = "Email/SMS", model.DeviceId };
         await logger.LogAsync(AuthLogEventType.MfaVerified, user.Username, data);
         return Ok(jwt);
     }
 
     [HttpPost("SendNewCode")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> SendNewCode([FromBody] SendNewCodeModel model)
     {
@@ -806,6 +819,7 @@ public class AuthController(
     }
 
     [HttpPost("VerifyAuthenticatorCode")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<IActionResult> VerifyAuthenticatorCode([FromBody] VerifyOtpModel model)
     {
@@ -877,6 +891,7 @@ public class AuthController(
     #region WhoAmI
 
     [HttpGet("WhoAmI")]
+    [AllowAnonymous]
     public async Task<IActionResult> WhoAmI()
     {
         if (User.Identity == null) return Ok("Nobody");
@@ -890,6 +905,7 @@ public class AuthController(
     #region UserVerified
 
     [HttpGet("UserVerified")]
+    [AllowAnonymous]
     [EnableRateLimiting("fixed")]
     public async Task<ActionResult<bool>> UserVerified([FromQuery] string username)
     {
