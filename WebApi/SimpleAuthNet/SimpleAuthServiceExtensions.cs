@@ -187,7 +187,21 @@ public static class SimpleAuthServiceExtensions
             {
                 OnMessageReceived = context =>
                 {
-                    context.Token = context.Request.Cookies["X-Access-Token"];
+                    // 1. Cookie (web app)
+                    var cookieToken = context.Request.Cookies["X-Access-Token"];
+                    if (!string.IsNullOrEmpty(cookieToken))
+                    {
+                        context.Token = cookieToken;
+                        return Task.CompletedTask;
+                    }
+
+                    // 2. Authorization: Bearer header (mobile/API clients)
+                    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                    if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Token = authHeader["Bearer ".Length..].Trim();
+                    }
+
                     return Task.CompletedTask;
                 },
                 OnChallenge = context =>
@@ -251,6 +265,52 @@ public static class SimpleAuthServiceExtensions
     {
         services.AddScoped<IRoleDbContext>(sp => sp.GetRequiredService<TContext>());
         services.AddScoped<IClaimsTransformation, LocalRoleClaimsTransformer>();
+        return services;
+    }
+
+    public static IServiceCollection AddSimpleAuth(this IServiceCollection services, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection("AuthSettings").Get<AuthSettings>()!;
+        var logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger("SimpleAuth");
+        logger.LogInformation("SimpleAuth running in {Mode} mode", settings.Mode);
+
+        // Common to all modes
+        services.AddSimpleAuthForwardedHeaders();
+        services.AddSimpleAuthJwt(configuration);
+        services.AddSimpleAuthDefaultAuthorization();
+        services.AddSimpleAuthCors(configuration);
+        services.AddSimpleAuthStartupValidation(configuration);
+
+        switch (settings.Mode)
+        {
+            case SimpleAuthMode.RelyingApp:
+                // RelyingApp: validate tokens, local roles, no auth endpoints
+                logger.LogInformation("IdentityProvider: {Url}", settings.IdentityProviderUrl);
+                services.AddSimpleAuthDbContext();
+                services.AddSimpleAuthLocalRoles<SimpleAuthContext>();
+                break;
+
+            case SimpleAuthMode.IdentityProvider:
+                // IdentityProvider: full auth endpoints, issues tokens, cookie domain via config
+                logger.LogInformation("CookieDomain: {Domain}", settings.CookieDomain);
+                services.AddSimpleAuthDbContext();
+                services.AddSimpleAuthControllers();
+                services.AddSimpleAuthRateLimiting(configuration);
+                services.AddSimpleAuthLogging(configuration);
+                services.AddSimpleAuthHttpClient();
+                services.AddSimpleAuthEmailSender();
+                break;
+
+            default: // Standalone
+                services.AddSimpleAuthDbContext();
+                services.AddSimpleAuthControllers();
+                services.AddSimpleAuthRateLimiting(configuration);
+                services.AddSimpleAuthLogging(configuration);
+                services.AddSimpleAuthHttpClient();
+                services.AddSimpleAuthEmailSender();
+                break;
+        }
+
         return services;
     }
 }
