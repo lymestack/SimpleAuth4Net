@@ -484,7 +484,7 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 - [ ] `lymestats`: port G19 (it is on neither branch), then bring `main` level.
 - [ ] `playmusiconline`: report what the 71 `develop`-only commits contain; do not merge to `main` without Mike.
 - [ ] `lymesend`, `paymentz`: propose deleting the stale `origin/develop` branches.
-- [ ] `lymecrm`: act on Mike's M1 decision for the 29 `worktree-agent-*` branches.
+- [ ] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. 24 of 29 deleted 2026-10-01; 5 held pending Mike's confirmation (see Progress Log).
 - [ ] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`.
 - [ ] Produce a table: repo · working branch · deploy branch · commits apart.
 
@@ -655,6 +655,11 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 17:20** - `lymecrm` branch cleanup (Mike's go-ahead). Deleted 24 local `worktree-agent-*` branches whose commits are patch-identical to `develop`, and removed their 12 worktrees (all clean, no uncommitted files). No remote copies existed. Tips, for recovery before `git gc`: `3ff1fc7 d06554b eead3db 4bd985f 79fa2e5 5cea73c 5c413d1 7cac728 d2a8388 2294d2c a888b3c a553569 ada6b5e 0d0f4f1 57ef23c 28e8013 4e3c09b f558681 9d7b97b e8b10f6 9a8d9e1 7541080 d568829 0f09da4`.
+
+- **5 branches held for Mike's confirmation.** M0 reported them as carrying work `develop` lacks; on inspection none does. Each feature commit has a same-subject twin on `develop`: J2-2 `958413e` → `46ba2dc`, P9 `da780f9` → `64a5a19`, P12 `44abe37` → `e9a2ffe`, P29 `67fc01e` → `f9c67cf`. Of 5,840 substantive added lines, 60 are absent from `develop` HEAD, all constructor/signature lines later refactored. The only content that exists nowhere else is two throwaway files: `worker-summary-p7-reference-mappers.md` (`0958e99`) and `worker-summary-p12-tender-capture.md` (in `44abe37`).
+- Held: `worktree-agent-a27f245…` (has worktree), `-a35471c…`, `-a3760b3…`, `-a4054db…`, `-ab0bf01…` (has worktree).
 
 **2026-10-01 17:01** - M0 complete. Nothing pushed, no branches created or deleted, no conflicts, no dirty repos.
 
