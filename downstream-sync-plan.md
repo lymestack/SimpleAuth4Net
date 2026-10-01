@@ -23,7 +23,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | Milestone | Model | Status | Duration (min) | Notes |
 |---|---|---|---|---|
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
-| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | 🔄 In Progress | — | All 11 decisions made 2026-10-01. Only open item: which `lymebooks` stale branches may be deleted |
+| [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | 🔄 In Progress | — | Auth hole, logger, publish env, email check. Worker prompt issued 2026-10-01 |
 | [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ⬜ Not Started | — | Unit/integration |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ⬜ Not Started | — | Template is the L2 diff base |
@@ -37,6 +37,7 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ⬜ Not Started | — | 5 LymeStarter-lineage apps |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | ⬜ Not Started | — | Attachments, bootstrap, `--check`, transport |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ⬜ Not Started | — | Build/tests + hands-on visual pass |
+| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ⬜ Not Started | — | Every hands-on check and push approval, batched at the end |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
 | [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | ⬜ Not Started | — | Inventory rows, skill lists, tags, docs |
 
@@ -57,7 +58,7 @@ Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual min
   - [1.9 Open decisions](#19-open-decisions)
 - [Part 2 — Implementation plan](#part-2--implementation-plan)
   - [Ground rules for every milestone](#ground-rules-for-every-milestone)
-  - [M0](#m0--reconcile-clones-with-origin) · [M1](#m1--decisions-gate) · [M2](#m2--simpleauth4net-catch-up-l1-upstream) · [T1](#t1--test-simpleauth4net) · [M3](#m3--lymestarter-template-catch-up) · [T2](#t2--test-the-template) · [M4](#m4--urgent-security-fan-out) · [M5](#m5--finish-the-argon2id-port) · [T3](#t3--security-verification-sweep) · [M6](#m6--branch-reconciliation) · [M7](#m7--remaining-l1-fan-out) · [M8](#m8--lymebooks--template-intake) · [M9](#m9--design-system-fan-out) · [M10](#m10--l2-small-fix-fan-out) · [T4](#t4--l2-verification) · [M11](#m11--production-migrations-and-deploys) · [M12](#m12--trackers-and-registration)
+  - [M0](#m0--reconcile-clones-with-origin) · [M1](#m1--decisions-gate) · [M2](#m2--simpleauth4net-catch-up-l1-upstream) · [T1](#t1--test-simpleauth4net) · [M3](#m3--lymestarter-template-catch-up) · [T2](#t2--test-the-template) · [M4](#m4--urgent-security-fan-out) · [M5](#m5--finish-the-argon2id-port) · [T3](#t3--security-verification-sweep) · [M6](#m6--branch-reconciliation) · [M7](#m7--remaining-l1-fan-out) · [M8](#m8--lymebooks--template-intake) · [M9](#m9--design-system-fan-out) · [M10](#m10--l2-small-fix-fan-out) · [T4](#t4--l2-verification) · [T5](#t5--deferred-hands-on-gate) · [M11](#m11--production-migrations-and-deploys) · [M12](#m12--trackers-and-registration)
 - [Parallel Development Recommendations](#parallel-development-recommendations)
 - [Appendix — probe markers](#appendix--probe-markers)
 - [Progress Log / Notes](#progress-log--notes)
@@ -346,7 +347,7 @@ Bring this machine's clones level with origin so every later milestone works fro
 **Owner:** Mike · **Depends on:** nothing (can run alongside M0) · **Blocks:** M5, M6, M7 scope
 
 - [x] Answer D1–D11 in [1.9](#19-open-decisions), or accept the defaults. All decided 2026-10-01.
-- [ ] Review M0's stale-branch report and say which branches may be deleted. `lymecrm`: all 29 deleted 2026-10-01. `lymebooks` `accounting-remediation` and `backup/pre-rewrite`: still to decide.
+- [x] Review M0's stale-branch report and say which branches may be deleted. `lymecrm`: all 29 deleted 2026-10-01. `lymebooks` `accounting-remediation` and `backup/pre-rewrite`: deleted 2026-10-01.
 - [x] Say whether `md-ccrs-dev`'s 29 unpushed commits should be pushed. No: the repo is not to be touched (D2).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -381,7 +382,7 @@ Make this repo the true L1 source again. *Workers must complete all items below.
 - [ ] Run the suite green: `cd WebApi && dotnet test`.
 - [ ] Start the API locally (`cd WebApi/WebApi && dotnet run`) and confirm with `curl -X POST` and no token that the three admin endpoints return 401, while `Login`, `ForgotPassword` and `RefreshToken` remain reachable.
 - [ ] `cd ng-app && npm run build` succeeds.
-- [ ] Hand to Mike for push approval: this is the first push of `ea622c8`, and it must go together with A.
+- [ ] **Deferred to T5 — do not pause here.** Push approval: this is the first push of `ea622c8`, and it must go together with A. Downstream workers read this repo's local clone, so nothing waits on the push.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -409,8 +410,8 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 - [ ] Write tests: anonymous `GET ConfigSetting` is refused; a non-admin cannot read another tenant's feedback; `EMAIL_TAKEN` cases as in T1.
 - [ ] `cd WebApi && dotnet test` green (baseline before M3: 103+ tests).
 - [ ] `npx ng build` green.
-- [ ] Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
-- [ ] Mike approves pushing `lymestarter` (includes `b8ec996`).
+- [ ] **Deferred to T5 — do not pause here.** Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
+- [ ] **Deferred to T5 — do not pause here.** Mike approves pushing `lymestarter` (includes `b8ec996`).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -470,7 +471,7 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 - [ ] `dotnet build` + `dotnet test` per repo; table of results with pre-existing failures called out (`sawgrass-v2`, `lymedeploy`, `open-mic-night` have known ones).
 - [ ] For each repo that can run locally, start the API and `curl -X POST` the three admin endpoints without a token: expect 401.
 - [ ] `git merge-base --is-ancestor <sha> HEAD` for every port commit on its working branch.
-- [ ] Update the `core-fix-log.md` tables. Mike approves pushes repo by repo.
+- [ ] Update the `core-fix-log.md` tables. Push approvals are deferred to T5; do not pause here.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -487,7 +488,7 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 - [ ] `playmusiconline`: report what the 71 `develop`-only commits contain; do not merge to `main` without Mike.
 - [ ] `lymesend`, `paymentz`: propose deleting the stale `origin/develop` branches.
 - [x] `lymecrm`: act on Mike's M1 decision for the `worktree-agent-*` branches. All 29 deleted 2026-10-01 (see Progress Log).
-- [ ] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`.
+- [x] `lymebooks`: act on Mike's M1 decision for `accounting-remediation` and `backup/pre-rewrite`. Both local branches deleted 2026-10-01 (`origin/accounting-remediation` still exists).
 - [ ] Produce a table: repo · working branch · deploy branch · commits apart.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -560,14 +561,30 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 - [ ] Re-run the appendix probe: columns J–P ✅ for all LymeStarter-lineage repos.
 - [ ] `dotnet test` + `ng build` per repo; results table.
 - [ ] Re-run the [1.7](#17-raw-drift-against-each-template) drift measurement; every remaining differing framework file is either gone or listed as an intentional divergence.
-- [ ] **Hands-on visual sign-off by Mike** (no screenshots — the look is judged live, one repo at a time). For each of `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`: `cd WebApi/WebApi && dotnet watch run`, `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin, and walk: app home → Admin home (`/admin`) → Security → Users → open a user → toggle dark mode on each. Expected: `.ls-*` cards, tables and page headers throughout; no fixed-light surfaces in dark mode; app-specific pages visually consistent with the admin pages.
-- [ ] The orchestrator pauses for sign-off per repo before marking T4 complete.
+- [ ] **Deferred to T5 — do not pause here.** **Hands-on visual sign-off by Mike** (no screenshots — the look is judged live, one repo at a time). For each of `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`: `cd WebApi/WebApi && dotnet watch run`, `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin, and walk: app home → Admin home (`/admin`) → Security → Users → open a user → toggle dark mode on each. Expected: `.ls-*` cards, tables and page headers throughout; no fixed-light surfaces in dark mode; app-specific pages visually consistent with the admin pages.
+- [ ] The orchestrator does **not** pause for sign-off here. T4 closes on the automated checks above; the per-repo sign-off happens in T5.
+
+[Return to Top](#downstream-sync--inventory--implementation-plan)
+
+## T5 — Deferred hands-on gate
+
+**Owner:** Mike · **Depends on:** every milestone through T4 (and as much of M12 as does not need final push state) · **Blocks:** M11
+
+Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testing gate while the work runs and collects them here, in one sitting at the end. The orchestrator prepares a single checklist with the exact commands and URLs, then walks Mike through it.
+
+- [ ] **`lymestarter` hands-on pass** (from T2): app loads past "Waiting for server…" while signed out; Add User with an existing address shows the in-use message and disables Save; Admin home and Users list render in `.ls-*` style in light and dark mode.
+- [ ] **Visual sign-off** (from T4), one repo at a time: `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
+- [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
+- [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
+- [ ] Anything a worker flagged along the way as needing Mike's eyes.
+
+If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-presents only the failed check.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
 ## M11 — Production: migrations and deploys
 
-**Model:** Sonnet assisting; **Mike drives every production action** · **Depends on:** T3 (security), T4 (the rest)
+**Model:** Sonnet assisting; **Mike drives every production action** · **Depends on:** T5
 
 *All items must be completed; each production step needs Mike's explicit go-ahead.*
 
@@ -615,6 +632,18 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 Do not run two workers in the same repo at once; no worktree isolation is needed if that holds.
 
+**Orchestrator run policy and handoff state (set 2026-10-01).** Read this before dispatching anything.
+
+- **State at handoff:** M0 and M1 are complete. The M2 worker prompt was issued to Mike on 2026-10-01 but may or may not have been run. Before dispatching M2, check `git log` in `~/git/SimpleAuth4Net` for M2 commits after `9e75a85` and ask Mike whether a worker is in flight; never run two workers in that repo.
+- **No hands-on gates mid-run.** Every hands-on check and every push approval is deferred to [T5](#t5--deferred-hands-on-gate). Test milestones close on their automated checks. Do not stop to ask Mike to look at anything until T5.
+- **Nothing is pushed and nothing is deployed before T5.** Workers commit locally; downstream workers use the local clones as their reference.
+- **`md-ccrs-dev/atcc-app` is off limits** (D2). No worker enters that repo.
+- **`pmo-app`** gets the authorization fix only (D1); **`sawgrass-v2`**'s Argon2id port is released in M5 (D4); **`qc-sod-ordering`** works on `develop` and merges to `main` in M6 (D5).
+- **.NET on this Mac:** every worker prompt that builds includes `export DOTNET_ROOT=/usr/local/share/dotnet PATH="/usr/local/share/dotnet:$PATH"`.
+- **Attribution hook:** a PreToolUse hook rejects any shell command that both commits and contains an assistant/vendor name or a co-author trailer, including inside heredoc text or a `grep` pattern. Keep such words out of commit commands; run message checks as a separate command.
+- **Shared repo, shared index:** when the orchestrator commits this document while a worker is active in `SimpleAuth4Net`, use `git commit downstream-sync-plan.md -m "…"` (pathspec form) so no worker's staged files are swept in.
+- **Still needing Mike mid-run** (not hands-on tests): the `lymebooks-intake.md` review in M8, and the branch deletions and `playmusiconline` merge question in M6. Treat each as non-blocking: carry on with every milestone that does not depend on the answer.
+
 **Orchestrator context management.** Fan-outs here reach 8–13 workers. If dispatching prompts fills the orchestrator context, prompt Mike to run `/compact` while workers run; suggest it proactively when approaching the limit. After compacting, resume from `.orchestrator/state.json`.
 
 **Gap-filling prompts.** When a milestone comes back with items skipped or partly done, the follow-up prompt must:
@@ -657,6 +686,8 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-01 (evening)** - M1 closed. All eleven decisions recorded in 1.9. `lymebooks` local branches `accounting-remediation` (`f85aeb15`, still on origin at the same commit) and `backup/pre-rewrite` (`d51c299a`, local only) deleted on Mike's go-ahead: every `accounting-remediation` commit has a patch-identical twin in `develop`'s history, and `backup/pre-rewrite`'s one unique commit (unlock + Reset Password modal) was redone on `develop` as `e701d906`. Mike will run the rest of the plan through `/iadev:orchestrator` in a new context, with hands-on gates deferred to the new T5.
 
 **2026-10-01 17:14** - `lymecrm` pushed, branches reconciled, and deployed to Production (Mike's instruction; no active users).
 
