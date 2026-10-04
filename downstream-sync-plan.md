@@ -25,21 +25,21 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M0 — Reconcile clones with origin](#m0--reconcile-clones-with-origin) | Sonnet | ✅ Complete | not timed | Done 2026-10-01; nothing pushed; `sawgrass-v2` left diverged for M5 |
 | [M1 — Decisions gate](#m1--decisions-gate) | — (Mike) | ✅ Complete | not timed | All 11 decisions made 2026-10-01; stale branches in `lymecrm` and `lymebooks` deleted |
 | [M2 — SimpleAuth4Net catch-up (L1 upstream)](#m2--simpleauth4net-catch-up-l1-upstream) | Opus | ✅ Complete | 6 | `8417557..ced452a`, 12 local commits. F uses the existing `EMAIL_EXISTS` code; prod `ng build` budget failure is pre-existing |
-| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget item and push carried to T5 |
+| [T1 — Test SimpleAuth4Net](#t1--test-simpleauth4net) | Sonnet | ✅ Complete | 4 | `7da6c02` (test seam) + `bd4dd98`; 28 tests green; admin endpoints 401 without a token. Prod `ng build` budget raised to 1.5 MB (`e2a1f66`, decision 7); push done 2026-10-01 |
 | [M3 — LymeStarter template catch-up](#m3--lymestarter-template-catch-up) | Opus | ✅ Complete | 8 | 10 commits `404a8f0..36f3416`, merged with the sample features as `b60d1b3` on `lymestarter` `main` (ahead of origin by 14, unpushed). 138 tests pass; dev and production `ng build` green |
-| [T2 — Test the template](#t2--test-the-template) | Sonnet | ✅ Complete | 1 | `283405f`: 161 tests pass; production and development `ng build` green. Hands-on pass and push carried to T5 |
+| [T2 — Test the template](#t2--test-the-template) | Sonnet | ✅ Complete | 1 | `283405f`: 161 tests pass; production and development `ng build` green. Hands-on pass run headlessly and passed 2026-10-01 (T5 section 3); push done 2026-10-01 |
 | [M4 — Urgent security fan-out](#m4--urgent-security-fan-out) | Sonnet | ✅ Complete | 8 + 4 | Both halves done: A + B in 7 repos, N + O in 5 repos (see log). No new test failures anywhere |
 | [M5 — Finish the Argon2id port](#m5--finish-the-argon2id-port) | Opus | ✅ Complete | 2 | `sawgrass-v2` rebased onto origin (ahead 5, behind 0) and G19 converted (`ddc4fec`); `qc-sod-ordering` G19 on `develop` with the hasher (`c3331ae`). `sawgrass-v2` migration unapplied (Azure firewall) |
 | [T3 — Security verification sweep](#t3--security-verification-sweep) | Sonnet | ✅ Complete | 7 | Nothing failed: A, B in 14 repos; N, O in 7; 401 over HTTP in 8 repos; all 50 port commits on their branches. Open: ledger update (tree in use), and HTTP checks for the 6 repos that had workers in them (moved to T4) |
 | [M6 — Branch reconciliation](#m6--branch-reconciliation) | Sonnet | ✅ Complete | 7 + 4 | `ping` G19 merged into `develop`; `lymestats` G19 ported and local `main` level; `qc-sod-ordering` local `main` = `develop` = `788b3bf`. All local, unpushed. Table in the log |
-| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | 🔄 In Progress | 6 (longest) | Done in all 11 repos except `pmo-app`, which is held for Mike's scope answer (see T5) |
+| [M7 — Remaining L1 fan-out](#m7--remaining-l1-fan-out) | Sonnet | ✅ Complete | 6 (longest) | Done in all 11 repos. `pmo-app` stays at the authorization fix by decision 1 (2026-10-01), so it is out of M7's scope |
 | [M8 — LymeBooks → template intake](#m8--lymebooks--template-intake) | Opus | 🔄 In Progress | 7 (analysis) | Analysis done: `~/git/lymestarter/lymebooks-intake.md` (20 to port in 8 groups, 6 questions) and `core-drift-audit.md` (14 upstream items). **Porting waits on Mike's review** and T2 |
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ✅ Complete | 22 (longest; 5 in parallel) | All five repos done, builds and tests green (see log). `ping`'s brand pages and `lymecrm`'s POS register, pos-count and customer portal kept by design. Visual sign-off at T5 |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ✅ Complete | 10 + 23 (gap-fill) | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill ported the three missed template fixes to all seven repos. Visual sign-off is at T5 |
-| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | 🔄 Ready for Mike | — | Checklist prepared: `t5-checklist.md` in this repo. Every hands-on check and push approval, batched at the end |
+| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | 🔄 Pushed; open items remain | — | Decisions, template hands-on and the five visual runs done 2026-10-01 (headless); all repos pushed 2026-10-01 (see log). Open: `lymecrm` production spot-check, the live UAT/deploy check, the `lymebooks` variable rename |
 | [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
-| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Open until after T5: final push state and the T4 gap-fill SHAs in the ledger, D6 to D9 backlog items, closing this document |
+| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Ledger now has push state and the T4 gap-fill SHAs (2026-10-04); D6 to D9 are in `lymestarter` `BACKLOG.md` (`59962b2`). Open: the `lymecrm` and `lymetimer` Register fix, the 2026-10-04 audit follow-ups, closing this document |
 
 Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual minutes in **Duration** when a milestone closes.
 
@@ -279,7 +279,7 @@ SimpleAuth-lineage Angular counts are inflated by UI-kit rewrites (Bootstrap, Pr
 - [x] `lymestarter/security-port-plan.md` status header still reads "MED batch next". *(Updated 2026-10-01.)*
 - [x] The `port-core-fix` skill's member lists omit `lymestats` and `atcc-app`. *(`lymestats` added, `atcc-app` listed as excluded, 2026-10-01.)*
 - [ ] `> **Upstream:**` tag missing from `CLAUDE.md` in `lymecrm`, `qc-sod-ordering` (`develop`), `playmusiconline`, `md-ccrs-dev`. `ping` and `lymestats` have no root `CLAUDE.md` at all.
-- [x] LymeBooks `lymestack-todos.md`: 52 design-pass entries are ported but still under Pending. *(Moved 2026-10-01, `34175437`.)*
+- [x] LymeBooks `lymestack-todos.md`: 52 design-pass entries are ported but still under Pending. *(Moved 2026-10-01, `34175437`; after the `lymebooks` rebase onto origin it is `2ca0dfe3`.)*
 - [ ] Pushed history still carries AI co-author trailers in 11 repos: `lymetimer` 58, `sawgrass-v2` 44, `lymesend` 43, `playmusiconline` 38, `qc-sod-ordering` 15, `lymestarter` 7, `open-mic-night` 7, `paymentz` 5, `SimpleAuth4Net` 3, `lymedeploy` 1, `md-ccrs-dev` 1 (decision D6).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -317,7 +317,7 @@ Organized by layer and urgency: reconcile → fix upstream → fan out security 
 - **Workers complete every item in their milestone.** Do not skip an item because it looks lower priority or slightly out of scope. If an item should be dropped or deferred, say so in the summary for the orchestrator to decide, and still attempt it unless truly blocked.
 - **`git pull` before touching a repo.** Three G19 workers ported against stale clones on 2026-09-26.
 - **Work on the repo's current branch. Never create a branch.** Read the branch; do not assume `develop`.
-- **Upstream before downstream.** Downstream patches are cut from the ported template file.
+- **Upstream before downstream.** Downstream patches are cut from the ported template file. *One recorded exception:* the always-registered `IAuthLogger` fix reached the template at 18:00 on 2026-10-01, `ping` and `lymedeploy` at 18:14 (their email-check tests needed it), and `SimpleAuth4Net` only at 18:48 (`3ff1542`). The end state is correct everywhere; the order was inverted.
 - **Semantic merge, never blind patch.** Every `AuthController.cs` has diverged.
 - **Commit locally, plain human commit messages, no AI attribution. Do not push** unless the milestone says Mike has approved it.
 - **Never exercise a production system.** All verification runs against local or dev instances.
@@ -381,8 +381,8 @@ Make this repo the true L1 source again. *Workers must complete all items below.
 - [x] Write tests for `EMAIL_TAKEN` on create, on edit to another user's address, and no false positive when editing a user without changing their own address (case-insensitive).
 - [x] Run the suite green: `cd WebApi && dotnet test`.
 - [x] Start the API locally (`cd WebApi/WebApi && dotnet run`) and confirm with `curl -X POST` and no token that the three admin endpoints return 401, while `Login`, `ForgotPassword` and `RefreshToken` remain reachable.
-- [ ] `cd ng-app && npm run build` succeeds. **Open:** fails on the bundle budget only (1.42 MB against 1.00 MB), unchanged from before M2; no compile errors, and the development build succeeds. Decision queued for T5.
-- [ ] **Deferred to T5 — do not pause here.** Push approval: this is the first push of `ea622c8`, and it must go together with A. Downstream workers read this repo's local clone, so nothing waits on the push.
+- [x] `cd ng-app && npm run build` succeeds. It failed on the bundle budget only (1.42 MB against 1.00 MB); decision 7 raised the error budget to 1.5 MB in `e2a1f66` and the production build passes.
+- [x] **Deferred to T5 — do not pause here.** *(Pushed 2026-10-01 together with A.)* Push approval: this is the first push of `ea622c8`, and it must go together with A. Downstream workers read this repo's local clone, so nothing waits on the push.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -410,8 +410,8 @@ The template is the diff base for every LymeStarter-lineage worker. *Workers mus
 - [x] Write tests: anonymous `GET ConfigSetting` is refused; a non-admin cannot read another tenant's feedback; `EMAIL_TAKEN` cases as in T1.
 - [x] `cd WebApi && dotnet test` green (baseline before M3: 103+ tests).
 - [x] `npx ng build` green.
-- [ ] **Deferred to T5 — do not pause here.** Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
-- [ ] **Deferred to T5 — do not pause here.** Mike approves pushing `lymestarter` (includes `b8ec996`).
+- [x] **Deferred to T5 — do not pause here.** *(Passed 2026-10-01, run headlessly: T5 section 3.)* Hands-on, folded into one pass (no screenshots). Start with `cd WebApi/WebApi && dotnet watch run` and `cd ng-app && npm start`, open `http://localhost:4200`, sign in as an Admin (ask Mike for the current password — the one in older notes is stale and locks the account after 3 tries). Check: (1) the app loads past "Waiting for server…" while signed out, proving N did not break bootstrap; (2) Admin → Security → Users → Add User, enter an existing address, tab out, see the in-use message and a disabled Save; (3) the Admin home and Users list render in the `.ls-*` style in both light and dark mode.
+- [x] **Deferred to T5 — do not pause here.** *(Pushed 2026-10-01.)* Mike approves pushing `lymestarter` (includes `b8ec996`).
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -499,11 +499,11 @@ For each: confirm the app does not read `ConfigSetting` anonymously somewhere ap
 
 *Workers must complete all items below.*
 
-- [ ] **F** — email duplicate validation to the 12 scaffolds other than `atcc-app` (which already has it). Probe the user form's actual UI kit before writing markup; express the feedback in that kit's idiom so it reads as native to the form (matching the adjacent username-availability hint), not pasted in. **Status 2026-10-01:** done in 11 scaffolds; `pmo-app` held for Mike's scope answer.
-- [ ] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary. **Status 2026-10-01:** done or already present in all listed repos except `pmo-app` (held). LymeDeploy does not override the environment for any app; TeamCity passes `-p:EnvironmentName=Production` where a pipeline exists; `qc-sod-ordering` deploys through Octopus (not checked).
+- [x] **F** — email duplicate validation to the 12 scaffolds other than `atcc-app` (which already has it). Probe the user form's actual UI kit before writing markup; express the feedback in that kit's idiom so it reads as native to the form (matching the adjacent username-availability hint), not pasted in. **Status 2026-10-01:** done in 11 scaffolds; `pmo-app` held for Mike's scope answer. *(Closed 2026-10-04: `pmo-app` stays at the authorization fix by decision 1, so the hold no longer applies.)*
+- [x] **G** — publish-as-Production to `lymecrm` (both `WebApi` and `NasRemoteApi` `web.config`), `lymetimer`, `lymedeploy`, `lymesend` (csproj only), `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`, `pmo-app`. Check first whether LymeDeploy already overrides the environment at deploy time for each app, and say so in the summary. **Status 2026-10-01:** done or already present in all listed repos except `pmo-app` (held). LymeDeploy does not override the environment for any app; TeamCity passes `-p:EnvironmentName=Production` where a pipeline exists; `qc-sod-ordering` deploys through Octopus (not checked). *(Closed 2026-10-04: `pmo-app` stays at the authorization fix by decision 1, so the hold no longer applies.)*
 - [x] **H** — forward-slash TypeGen `outputPath` in `sawgrass-v2`, `paymentz`, `open-mic-night`; clean-rebuild (`rm -rf bin obj`) and confirm `_api/` is populated in the right place. In `open-mic-night`, `git rm` the 18 tracked backslash-named files and add the `.gitignore` rule from lymestarter `18a9108`. Done 2026-10-01 in all three.
-- [ ] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` per D1; `atcc-app` is excluded per D2). **Status 2026-10-01:** done in `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`; `pmo-app` held.
-- [ ] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline` `CLAUDE.md` (not `md-ccrs-dev`: excluded per D2). Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`. **Status 2026-10-01:** added in `lymecrm` (`63121f4`) and `qc-sod-ordering` (`9cbe315`); `playmusiconline` held with the rest of `pmo-app`. `ping` and `lymestats` have no root file (flagged, not created).
+- [x] **I** — per D3: `ISimpleAuthEmailSender` and `IPostRegistrationHandler` into `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` (and `pmo-app` per D1; `atcc-app` is excluded per D2). **Status 2026-10-01:** done in `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering`; `pmo-app` held. *(Closed 2026-10-04: `pmo-app` stays at the authorization fix by decision 1, so the hold no longer applies.)*
+- [x] Add the `> **Upstream:**` tag to `lymecrm`, `qc-sod-ordering`, `playmusiconline` `CLAUDE.md` (not `md-ccrs-dev`: excluded per D2). Flag (do not create) the missing root `CLAUDE.md` in `ping` and `lymestats`. **Status 2026-10-01:** added in `lymecrm` (`63121f4`) and `qc-sod-ordering` (`9cbe315`); `playmusiconline` held with the rest of `pmo-app`. `ping` and `lymestats` have no root file (flagged, not created). *(Closed 2026-10-04: `pmo-app` stays at the authorization fix by decision 1, so the hold no longer applies.)*
 - [x] Each worker builds, tests and commits locally. 
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -572,10 +572,10 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 
 Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testing gate while the work runs and collects them here, in one sitting at the end. The orchestrator prepares a single checklist with the exact commands and URLs, then walks Mike through it.
 
-- [ ] **`lymestarter` hands-on pass** (from T2): app loads past "Waiting for server…" while signed out; Add User with an existing address shows the in-use message and disables Save; Admin home and Users list render in `.ls-*` style in light and dark mode.
-- [ ] **Visual sign-off** (from T4), one repo at a time: `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
+- [x] *(Passed 2026-10-01, headless, section 3 of the checklist.)* **`lymestarter` hands-on pass** (from T2): app loads past "Waiting for server…" while signed out; Add User with an existing address shows the in-use message and disables Save; Admin home and Users list render in `.ls-*` style in light and dark mode.
+- [x] *(Run headlessly 2026-10-01, section 4 of the checklist; results in `.orchestrator/downstream-sync-plan/t5-review/`; three template fixes found and fanned out. Mike's own look is not recorded.)* **Visual sign-off** (from T4), one repo at a time: `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
 - [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
-- [ ] **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
+- [x] *(Done 2026-10-01: every repo in the checklist's section 6 table, plus `lymestats` and `qc-sod-ordering` `main`; `md-ccrs-dev` untouched.)* **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
 - [ ] Anything a worker flagged along the way as needing Mike's eyes.
   - **M9 `lymecrm`: deployed environment.** LymeDeploy does not set the environment and this repo has no CI pipeline, so deployed `lymecrm` (UAT and Production) has probably been running as `Development` unless it was set on the server. Check both. The `web.config` files now say Production (local commit `119e6a1`).
   - M9 `lymecrm`: the e2e contrast probe (`e2e/tests/crm-contrast-probe.spec.ts`) was tuned to the old chip and banner colours and needs a re-run, with `crm-customer-tabs.spec.ts` and `crm-lead-inline-customer.spec.ts` (two selectors changed). Kept by design: POS register surface, `/crm/pos-count`, customer portal. Some views keep more than one primary button on purpose; POS keycaps now render in Roboto.
@@ -645,10 +645,10 @@ If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-
 - [x] Add a `lymestats` row (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`, plus a one-line note that `md-ccrs-dev/atcc-app` exists but is deliberately not a fleet member (D2: not Mike's project, SimpleAuth v1.0, never port to it); correct the 2026-09-26 "still unported" note.
 - [x] Add `lymestats` to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
 - [x] Update `security-port-plan.md`'s status header, or retire the file.
-- [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state. **Open:** tables filled with today's SHAs and sections added for H, I, M, P, J and the C/D/E completions (`lymestarter` `6b62ae1`). Still to add after T5: push state, and the T4 gap-fill commits (`Secure` cookies, `IAuthLogger`, `Register` handler).
+- [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state. **Open:** tables filled with today's SHAs and sections added for H, I, M, P, J and the C/D/E completions (`lymestarter` `6b62ae1`). Push state and the T4 gap-fill SHAs (cookies, `IAuthLogger`, Register) were added 2026-10-04 with new fan-out tables. Still open: the `lymecrm` and `lymetimer` Register rows, until that fix lands.
 - [x] Update `~/.claude/claude-md-sections/products/lymestack.md` ("roughly half rolled out" is no longer true).
 - [x] Write a short "how to stay in sync" note at the top of `downstream-inventory.md`: fetch first, one working branch per repo, `lymestack-todos.md` in every LymeStarter-lineage repo.
-- [ ] Record D6, D7, D8, D9 outcomes as backlog items where Mike wants them.
+- [x] Record D6, D7, D8, D9 outcomes as backlog items where Mike wants them. *(Done: `lymestarter` `BACKLOG.md`, `59962b2`, as Mike chose in T5 decision 11.)*
 - [ ] Mark this document complete and move it to `documentation/` only when Mike says he is done with it.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
@@ -724,6 +724,15 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-04** - Read-only sync audit run (`git fetch` only); report at `sync-audit-report.md` in this repo. Code verdict: good, every claimed SHA on its pushed branch except one stale one, and every port diff correct or partial-and-small. Key findings:
+
+- **UAT is probably not "nothing deployed".** `lymesend`, `paymentz`, `lymetimer`, `lymestats`, `lymebooks` and `qc-sod-ordering` have committed TeamCity configs with a VCS trigger and a LymeDeploy (or Octopus) UAT release step, so the 2026-10-01 pushes likely built UAT releases. Live TeamCity, LymeDeploy and Octopus state is unchecked. `qc-sod-ordering` is a client app deploying through Octopus.
+- **`lymebooks` email-variable blocker.** `main` carries the email transport move to `LymeStackCore:Email` and has been building to UAT since 2026-10-03. The LymeDeploy variables must be renamed from `EmailSettings:*` first, or UAT mail falls back to SMTP pickup and the next promote to production ships it. Warning added to `lymebooks` `RESUME.md`.
+- **Register gap.** `lymecrm` and `lymetimer` write the registration audit log entry only for the first user (the second half of template fix `2fa0dd2`, decision 6). Fix in progress 2026-10-04.
+- **Also:** `lymebooks` support-session cookie lacks `Secure`; `lymedeploy` `--check` works only in its standalone DbUp exe; the ledger and inventory were stale on push state (fixed today in `lymestarter` `core-fix-log.md` and `downstream-inventory.md`). Plan ticks fixed today: T1 budget, T2 and T5 hands-on and pushes, M7 (`pmo-app` out of scope), M12 D6 to D9. M11, M12 and this plan stay open.
+
+**2026-10-01 (late)** - Everything pushed. Pushed: the 14 repos in the push table of `t5-checklist.md` section 6 (`SimpleAuth4Net`, `lymestarter`, `lymecrm` `develop`, `lymebooks`, `lymetimer`, `lymedeploy`, `ping` `develop`, `lymestats` `develop`, `lymesend`, `sawgrass-v2`, `paymentz`, `open-mic-night`, `qc-sod-ordering` `develop` and `main`, `playmusiconline` `develop`), plus `lymestats` `main`. `md-ccrs-dev` untouched (not Mike's project). `lymecrm` and `ping` `main` not moved. Nothing was checked for UAT builds triggered by the pushes (see 2026-10-04).
 
 **2026-10-01 21:25** - T5 section 4 run headlessly by Sonnet workers, one app at a time on ports 4200 and 5218; defects found were fixed upstream first and fanned out. Everything is local; nothing pushed. Screenshots, manifests and a review page are in `.orchestrator/downstream-sync-plan/t5-review/`; the compiled open items for Mike are in `.orchestrator/downstream-sync-plan/prompts/t5-open-items.md`.
 
