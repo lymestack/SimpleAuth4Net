@@ -6,34 +6,35 @@
 
 ## Current Status
 
-**Every repo in the sync is pushed (2026-10-01, on Mike's "push everything"). Nothing is deployed. T5 review items and the lymecrm production check are still open.**
+**The downstream sync plan is complete (2026-10-04). M11, M12 and T5 are closed.**
 
-- Pushed: all 14 repos in the `t5-checklist.md` section 6 table, plus `lymestats` `main` (now tracks `origin/main`) and `qc-sod-ordering` `main` (`0363f69..4e29380`; TeamCity/Octopus may pick it up, check).
-- Not touched: `md-ccrs-dev` (its 29 local commits stay local).
-- The plan's Progress Log does **not** yet record the push. M12's final pass should.
-- All worker agents stopped, ports free, every tree clean except the lymetools session's untracked `~/git/lymestarter/lymebooks-intake.md`.
+- Seven apps are on Production through LymeDeploy with UAT equal to Prod: `lymecrm` 2.0.0.23, `lymetimer` 3.0.0.64, `ping` 2.0.0.31, `lymesend` 2.0.0.7, `lymestats` 1.0.0.18, `paymentz` 1.0.0.57, `lymebooks` 1.0.0.184.
+- Mike approved the T5 visual sign-off with no feedback. The audit (`sync-audit-report.md`) and smoke test (`smoke-test-report.md`) are committed.
+- Two Production deploys are handed off to per-repo backlogs, not open plan items.
+- Untracked `~/git/lymestarter/lymebooks-intake.md` belongs to another session; leave it.
 
 ## What's Done
 
-- **M2 to M10, T1 to T4:** authorization fix, logger event type, publish as Production, email duplicate check, tests, template catch-up, G19, design system ports, attachments/bootstrap/DbUp `--check`. See the Progress Log.
-- **T5 hands-on (2026-10-01 evening):** visual sign-off runs in every LymeStarter app; three shared template fixes (dark mode, logger toast messages, dark-mode links) fanned out to all six LymeStarter apps; lymestats Live-page delay and search-page contrast fixed; ledger (`~/git/lymestarter/core-fix-log.md`) updated with verified SHAs.
-- **Review page built:** `.orchestrator/downstream-sync-plan/t5-review/index.html` (745 images, 12 open items with tick boxes and "Copy my answers").
+- **M0 to M12 and T1 to T5**: authorization fix, logger, email check, Argon2id, design system fan-out, template catch-up, all pushed 2026-10-01. See the Progress Log.
+- **2026-10-04:** audit, Register audit-log fix in `lymecrm` (`ce81684`) and `lymetimer` (`e2e5450`), `lymebooks` email variables renamed (release 184 verified in UAT and Prod), smoke test and its two fixes, M11 Production deploys, `lymecrm` spot check.
 
 ## What's Next
 
-1. **Mike's review page answers:** he works through the 12 items and pastes "Copy my answers". Any fix becomes a gap-fill worker, then a new push.
-2. **lymecrm production spot check** (checklist section 5): Mike signs in to Production `2.0.0.22`; confirm which environment UAT and Production run as.
-3. **M12 final pass:** record the push state in the Progress Log and `core-fix-log.md`, D6 to D9 as backlog items, close the plan.
-4. **M11 (production), Mike drives, in checklist section 7 order:** authorization fix first (`lymesend`, `lymetimer`, `paymentz`); **`lymebooks` must not deploy** until LymeDeploy's email variables move from `EmailSettings:*` to `LymeStackCore:Email:*`; `sawgrass-v2` needs the Azure firewall rule and its security migration first.
-5. **Optional small fixes Mike hasn't ruled on:** lymetimer NG0100 (defer the emit from commit `b84a4e0`); `.link-primary` underline still Bootstrap blue (two undefined RGB tokens); light-mode link contrast 3.68:1 fleet-wide (visible design change); PinG brand pages forced to light mode.
-6. **Round two** (after Mike reviews `core-drift-audit.md` and `lymebooks-intake.md`): 20 LymeBooks fixes up to the template, audit items U1 to U14, fan out.
-
-To resume orchestration, run `/iadev:orchestrator downstream-sync-plan.md` **from `~/git/SimpleAuth4Net`** and choose resume.
+1. **Round two** (Mike reviews first): `core-drift-audit.md` (U1 to U14), `~/git/lymestarter/lymebooks-intake.md` (8 port groups), then fan out.
+2. **`sawgrass-v2` Production:** Azure firewall rule and the `2026-08-26 - Security hardening.sql` migration; waiting on Brian (vacation). See `~/git/sawgrass-v2/RESUME.md`.
+3. **`qc-sod-ordering` Production:** Ordering `0.1.0.32` is UAT only; move Ordering into its own Octopus project first. See `~/git/qc-sod-ordering/BACKLOG.md`.
+4. **Backlog** (also in the 2026-10-04 close-out log entry):
+   - `onEmailFieldChanged(string)` breaks under nullable TypeGen output in `lymesend`, `open-mic-night`, `qc-sod-ordering`, `paymentz`.
+   - `sawgrass-v2`: dormant tgconfig with `clearOutputDirectory:true`; `DbUp/Program.cs` hardcodes a SQL password.
+   - `lymedeploy` `Tools dbup --check` still runs migrations.
+   - `lymecrm` and `lymetimer`: post-registration handler runs before the admin grant.
+   - Stale .NET tests: `lymebooks` (15), `lymedeploy` (9); `lymestats` integration failures (6); `open-mic-night` bundle budget; `paymentz` macOS data-dir default.
+   - Optional design calls: lymetimer NG0100, `.link-primary` underline, light-mode link contrast 3.68:1, PinG brand pages in dark mode.
 
 ## Planning Docs
 
 - `downstream-sync-plan.md`: inventory, milestones, decisions D1 to D11, Progress Log (source of truth; only the orchestrator edits it).
-- `t5-checklist.md`: the T5 list (now committed). Sections 5, 7 and the review page items remain.
+- `t5-checklist.md`: the T5 list (now committed). All sections now ticked.
 - `core-drift-audit.md`: per-file core drift verdicts in four apps (committed, awaiting review).
 - `~/git/lymestarter/lymebooks-intake.md`: 189 LymeBooks upstream entries classified (untracked, awaiting review).
 
@@ -62,16 +63,17 @@ WebApi/WebApi.Tests/                          28 tests
 ## Recent Git Log
 
 ```text
+313dadc Add the downstream sync smoke test report
+983af34 Fix the RegisterConfirmationComponent spec and accept a null email on the user form
+8746812 Add the downstream sync audit report
+296e056 Log the 2026-10-01 push and the 2026-10-04 audit, and fix the stale tracker ticks
+c2f10db Update the resume prompt after the push
 9a84bdb Add the core drift audit and the T5 checklist
 47c8e94 Record the lymestats verification and the review page
 e7a2712 Record the visual sign-off runs, the three template fixes and their fan-out
-54f3be2 Record the lymebooks rebase onto origin
-7d273eb Record the template hands-on pass and the visual sign-off dispatch
-12164e1 Record the T5 section 1 decisions in the downstream sync plan
-e2a1f66 Raise the production bundle error budget to 1.5 MB
 ```
 
-`master` is level with `origin/master` (pushed 2026-10-01).
+`master` is pushed to `origin/master` (close-out commit on top of this list).
 
 ## Any Other Notes
 

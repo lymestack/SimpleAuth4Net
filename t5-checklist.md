@@ -65,38 +65,38 @@ Full click paths are in each worker's summary under "Review Materials":
 
 Start: `cd ~/git/lymecrm/WebApi/WebApi && ASPNETCORE_URLS='http://localhost:5218' dotnet watch run`; `cd ~/git/lymecrm/ng-app && npm start`. Account: `mjoseph@iadev.net` (local dev Admin, tenant 1). Confirm `appsettings.Development.json` points at `LymeCrm` on `192.168.50.42\SQLEXPRESS`, not UAT or Production.
 
-- [ ] `/` home dashboard: queue cards, POS stat tiles, pipeline bar.
-- [ ] `/crm/customers` list and a customer (name is the title; tabs General, Assets, Jobs, Estimates, Files, Portal access).
-- [ ] `/crm/leads` list and board (drag a card; Won/Lost confirm), `/crm/jobs`, service agreements, communications, `/crm/search`, portal requests.
-- [ ] `/admin/config`: every tab (the POS tab has seven sub-pages). `/admin/tenants`.
-- [ ] `/crm/pos`: home, sessions, sales history and a sale, returns, payments, reports, catalog, counts, orders, purchase orders, receiving, vendors, invoices.
-- [ ] Kept by design, should still feel as before: POS register, `/crm/pos-count` at phone width, `/portal`.
-- [ ] Re-run the e2e specs the port touched: `crm-contrast-probe.spec.ts` (chip and banner colours changed), `crm-customer-tabs.spec.ts`, `crm-lead-inline-customer.spec.ts`.
+- [x] `/` home dashboard: queue cards, POS stat tiles, pipeline bar.
+- [x] `/crm/customers` list and a customer (name is the title; tabs General, Assets, Jobs, Estimates, Files, Portal access).
+- [x] `/crm/leads` list and board (drag a card; Won/Lost confirm), `/crm/jobs`, service agreements, communications, `/crm/search`, portal requests.
+- [x] `/admin/config`: every tab (the POS tab has seven sub-pages). `/admin/tenants`.
+- [x] `/crm/pos`: home, sessions, sales history and a sale, returns, payments, reports, catalog, counts, orders, purchase orders, receiving, vendors, invoices.
+- [x] Kept by design, should still feel as before: POS register, `/crm/pos-count` at phone width, `/portal`.
+- [x] Re-run the e2e specs the port touched: `crm-contrast-probe.spec.ts` (chip and banner colours changed), `crm-customer-tabs.spec.ts`, `crm-lead-inline-customer.spec.ts`.
 
 ### `lymetimer`
 
 Start: `cd ~/git/lymetimer/WebApi/WebApi && dotnet watch run`; `cd ~/git/lymetimer/ng-app && npm start`. Account: an Admin who owns a team. Dev database `LymeTimer` on `192.168.50.42\SQLEXPRESS`.
 
-- [ ] `/timer` dashboard: one blue "Add a Timer"; filter card; entry view and Adjust modals.
-- [ ] `/timer/projects`, `/timer/tags`, `/timer/preferences`, `/timer/team` (4 tabs, 3 modals), `/timer/admin-teams`, both reports.
-- [ ] Admin → App Health: the Send Test Email card is still there.
-- [ ] Judge these visible changes: tags are uppercase pills; deleted projects are muted, not red, and the duplicate Archived badge is gone; Save and Return to Timer sit in the page header; team member row actions are always visible; team modals are no longer vertically centred.
+- [x] `/timer` dashboard: one blue "Add a Timer"; filter card; entry view and Adjust modals.
+- [x] `/timer/projects`, `/timer/tags`, `/timer/preferences`, `/timer/team` (4 tabs, 3 modals), `/timer/admin-teams`, both reports.
+- [x] Admin → App Health: the Send Test Email card is still there.
+- [x] Judge these visible changes: tags are uppercase pills; deleted projects are muted, not red, and the duplicate Archived badge is gone; Save and Return to Timer sit in the page header; team member row actions are always visible; team modals are no longer vertically centred.
 
 ### `lymedeploy`
 
 Start: the local sandbox only (`~/git/lymedeploy/sandbox/up.sh`; login in `sandbox/README.md`). Never the production database.
 
-- [ ] `/deploy` dashboard, a Promote/Redeploy confirm dialog, `/deploy/projects` and a project (5 tabs), a deployment (terminal stays dark in both modes), `/deploy/infrastructure`, `/deploy/backups`, `/deploy/activity`.
-- [ ] Status colours: emerald, amber and red now come from the shared tokens and shift slightly. Acceptable?
-- [ ] As a **non-admin**, `/deploy/settings` → Deployment shows "The current deployment mode is unavailable…" and no radio options.
+- [x] `/deploy` dashboard, a Promote/Redeploy confirm dialog, `/deploy/projects` and a project (5 tabs), a deployment (terminal stays dark in both modes), `/deploy/infrastructure`, `/deploy/backups`, `/deploy/activity`.
+- [x] Status colours: emerald, amber and red now come from the shared tokens and shift slightly. Acceptable?
+- [x] As a **non-admin**, `/deploy/settings` → Deployment shows "The current deployment mode is unavailable…" and no radio options.
 
 ### `ping`
 
 Start: `cd ~/git/ping/WebApi/WebApi && dotnet watch run`; `cd ~/git/ping/ng-app && npm start`. Needs a local `appsettings.Development.json` pointing at a dev database.
 
-- [ ] Admin pages under `/admin` and `/auth-admin`, and `/about`, in light and dark.
-- [ ] `/` home: the module menu's plain card now picks up the soft shadow (the one possible change on a PinG page).
-- [ ] `/coordinator`, the treasurer and shopper pages look unchanged.
+- [x] Admin pages under `/admin` and `/auth-admin`, and `/about`, in light and dark.
+- [x] `/` home: the module menu's plain card now picks up the soft shadow (the one possible change on a PinG page).
+- [x] `/coordinator`, the treasurer and shopper pages look unchanged.
 
 ### `lymestats`
 
@@ -104,7 +104,7 @@ Start: `cd ~/git/ping/WebApi/WebApi && dotnet watch run`; `cd ~/git/ping/ng-app 
 
 Start: `cd ~/git/lymestats/WebApi/WebApi && dotnet watch run`; `cd ~/git/lymestats/ng-app && npm start`.
 
-- [ ] `/analytics` (KPI tiles, panels, View all dialog), `/analytics/search`, `/analytics/live`, `/analytics-admin` (three tabs). Chart colours in dark mode.
+- [x] `/analytics` (KPI tiles, panels, View all dialog), `/analytics/search`, `/analytics/live`, `/analytics-admin` (three tabs). Chart colours in dark mode.
 
 ### Email check in the SimpleAuth-lineage apps (optional spot check)
 
@@ -112,8 +112,10 @@ The same Add User check exists in `lymesend` (Bootstrap), `paymentz` and `open-m
 
 ## 5. `lymecrm` production spot check
 
-- [ ] Sign in to Production (release `2.0.0.22`, promoted 2026-10-01 without a sign-in check).
-- [ ] Check which environment the deployed UAT and Production sites run as. LymeDeploy does not set it and this repo has no pipeline, so they have probably been running as `Development`. The local commit `119e6a1` flips both `web.config` files to Production.
+- [x] Sign in to Production (release `2.0.0.22`, promoted 2026-10-01 without a sign-in check).
+- [x] Check which environment the deployed UAT and Production sites run as. LymeDeploy does not set it and this repo has no pipeline, so they have probably been running as `Development`. The local commit `119e6a1` flips both `web.config` files to Production.
+
+**Done 2026-10-04:** signed in on UAT (badge UAT) and Production (badge Production), both on build `2.0.0.23`.
 
 ## 6. Push approvals
 
@@ -140,11 +142,15 @@ Not touched and not to be pushed: `md-ccrs-dev` (its 29 local commits stay as th
 
 ## 7. Carry into M11 (production), in this order
 
-1. Deploy the authorization fix first: `lymesend`, `lymetimer`, `paymentz`, then the rest. UAT before production.
-2. **`lymebooks`:** before deploying, rename LymeDeploy's variables from `EmailSettings:Transport`, `EmailSettings:LymeSend:ApiUrl`, `EmailSettings:LymeSend:SubjectPrefix`, `EmailSettings:LymeSend:ApiKey` to the same names under `LymeStackCore:Email:`. Otherwise mail silently falls back to SMTP pickup and nothing is delivered. Confirm against the live variable table; the worker could only read the onboarding doc.
-3. `lymetimer` and `lymebooks`: after deploy, confirm `/api/AppConfig` returns a JSON content type (the new bootstrap guard retries otherwise).
-4. `sawgrass-v2`: Azure firewall rule, then apply `2026-08-26 - Security hardening.sql`. `lymesend` and `paymentz`: confirm the same migration on production before deploying.
-5. `lymecrm`: the environment check in section 5.
+- [x] 1. Deploy the authorization fix first: `lymesend`, `lymetimer`, `paymentz`, then the rest. UAT before production.
+- [x] 2. **`lymebooks`:** before deploying, rename LymeDeploy's variables from `EmailSettings:Transport`, `EmailSettings:LymeSend:ApiUrl`, `EmailSettings:LymeSend:SubjectPrefix`, `EmailSettings:LymeSend:ApiKey` to the same names under `LymeStackCore:Email:`. Otherwise mail silently falls back to SMTP pickup and nothing is delivered. Confirm against the live variable table; the worker could only read the onboarding doc.
+- [x] 3. `lymetimer` and `lymebooks`: after deploy, confirm `/api/AppConfig` returns a JSON content type (the new bootstrap guard retries otherwise).
+- [x] 4. `sawgrass-v2`: Azure firewall rule, then apply `2026-08-26 - Security hardening.sql`. `lymesend` and `paymentz`: confirm the same migration on production before deploying.
+- [x] 5. `lymecrm`: the environment check in section 5.
+
+**Closed 2026-10-04:** seven apps on Production via LymeDeploy (UAT equals Prod); `lymebooks` variables renamed and `1.0.0.184` verified in both. `sawgrass-v2` (item 4) and `qc-sod-ordering` Production deploys handed off to `sawgrass-v2/RESUME.md` and `qc-sod-ordering/BACKLOG.md`.
+
+**T5 visual sign-off:** Mike approved it on 2026-10-04 with no feedback; the 12 review page items are closed (sections 3 and 4 were run headlessly 2026-10-01).
 
 ## 8. Smaller findings, no action needed today
 

@@ -37,9 +37,9 @@ Framework code in this estate is vendored as source copies. `SimpleAuth4Net` (la
 | [M9 — Design system fan-out](#m9--design-system-fan-out) | Opus | ✅ Complete | 22 (longest; 5 in parallel) | All five repos done, builds and tests green (see log). `ping`'s brand pages and `lymecrm`'s POS register, pos-count and customer portal kept by design. Visual sign-off at T5 |
 | [M10 — L2 small-fix fan-out](#m10--l2-small-fix-fan-out) | Sonnet | 🔄 In Progress | 5 | K, L, M, P done in all five repos (see log). Open: fanning out whatever M8 ports, which waits on Mike's intake review |
 | [T4 — L2 verification](#t4--l2-verification) | Sonnet | ✅ Complete | 10 + 23 (gap-fill) | Automated checks pass: J to P ✅ in six repos, no new failures, 30 of 30 tokenless calls 401. Gap-fill ported the three missed template fixes to all seven repos. Visual sign-off is at T5 |
-| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | 🔄 Pushed; open items remain | — | Decisions, template hands-on and the five visual runs done 2026-10-01 (headless); all repos pushed 2026-10-01 (see log). Open: `lymecrm` production spot-check, the live UAT/deploy check, the `lymebooks` variable rename |
-| [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ⬜ Not Started | — | Migrate before deploying code |
-| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | 🔄 In Progress | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Ledger now has push state and the T4 gap-fill SHAs (2026-10-04); D6 to D9 are in `lymestarter` `BACKLOG.md` (`59962b2`). Open: the `lymecrm` and `lymetimer` Register fix, the 2026-10-04 audit follow-ups, closing this document |
+| [T5 — Deferred hands-on gate](#t5--deferred-hands-on-gate) | — (Mike) | ✅ Complete | — | Decisions, template hands-on and the five visual runs done 2026-10-01 (headless); all repos pushed 2026-10-01. 2026-10-04: `lymecrm` UAT and Production spot check done (build 2.0.0.23), `lymebooks` variables renamed and verified, Mike approved the visual sign-off with no feedback (12 review items closed) |
+| [M11 — Production: migrations and deploys](#m11--production-migrations-and-deploys) | Sonnet (Mike-driven) | ✅ Complete | — | 2026-10-04: seven apps on Production through LymeDeploy, UAT equals Prod in each (see log). `sawgrass-v2` and `qc-sod-ordering` Production deploys handed off to their repos' own trackers |
+| [M12 — Trackers and registration](#m12--trackers-and-registration) | Haiku | ✅ Complete | 15 + 10 | Everything that needs no push state is done and verified (first pass on Haiku had errors; corrected by a Sonnet gap-fill). Ledger now has push state and the T4 gap-fill SHAs (2026-10-04); D6 to D9 are in `lymestarter` `BACKLOG.md` (`59962b2`). Register fix ported to `lymecrm` and `lymetimer` (2026-10-04); ledger entries T and U added; round-two and backlog items recorded in the 2026-10-04 log entry. Plan closed 2026-10-04 |
 
 Status key: ⬜ Not Started / 🔄 In Progress / ✅ Complete. Record actual minutes in **Duration** when a milestone closes.
 
@@ -573,10 +573,10 @@ Reference: `lymestarter` `f1d88b5` and `docs/design-system.md`; LymeBooks `devel
 Mike's instruction (2026-10-01): the orchestrator bypasses every hands-on testing gate while the work runs and collects them here, in one sitting at the end. The orchestrator prepares a single checklist with the exact commands and URLs, then walks Mike through it.
 
 - [x] *(Passed 2026-10-01, headless, section 3 of the checklist.)* **`lymestarter` hands-on pass** (from T2): app loads past "Waiting for server…" while signed out; Add User with an existing address shows the in-use message and disables Save; Admin home and Users list render in `.ls-*` style in light and dark mode.
-- [x] *(Run headlessly 2026-10-01, section 4 of the checklist; results in `.orchestrator/downstream-sync-plan/t5-review/`; three template fixes found and fanned out. Mike's own look is not recorded.)* **Visual sign-off** (from T4), one repo at a time: `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
-- [ ] **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
+- [x] *(Run headlessly 2026-10-01, section 4 of the checklist; results in `.orchestrator/downstream-sync-plan/t5-review/`; three template fixes found and fanned out. Mike approved the visual sign-off on 2026-10-04 with no feedback; the 12 review page items are closed.)* **Visual sign-off** (from T4), one repo at a time: `lymecrm`, `lymetimer`, `lymedeploy`, `ping`, `lymestats`.
+- [x] *(Done 2026-10-04: signed in on UAT (badge UAT) and Production (badge Production), both on build 2.0.0.23.)* **`lymecrm` production spot-check:** release `2.0.0.22` was promoted on 2026-10-01 without a sign-in check.
 - [x] *(Done 2026-10-01: every repo in the checklist's section 6 table, plus `lymestats` and `qc-sod-ordering` `main`; `md-ccrs-dev` untouched.)* **Push approvals, repo by repo:** `SimpleAuth4Net` (first push of `ea622c8`, together with item A), `lymestarter` (includes `b8ec996`), then each downstream repo. The orchestrator presents a table: repo · branch · commits ahead · what they contain.
-- [ ] Anything a worker flagged along the way as needing Mike's eyes.
+- [x] *(Closed 2026-10-04; leftovers moved to the backlog in the 2026-10-04 log entry.)* Anything a worker flagged along the way as needing Mike's eyes.
   - **M9 `lymecrm`: deployed environment.** LymeDeploy does not set the environment and this repo has no CI pipeline, so deployed `lymecrm` (UAT and Production) has probably been running as `Development` unless it was set on the server. Check both. The `web.config` files now say Production (local commit `119e6a1`).
   - M9 `lymecrm`: the e2e contrast probe (`e2e/tests/crm-contrast-probe.spec.ts`) was tuned to the old chip and banner colours and needs a re-run, with `crm-customer-tabs.spec.ts` and `crm-lead-inline-customer.spec.ts` (two selectors changed). Kept by design: POS register surface, `/crm/pos-count`, customer portal. Some views keep more than one primary button on purpose; POS keycaps now render in Roboto.
   - M9 `lymedeploy`: its emerald, amber and red status colours now come from the shared tokens and shift slightly. Its Karma suite does not compile on `main` (`dashboard.component.spec.ts:240`, pre-existing).
@@ -626,13 +626,16 @@ If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-
 
 *All items must be completed; each production step needs Mike's explicit go-ahead.*
 
-- [ ] From LymeDeploy, record the currently deployed release and commit per app and environment (UAT, prod). Fill a table: app · env · deployed commit · has C? · has A?
-- [ ] Confirm whether the security-hardening migration has been applied on the **production** databases of `lymesend` and `paymentz`. Migrate before deploying code that needs the columns.
-- [ ] Add the Azure firewall rule for `sawgrass-v2`'s dev DB and apply its migration, or record why not.
-- [ ] Deploy the M4 security fixes first, in this order: `lymesend`, `lymetimer`, `paymentz`, then the rest. UAT before prod.
-- [ ] Set `AuthSettings:AlwaysUseSecureCookies=true` in production config behind the TLS-terminating proxy, where not already set.
-- [ ] After each deploy, Mike confirms sign-in works and an existing (legacy-hash) account still logs in.
-- [ ] `open-mic-night` has no DbUp project — note that its migration is hand-run at first deploy.
+- [x] From LymeDeploy, record the currently deployed release and commit per app and environment (UAT, prod). Fill a table: app · env · deployed commit · has C? · has A?
+- [x] Confirm whether the security-hardening migration has been applied on the **production** databases of `lymesend` and `paymentz`. Migrate before deploying code that needs the columns.
+- [x] *(Handed off 2026-10-04: waiting on Brian, tracked in `sawgrass-v2/RESUME.md`, `d7d201c`.)* Add the Azure firewall rule for `sawgrass-v2`'s dev DB and apply its migration, or record why not.
+- [x] *(Done 2026-10-04 for seven apps; `qc-sod-ordering` handed off to `qc-sod-ordering/BACKLOG.md`, `6aaf118`.)* Deploy the M4 security fixes first, in this order: `lymesend`, `lymetimer`, `paymentz`, then the rest. UAT before prod.
+- [x] Set `AuthSettings:AlwaysUseSecureCookies=true` in production config behind the TLS-terminating proxy, where not already set.
+- [x] After each deploy, Mike confirms sign-in works and an existing (legacy-hash) account still logs in.
+- [x] `open-mic-night` has no DbUp project — note that its migration is hand-run at first deploy.
+
+
+*Closed 2026-10-04: see the Progress Log. Not open plan items: the `sawgrass-v2` Production deploy and the `qc-sod-ordering` Production deploy, handed off to per-repo backlogs.*
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -645,11 +648,11 @@ If a hands-on check fails, the orchestrator dispatches a gap-fill worker and re-
 - [x] Add a `lymestats` row (lineage, DbUp layout, Angular path, UI kit, branch) to `~/git/lymestarter/downstream-inventory.md`, plus a one-line note that `md-ccrs-dev/atcc-app` exists but is deliberately not a fleet member (D2: not Mike's project, SimpleAuth v1.0, never port to it); correct the 2026-09-26 "still unported" note.
 - [x] Add `lymestats` to the member lists in `~/git/claude-shared-settings/skills/iadev-lyme/skills/port-core-fix/SKILL.md`, and add a step telling it to `git fetch` and compare against origin before probing.
 - [x] Update `security-port-plan.md`'s status header, or retire the file.
-- [ ] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state. **Open:** tables filled with today's SHAs and sections added for H, I, M, P, J and the C/D/E completions (`lymestarter` `6b62ae1`). Push state and the T4 gap-fill SHAs (cookies, `IAuthLogger`, Register) were added 2026-10-04 with new fan-out tables. Still open: the `lymecrm` and `lymetimer` Register rows, until that fix lands.
+- [x] Close out every `core-fix-log.md` table opened in M3 and M8 with final SHAs and push state. Tables filled with today's SHAs and sections added for H, I, M, P, J and the C/D/E completions (`lymestarter` `6b62ae1`). Push state and the T4 gap-fill SHAs (cookies, `IAuthLogger`, Register) were added 2026-10-04 with new fan-out tables. The `lymecrm` and `lymetimer` Register rows closed 2026-10-04 (`ce81684`, `e2e5450`; ledger `5fe2ed0`).
 - [x] Update `~/.claude/claude-md-sections/products/lymestack.md` ("roughly half rolled out" is no longer true).
 - [x] Write a short "how to stay in sync" note at the top of `downstream-inventory.md`: fetch first, one working branch per repo, `lymestack-todos.md` in every LymeStarter-lineage repo.
 - [x] Record D6, D7, D8, D9 outcomes as backlog items where Mike wants them. *(Done: `lymestarter` `BACKLOG.md`, `59962b2`, as Mike chose in T5 decision 11.)*
-- [ ] Mark this document complete and move it to `documentation/` only when Mike says he is done with it.
+- [x] Mark this document complete *(marked complete 2026-10-04; still in the repo root, to move to `documentation/` only when Mike says he is done with it)*.
 
 [Return to Top](#downstream-sync--inventory--implementation-plan)
 
@@ -724,6 +727,26 @@ Markers N and O are counts, not proofs — M3 reads the LymeBooks diff rather th
 ## Progress Log / Notes
 
 Newest first. Format: `**YYYY-MM-DD HH:MM** - entry`.
+
+**2026-10-04 (close-out)** - Plan complete: M11, M12, T5 and this document are closed.
+
+- **Audit:** read-only, about 230 SHAs checked, code verdict good. Report `sync-audit-report.md` (committed).
+- **Register audit-log fix:** ported to `lymecrm` `ce81684` (`develop`) and `lymetimer` `e2e5450` (`main`); ledger updated in `lymestarter` `5fe2ed0`.
+- **`lymebooks` email:** LymeDeploy variables renamed from `EmailSettings:*` to `LymeStackCore:Email:*`. ApiKey is Global (UAT and Prod share one key); SubjectPrefix is `[UAT]` in UAT and empty in Prod; the old rows were deleted. Release `1.0.0.184` deployed to UAT and Production; a password-reset email was verified in both (UAT subject `[UAT] Reset your password`, Prod no prefix). Releases `1.0.0.175` to `1.0.0.182` went to Prod with the old names, so Prod mail was likely broken from about 10-02 until 184.
+- **Correction to the audit entry below:** the pipelines do deploy on push. The 10-01 push deployed `lymesend`, `lymestats`, `lymetimer` and `paymentz` to UAT (via LymeDeploy) and `lymebooks` to UAT and Prod.
+- **Smoke test:** report `smoke-test-report.md` (committed); 12 of 14 builds green. Two fixes followed. The `RegisterConfirmationComponent` spec (broken since scaffolding, not from the sync): `lymestarter` `8497e75`, `SimpleAuth4Net` `983af34`, `paymentz` `067bc99`, `qc-sod-ordering` `c11297e`, `playmusiconline` `b1675bc`, `sawgrass-v2` `4a3a8fb`. The `sawgrass-v2` client build: TypeGen 7.0.0 pinned as a local tool, `6e9af85`. Ledger entries T and U in `lymestarter` `9f236d0`; inventory updated in `b44f3c5`.
+- **M11 Production (LymeDeploy), verified on the dashboard:** `lymecrm` 2.0.0.23, `lymetimer` 3.0.0.64, `ping` 2.0.0.31, `lymesend` 2.0.0.7, `lymestats` 1.0.0.18, `paymentz` 1.0.0.57, `lymebooks` 1.0.0.184. UAT equals Prod in each.
+- **`lymecrm` spot check:** signed in on UAT (badge UAT) and Production (badge Production), both on build 2.0.0.23.
+- **T5 visual sign-off:** Mike approved with no feedback; the 12 review page items are closed.
+- **Handed off to per-repo backlogs (not open plan items):** `sawgrass-v2` Production needs the Azure firewall rule and the `2026-08-26 - Security hardening.sql` migration, waiting on Brian (on vacation), tracked in `sawgrass-v2/RESUME.md` (`d7d201c`). `qc-sod-ordering` Production: Ordering `0.1.0.32` is on UAT only (Octopus project QuanticoCreek, channel Ordering); Mike decided to move Ordering into its own Octopus project first, tracked in `qc-sod-ordering/BACKLOG.md` (`6aaf118`).
+- **Backlog and round two (follow-ups, not plan items):**
+  - Round two: `core-drift-audit.md` (U1 to U14) and `lymebooks-intake.md`.
+  - `onEmailFieldChanged(string)` in `lymesend`, `open-mic-night`, `qc-sod-ordering` and `paymentz` will break when their TypeGen emits nullable types.
+  - `sawgrass-v2` has a dormant tgconfig with `clearOutputDirectory:true`; its `DbUp/Program.cs` hardcodes a SQL password.
+  - `lymedeploy` `Tools dbup --check` still runs migrations.
+  - `lymecrm` and `lymetimer` post-registration handler runs before the admin grant (the template runs it after).
+  - Stale .NET tests in `lymebooks` (15) and `lymedeploy` (9); integration failures in `lymestats` (6); the `open-mic-night` bundle budget; the `paymentz` macOS data-dir default.
+  - The smoke worker made one guessed sign-in attempt on `lymestats`.
 
 **2026-10-04** - Read-only sync audit run (`git fetch` only); report at `sync-audit-report.md` in this repo. Code verdict: good, every claimed SHA on its pushed branch except one stale one, and every port diff correct or partial-and-small. Key findings:
 
