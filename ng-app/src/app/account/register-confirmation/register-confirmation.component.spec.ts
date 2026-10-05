@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { RouterModule } from '@angular/router';
 
 import { RegisterConfirmationComponent } from './register-confirmation.component';
 
@@ -8,6 +11,7 @@ describe('RegisterConfirmationComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [MatCardModule, MatButtonModule, RouterModule.forRoot([])],
       declarations: [RegisterConfirmationComponent]
     })
     .compileComponents();

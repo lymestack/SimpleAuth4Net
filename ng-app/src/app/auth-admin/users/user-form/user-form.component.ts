@@ -135,7 +135,7 @@ export class UserFormComponent implements OnInit {
     }
   }
 
-  onEmailFieldChanged(emailAddress: string) {
+  onEmailFieldChanged(emailAddress: string | null | undefined) {
     const normalized = (emailAddress || '').trim().toLowerCase();
 
     // Nothing to check for a blank address, or for an existing user keeping their own address.
