@@ -322,7 +322,7 @@ Organized by layer and urgency: reconcile → fix upstream → fan out security 
 - **Commit locally, plain human commit messages, no AI attribution. Do not push** unless the milestone says Mike has approved it.
 - **Never exercise a production system.** All verification runs against local or dev instances.
 - **On this Mac, run `dotnet` from the arm64 SDK:** `export DOTNET_ROOT=/usr/local/share/dotnet PATH="/usr/local/share/dotnet:$PATH"`. The brew `dotnet` in `/usr/local/bin` is x86_64 and fails at the TypeGen post-build step (found in M0).
-- Fan-outs use `/iadev-lyme:port-core-fix`; every fan-out gets a section in `~/git/lymestarter/core-fix-log.md`.
+- Fan-outs use `/iadev:upstream-downstream-update` (replaced `port-core-fix` 2026-10-07); every fan-out gets a section in `~/git/lymestarter/core-fix-log.md`.
 - Per-repo quirks (DbUp layout, UI kit, gitignored `_api/`) live in `~/git/lymestarter/downstream-inventory.md`. Read it before porting.
 
 ## M0 — Reconcile clones with origin
