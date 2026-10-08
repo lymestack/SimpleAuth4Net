@@ -41,6 +41,16 @@ public static class SimpleAuthServiceExtensions
         return services;
     }
 
+    /// <summary>
+    /// Registers the default <see cref="IRegistrationGate"/> that honours <c>AllowRegistration</c>.
+    /// Uses TryAddScoped so downstream layers (e.g. LymeStackCore) can override.
+    /// </summary>
+    public static IServiceCollection AddSimpleAuthRegistrationGate(this IServiceCollection services)
+    {
+        services.TryAddScoped<IRegistrationGate, DefaultRegistrationGate>();
+        return services;
+    }
+
     public static IServiceCollection AddSimpleAuthDbContext(this IServiceCollection services)
     {
         services.AddDbContext<SimpleAuthContext>();
@@ -305,6 +315,7 @@ public static class SimpleAuthServiceExtensions
                 services.AddSimpleAuthLogging(configuration);
                 services.AddSimpleAuthHttpClient();
                 services.AddSimpleAuthEmailSender();
+                services.AddSimpleAuthRegistrationGate();
                 break;
 
             default: // Standalone
@@ -314,6 +325,7 @@ public static class SimpleAuthServiceExtensions
                 services.AddSimpleAuthLogging(configuration);
                 services.AddSimpleAuthHttpClient();
                 services.AddSimpleAuthEmailSender();
+                services.AddSimpleAuthRegistrationGate();
                 break;
         }
 

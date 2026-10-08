@@ -115,6 +115,16 @@ SimpleAuth requires a database to store user, token, and session data.
 
 ---
 
+## Optional: Registration Hooks
+
+`Auth/Register` has two extension points. Register your own implementation after `AddSimpleAuthRegistrationGate()` (or `AddSimpleAuth()`) and it replaces the default.
+
+**`IPostRegistrationHandler`** runs after a user has been created: `HandleAsync(AppUser user, bool isFirstUser)`. Use it to enrol the user in your own tables.
+
+**`IRegistrationGate`** runs before anything else in `Register` and decides whether the request may proceed: `Task<RegistrationDecision> EvaluateAsync(RegisterModel model)`, returning `RegistrationDecision.Allow()` or `RegistrationDecision.Deny(reason)`. The default (`DefaultRegistrationGate`) allows registration only when `AppConfig:SimpleAuth:AllowRegistration` is `true`, so apps that register nothing behave exactly as before. A custom gate replaces that check entirely, so it can admit a request while the flag is `false` (for example, a holder of a valid invite token) or refuse one while it is `true`. The caller always receives `400 Bad Request` with `Public registration is not allowed.` on a denial; the reason is for your own logging. The gate is registered with `TryAddScoped`, so a `services.AddScoped<IRegistrationGate, MyGate>()` placed after it wins.
+
+---
+
 ## Optional: Customize UI or Client Integration
 
 The `AppConfig` controller exposes public auth config to clients. You can build your Angular or Blazor front-end to respect these config values.

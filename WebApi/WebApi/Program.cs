@@ -19,7 +19,8 @@ builder.Services
     .AddSimpleAuthJwt(builder.Configuration)
     .AddSimpleAuthDefaultAuthorization()
     .AddSimpleAuthHttpClient()
-    .AddSimpleAuthEmailSender();
+    .AddSimpleAuthEmailSender()
+    .AddSimpleAuthRegistrationGate();
 
 var app = builder.Build();
 

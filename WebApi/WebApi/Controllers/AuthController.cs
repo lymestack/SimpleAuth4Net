@@ -49,7 +49,11 @@ public class AuthController(
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
         if (!_simpleAuthSettings.EnableLocalAccounts) return BadRequest("Local Accounts are not enabled.");
-        if (!_simpleAuthSettings.AllowRegistration) return BadRequest("Public registration is not allowed.");
+
+        // The gate is the single place AllowRegistration is read. Apps that register no gate get the default.
+        var registrationGate = HttpContext.RequestServices.GetService<IRegistrationGate>() ?? new DefaultRegistrationGate(configuration);
+        var registrationDecision = await registrationGate.EvaluateAsync(model);
+        if (!registrationDecision.Allowed) return BadRequest("Public registration is not allowed.");
         
         // Check for duplicate username
         if (await db.AppUsers.AnyAsync(x => x.Username == model.Username))
