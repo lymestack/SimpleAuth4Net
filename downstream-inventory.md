@@ -25,9 +25,9 @@ also carries SimpleAuth-style `core/_services/auth.service.ts` and is included h
 
 | Repo | Client | Logout() vs old | `revokeToken()` | Hand merge | Ported |
 |---|---|---|---|---|---|
-| `sawgrass-v2` | ng-app | identical | present, no callers | no | no |
-| `paymentz` | ng-app | identical | present, no callers | no | no |
-| `open-mic-night` | ng-app | identical | present, no callers | no | no |
-| `qc-sod-ordering` | ng-app | identical | present, no callers | no | no |
-| `lymesend` (hybrid) | ng-app | identical | present, no callers | no | no |
+| `sawgrass-v2` | ng-app | identical | present, no callers | no | yes (`339813f`, local, unpushed) |
+| `paymentz` | ng-app | identical | present, no callers | no | yes (`7f2792f`, local, unpushed) |
+| `open-mic-night` | ng-app | identical | present, no callers | no | yes (`0e95c65`, local, unpushed) |
+| `qc-sod-ordering` | ng-app | identical | present, no callers | no | yes (`f5fa1b0`, local, unpushed) |
+| `lymesend` (hybrid) | ng-app | identical | present, no callers | no | yes (`28efee7`, local, unpushed) |
 | `playmusiconline/pmo-app` | ng-app | identical | present, no callers | no | no (app deferred to its rebuild) |
