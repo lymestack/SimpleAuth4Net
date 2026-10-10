@@ -273,14 +273,6 @@ export class AuthService {
       );
   }
 
-  revokeToken(): Observable<any> {
-    const header = new HttpHeaders().set('Content-Type', 'application/json');
-    return this.httpClient.delete(`${this.apiUrl}Auth/RevokeToken`, {
-      headers: header,
-      withCredentials: true,
-    });
-  }
-
   checkPasswordComplexity(password: string) {
     const header = new HttpHeaders().set('Content-Type', 'application/json');
     const url = `${

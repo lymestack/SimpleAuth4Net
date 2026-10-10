@@ -415,9 +415,22 @@ public class AuthController(
             await logger.LogAsync(AuthLogEventType.Logout, User.Identity.Name, null);
         }
 
+        // Revoke the presented refresh token server-side, so a copy of the cookie taken before logout can no longer
+        // mint access tokens. Deleting the row also drops its reuse lineage; a later replay is simply invalid.
+        var presented = Request.Cookies["X-Refresh-Token"];
+        if (!string.IsNullOrEmpty(presented))
+        {
+            var hashed = HashToken(presented);
+            var rows = await db.AppRefreshTokens.Where(x => x.Token == hashed).ToListAsync();
+            if (rows.Count > 0)
+            {
+                db.AppRefreshTokens.RemoveRange(rows);
+                await db.SaveChangesAsync();
+            }
+        }
+
         SetJwtAccessTokenCookie("");
         SetJwtRefreshTokenCookie("", DateTime.UtcNow);
-        await Task.CompletedTask;
         return Ok();
     }
 
